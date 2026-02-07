@@ -31,6 +31,15 @@ import {
 import { saveUpload, validateUpload, getUploadCategories } from "./services/uploads";
 import { setupTrackingSocket, getOrderDriverLocation, getActiveDriverCount, getAllActiveDrivers, getDirectionsETA, assignDriverToOrder } from "./services/tracking";
 import { reportError } from "./services/monitoring";
+import {
+  startIdentityVerification, handleVerificationWebhook, handleCheckrWebhook,
+  getVerificationStatus, checkAlcoholEligibility, isPersonaConfigured, isCheckrConfigured,
+} from "./services/verification";
+import { initCache, getCachedMenu, getCachedRestaurants, invalidateMenuCache, invalidateRestaurantsCache, getCacheStats } from "./services/cache";
+import {
+  getPresignedUploadUrl, getPresignedDownloadUrl, uploadToCloud, deleteFromCloud,
+  validateCloudUpload, isS3Configured, getCloudStorageStatus,
+} from "./services/cloud-storage";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
 
@@ -72,6 +81,7 @@ const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 
 
 export async function registerRoutes(app: Express): Promise<Server> {
   await seedDatabase();
+  await initCache();
 
   // =================== AUTH ===================
   app.post("/api/auth/register", authLimiter, async (req: Request, res: Response) => {
@@ -356,7 +366,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (cuisine) filters.cuisine = cuisine as string;
       if (search) filters.search = search as string;
       if (featured !== undefined) filters.featured = featured === "true";
-      const results = await storage.getAllRestaurants(filters);
+      const hasFilters = cuisine || search || featured !== undefined;
+      if (hasFilters) {
+        const results = await storage.getAllRestaurants(filters);
+        return res.json(results);
+      }
+      const results = await getCachedRestaurants(() => storage.getAllRestaurants(filters));
       res.json(results);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
@@ -365,7 +380,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/restaurants/:id/menu", async (req: Request, res: Response) => {
     try {
-      const items = await storage.getMenuItems(getParam(getParam(req.params.id)));
+      const restaurantId = getParam(req.params.id);
+      const items = await getCachedMenu(restaurantId, () => storage.getMenuItems(restaurantId));
       res.json(items);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
@@ -1646,6 +1662,143 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =================== IDENTITY VERIFICATION ===================
+  app.post("/api/verify/start", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type } = req.body;
+      if (!type || !["alcohol", "driver"].includes(type)) {
+        return res.status(400).json({ message: "type must be 'alcohol' or 'driver'" });
+      }
+      const result = await startIdentityVerification(req.user!.id, type);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "verify/start", userId: req.user?.id });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/verify/status", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const type = (req.query.type as string) || "alcohol";
+      if (!["alcohol", "driver"].includes(type)) {
+        return res.status(400).json({ message: "type must be 'alcohol' or 'driver'" });
+      }
+      const status = await getVerificationStatus(req.user!.id, type as "alcohol" | "driver");
+      res.json(status);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/verify/alcohol-eligibility", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const eligibility = await checkAlcoholEligibility(req.user!.id);
+      res.json(eligibility);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/webhooks/persona", async (req: Request, res: Response) => {
+    try {
+      const { event, data } = req.body;
+      const result = await handleVerificationWebhook(event, data);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "webhooks/persona" });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/webhooks/checkr", async (req: Request, res: Response) => {
+    try {
+      const { type: event, data } = req.body;
+      const result = await handleCheckrWebhook(event, data);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "webhooks/checkr" });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== CLOUD STORAGE ===================
+  app.post("/api/cloud/upload-url", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { fileName, mimeType, category } = req.body;
+      if (!fileName || !mimeType || !category) {
+        return res.status(400).json({ message: "fileName, mimeType, and category are required" });
+      }
+      const validation = validateCloudUpload(0, mimeType, category);
+      if (!validation.valid) return res.status(400).json({ message: validation.error });
+
+      const result = await getPresignedUploadUrl(fileName, mimeType, category);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "cloud/upload-url", userId: req.user?.id });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/cloud/upload/:category", authMiddleware as any, upload.single("file"), async (req: AuthRequest, res: Response) => {
+    try {
+      const category = getParam(req.params.category);
+      const file = (req as any).file;
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+      const validation = validateCloudUpload(file.size, file.mimetype, category);
+      if (!validation.valid) return res.status(400).json({ message: validation.error });
+
+      const result = await uploadToCloud(file.buffer, file.originalname, file.mimetype, category);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "cloud/upload", userId: req.user?.id });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/cloud/download-url", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { fileKey } = req.query;
+      if (!fileKey) return res.status(400).json({ message: "fileKey is required" });
+      const result = await getPresignedDownloadUrl(fileKey as string);
+      res.json(result);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/cloud/file", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const fileKey = req.query.fileKey as string;
+      if (!fileKey) return res.status(400).json({ message: "fileKey query parameter is required" });
+      const deleted = await deleteFromCloud(fileKey);
+      res.json({ deleted });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== CACHE MANAGEMENT ===================
+  app.get("/api/cache/stats", authMiddleware as any, async (_req: AuthRequest, res: Response) => {
+    res.json(getCacheStats());
+  });
+
+  app.post("/api/cache/invalidate", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { type, restaurantId } = req.body;
+      if (type === "menu" && restaurantId) {
+        await invalidateMenuCache(restaurantId);
+      } else if (type === "restaurants") {
+        await invalidateRestaurantsCache();
+      } else {
+        await invalidateRestaurantsCache();
+      }
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   // =================== SERVICES STATUS ===================
   app.get("/api/services/status", (_req: Request, res: Response) => {
     res.json({
@@ -1664,6 +1817,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         googleMaps: !!process.env.GOOGLE_MAPS_API_KEY,
         activeDrivers: getActiveDriverCount(),
       },
+      verification: {
+        persona: isPersonaConfigured(),
+        checkr: isCheckrConfigured(),
+      },
+      cache: getCacheStats(),
+      cloudStorage: getCloudStorageStatus(),
       blockchain: {
         network: process.env.BASE_NETWORK || "mainnet",
         nftContract: MARKETPLACE_NFT_ADDRESS,

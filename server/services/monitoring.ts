@@ -185,3 +185,113 @@ export function getErrorStats() {
     },
   };
 }
+
+interface PerformanceTrace {
+  id: string;
+  name: string;
+  startTime: number;
+  endTime?: number;
+  duration?: number;
+  tags: Record<string, string>;
+  spans: { name: string; duration: number }[];
+}
+
+const activeTraces = new Map<string, PerformanceTrace>();
+const completedTraces: PerformanceTrace[] = [];
+const MAX_TRACES = 200;
+
+export function startTransaction(name: string, tags: Record<string, string> = {}): string {
+  const id = `txn_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+  activeTraces.set(id, {
+    id,
+    name,
+    startTime: Date.now(),
+    tags,
+    spans: [],
+  });
+  return id;
+}
+
+export function addSpan(transactionId: string, spanName: string, durationMs: number): void {
+  const trace = activeTraces.get(transactionId);
+  if (trace) {
+    trace.spans.push({ name: spanName, duration: durationMs });
+  }
+}
+
+export function finishTransaction(transactionId: string): PerformanceTrace | undefined {
+  const trace = activeTraces.get(transactionId);
+  if (!trace) return undefined;
+
+  trace.endTime = Date.now();
+  trace.duration = trace.endTime - trace.startTime;
+  activeTraces.delete(transactionId);
+
+  completedTraces.unshift(trace);
+  if (completedTraces.length > MAX_TRACES) completedTraces.pop();
+
+  if (trace.duration > 3000) {
+    reportError(`Slow transaction: ${trace.name} took ${trace.duration}ms`, {
+      transactionId: trace.id,
+      tags: trace.tags,
+      spans: trace.spans,
+    }, "warn");
+  }
+
+  if (process.env.SENTRY_DSN) {
+    sendTransactionToSentry(trace).catch(() => {});
+  }
+
+  return trace;
+}
+
+async function sendTransactionToSentry(trace: PerformanceTrace) {
+  const dsn = process.env.SENTRY_DSN;
+  if (!dsn) return;
+
+  try {
+    const dsnParts = new URL(dsn);
+    const projectId = dsnParts.pathname.replace("/", "");
+    const publicKey = dsnParts.username;
+    const host = dsnParts.host;
+
+    await fetch(`https://${host}/api/${projectId}/envelope/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/x-sentry-envelope",
+        "X-Sentry-Auth": `Sentry sentry_version=7, sentry_client=cryptoeats/1.0, sentry_key=${publicKey}`,
+      },
+      body: JSON.stringify({
+        type: "transaction",
+        transaction: trace.name,
+        start_timestamp: trace.startTime / 1000,
+        timestamp: (trace.endTime || Date.now()) / 1000,
+        tags: trace.tags,
+        spans: trace.spans.map((s, i) => ({
+          op: s.name,
+          description: s.name,
+          start_timestamp: trace.startTime / 1000,
+          timestamp: (trace.startTime + s.duration) / 1000,
+          span_id: `span_${i}`,
+        })),
+      }),
+    });
+  } catch {
+  }
+}
+
+export function getPerformanceStats(): {
+  activeTransactions: number;
+  recentTransactions: PerformanceTrace[];
+  avgDuration: number;
+  slowTransactions: number;
+} {
+  const recent = completedTraces.slice(0, 50);
+  const totalDuration = recent.reduce((sum, t) => sum + (t.duration || 0), 0);
+  return {
+    activeTransactions: activeTraces.size,
+    recentTransactions: recent.slice(0, 10),
+    avgDuration: recent.length > 0 ? Math.round(totalDuration / recent.length) : 0,
+    slowTransactions: completedTraces.filter(t => (t.duration || 0) > 3000).length,
+  };
+}
