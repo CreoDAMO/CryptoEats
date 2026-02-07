@@ -73,6 +73,7 @@ export default function CheckoutScreen() {
   }
 
   const isCrypto = paymentMethod === 'bitcoin' || paymentMethod === 'ethereum' || paymentMethod === 'usdc';
+  const isEscrow = paymentMethod === 'escrow';
   const checkoutDisabled = isPlacing || (hasAlcohol && !ageVerified) || alcoholBlocked;
 
   return (
@@ -189,6 +190,14 @@ export default function CheckoutScreen() {
               <Feather name="info" size={14} color={c.yellow} />
               <Text style={[styles.cryptoNoteText, { color: c.yellow, fontFamily: 'DMSans_400Regular' }]}>
                 Rate locked for 15 minutes. USD value recorded for tax purposes.
+              </Text>
+            </View>
+          )}
+          {isEscrow && (
+            <View style={[styles.cryptoNote, { backgroundColor: c.accentSoft }]}>
+              <Ionicons name="shield-checkmark" size={14} color={c.accent} />
+              <Text style={[styles.cryptoNoteText, { color: c.accent, fontFamily: 'DMSans_400Regular' }]}>
+                USDC held in smart contract escrow on Base until delivery is confirmed. Fully refundable if disputed.
               </Text>
             </View>
           )}

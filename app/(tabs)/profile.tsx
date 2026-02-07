@@ -128,6 +128,52 @@ export default function ProfileScreen() {
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
           <View style={styles.sectionHeader}>
+            <Ionicons name="diamond-outline" size={18} color="#7B61FF" />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Web3</Text>
+          </View>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/wallet'); }}
+            style={[styles.web3Row, { borderBottomColor: c.border }]}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: '#0052FF22' }]}>
+              <Ionicons name="wallet-outline" size={18} color="#0052FF" />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Wallet</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Connect wallet, view balances</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/nft-collection'); }}
+            style={[styles.web3Row, { borderBottomColor: c.border }]}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: '#FFD70022' }]}>
+              <Ionicons name="trophy-outline" size={18} color="#FFD700" />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>NFT Rewards</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Milestones & achievements</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/marketplace'); }}
+            style={styles.web3Row}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: c.accentLight }]}>
+              <Ionicons name="storefront-outline" size={18} color={c.accent} />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Marketplace</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Trade & collect NFTs</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
             <Ionicons name="shield-checkmark-outline" size={18} color={c.accent} />
             <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>ID Verification</Text>
           </View>
@@ -417,4 +463,21 @@ const styles = StyleSheet.create({
   driverCardInfo: { flex: 1, gap: 2 },
   driverCardTitle: { fontSize: 16 },
   driverCardDesc: { fontSize: 12 },
+  web3Row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    gap: 12,
+    borderBottomWidth: 1,
+  },
+  web3Icon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  web3Info: { flex: 1 },
+  web3Label: { fontSize: 15 },
+  web3Sub: { fontSize: 12, marginTop: 1 },
 });

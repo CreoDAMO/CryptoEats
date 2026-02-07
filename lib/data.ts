@@ -257,6 +257,7 @@ export const MENU_ITEMS: MenuItem[] = [
 export const PAYMENT_METHODS = [
   { id: 'card', label: 'Credit / Debit Card', icon: 'credit-card', sublabel: 'Visa ending 4242' },
   { id: 'cashapp', label: 'Cash App Pay', icon: 'dollar-sign', sublabel: '$CryptoEats' },
+  { id: 'escrow', label: 'USDC Escrow (Base)', icon: 'lock', sublabel: 'Smart contract secured' },
   { id: 'bitcoin', label: 'Bitcoin', icon: 'zap', sublabel: 'via Coinbase' },
   { id: 'ethereum', label: 'Ethereum', icon: 'hexagon', sublabel: 'via Coinbase' },
   { id: 'usdc', label: 'USDC', icon: 'disc', sublabel: 'via Coinbase' },

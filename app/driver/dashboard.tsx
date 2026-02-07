@@ -133,6 +133,43 @@ export default function DashboardScreen() {
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
           <View style={styles.sectionHeader}>
+            <Ionicons name="trophy-outline" size={18} color="#FFD700" />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>NFT Achievements</Text>
+          </View>
+          <Text style={[styles.sectionDesc, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
+            Earn on-chain NFT rewards for hitting delivery milestones. These live on Base and are yours forever.
+          </Text>
+          {[
+            { name: 'Rising Star', value: 10, icon: 'rocket-outline', color: '#FF6B35', progress: 234 },
+            { name: 'Road Warrior', value: 50, icon: 'car-sport-outline', color: '#00D4AA', progress: 234 },
+            { name: 'Delivery Hero', value: 100, icon: 'shield-checkmark-outline', color: '#7B61FF', progress: 234 },
+            { name: 'Legendary Driver', value: 500, icon: 'trophy-outline', color: '#FFD700', progress: 234 },
+          ].map((ms, i) => {
+            const earned = ms.progress >= ms.value;
+            return (
+              <View key={i} style={[styles.nftRow, i > 0 && { borderTopWidth: 1, borderTopColor: c.border }]}>
+                <View style={[styles.nftIcon, { backgroundColor: earned ? ms.color + '22' : c.surfaceElevated }]}>
+                  <Ionicons name={ms.icon as any} size={22} color={earned ? ms.color : c.textTertiary} />
+                </View>
+                <View style={styles.nftInfo}>
+                  <Text style={[styles.nftName, { color: earned ? ms.color : c.text, fontFamily: 'DMSans_600SemiBold' }]}>{ms.name}</Text>
+                  <View style={styles.nftBarWrap}>
+                    <View style={[styles.nftBar, { backgroundColor: c.surfaceElevated }]}>
+                      <View style={[styles.nftBarFill, { backgroundColor: ms.color, width: `${Math.min((ms.progress / ms.value) * 100, 100)}%` }]} />
+                    </View>
+                    <Text style={[styles.nftCount, { color: c.textTertiary, fontFamily: 'DMSans_500Medium' }]}>
+                      {Math.min(ms.progress, ms.value)}/{ms.value}
+                    </Text>
+                  </View>
+                </View>
+                {earned && <Ionicons name="checkmark-circle" size={22} color={ms.color} />}
+              </View>
+            );
+          })}
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
             <Feather name="umbrella" size={18} color={c.accent} />
             <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Insurance Status</Text>
           </View>
@@ -253,4 +290,35 @@ const styles = StyleSheet.create({
   insuranceInfo: { flex: 1, gap: 2 },
   insuranceLabel: { fontSize: 14 },
   insuranceExpiry: { fontSize: 12 },
+  nftRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    gap: 12,
+  },
+  nftIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  nftInfo: { flex: 1, gap: 4 },
+  nftName: { fontSize: 14 },
+  nftBarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  nftBar: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    overflow: 'hidden',
+  },
+  nftBarFill: {
+    height: '100%',
+    borderRadius: 3,
+  },
+  nftCount: { fontSize: 11, minWidth: 36, textAlign: 'right' },
 });
