@@ -8,6 +8,7 @@ import { storage } from "./storage";
 import { seedDatabase } from "./seed";
 import {
   registerSchema, loginSchema, createOrderSchema, rateOrderSchema,
+  merchantOnboardingSchema, driverOnboardingSchema,
 } from "../shared/schema";
 import {
   getUSDCBalance, getBaseBalance, prepareEscrowDeposit, verifyTransaction,
@@ -69,6 +70,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (data.role === "driver") {
         await storage.createDriver({ userId: user.id, firstName: data.firstName, lastName: data.lastName });
+        await storage.createOnboardingApplication({ userId: user.id, role: "driver" });
+      } else if (data.role === "restaurant") {
+        await storage.createOnboardingApplication({ userId: user.id, role: "restaurant" });
       } else {
         await storage.createCustomer({ userId: user.id, firstName: data.firstName, lastName: data.lastName });
       }
@@ -113,6 +117,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ token, user: req.user });
     } catch (err: any) {
       res.status(400).json({ message: "Token refresh failed" });
+    }
+  });
+
+  // =================== ONBOARDING ===================
+  app.get("/api/onboarding/status", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const onboarding = await storage.getOnboardingByUserId(req.user!.id);
+      if (!onboarding) {
+        return res.json({ status: "none", message: "No onboarding application found" });
+      }
+      res.json(onboarding);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to fetch onboarding status" });
+    }
+  });
+
+  app.post("/api/onboarding/merchant", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user!.role !== "restaurant") {
+        return res.status(403).json({ message: "Only restaurant accounts can complete merchant onboarding" });
+      }
+      const data = merchantOnboardingSchema.parse(req.body);
+      let onboarding = await storage.getOnboardingByUserId(req.user!.id);
+      if (!onboarding) {
+        onboarding = await storage.createOnboardingApplication({ userId: req.user!.id, role: "restaurant" });
+      }
+
+      const updated = await storage.updateOnboarding(onboarding.id, {
+        businessName: data.businessName,
+        businessAddress: data.businessAddress,
+        businessPhone: data.businessPhone,
+        einNumber: data.einNumber || null,
+        cuisineType: data.cuisineType,
+        hasAlcoholLicense: data.hasAlcoholLicense,
+        alcoholLicenseNumber: data.alcoholLicenseNumber || null,
+        operatingHoursData: data.operatingHours || null,
+        agreementSigned: data.agreementSigned,
+        agreementSignedAt: data.agreementSigned ? new Date() : null,
+        status: "pending_review",
+        step: 3,
+      });
+
+      if (data.agreementSigned) {
+        await storage.createAgreement({
+          entityType: "restaurant",
+          entityId: req.user!.id,
+          agreementType: "merchant_onboarding",
+          agreementText: "CryptoEats Merchant Partner Agreement — I agree to the terms of service, SB 676 compliance requirements, and platform fee structure.",
+          signatureData: `digital-signature-${req.user!.email}-${Date.now()}`,
+          ipAddress: (req.ip as string) || "unknown",
+        });
+      }
+
+      res.json({ message: "Merchant onboarding submitted for review", application: updated });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Merchant onboarding failed" });
+    }
+  });
+
+  app.post("/api/onboarding/driver", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user!.role !== "driver") {
+        return res.status(403).json({ message: "Only driver accounts can complete driver onboarding" });
+      }
+      const data = driverOnboardingSchema.parse(req.body);
+      let onboarding = await storage.getOnboardingByUserId(req.user!.id);
+      if (!onboarding) {
+        onboarding = await storage.createOnboardingApplication({ userId: req.user!.id, role: "driver" });
+      }
+
+      const updated = await storage.updateOnboarding(onboarding.id, {
+        licenseNumber: data.licenseNumber,
+        vehicleType: data.vehicleType,
+        vehicleMake: data.vehicleMake,
+        vehicleModel: data.vehicleModel,
+        vehicleYear: data.vehicleYear,
+        vehicleColor: data.vehicleColor,
+        licensePlate: data.licensePlate,
+        insuranceProvider: data.insuranceProvider,
+        insurancePolicyNumber: data.insurancePolicyNumber,
+        insuranceExpiry: data.insuranceExpiry,
+        backgroundCheckConsent: data.backgroundCheckConsent,
+        agreementSigned: data.agreementSigned,
+        agreementSignedAt: data.agreementSigned ? new Date() : null,
+        status: "pending_review",
+        step: 4,
+      });
+
+      const driverRecords = await storage.getDriverByUserId(req.user!.id);
+      if (driverRecords) {
+        await storage.updateDriver(driverRecords.id, {
+          licenseNumber: data.licenseNumber,
+          vehicleInfo: `${data.vehicleYear} ${data.vehicleMake} ${data.vehicleModel} (${data.vehicleColor})`,
+          insuranceData: {
+            policyNumber: data.insurancePolicyNumber,
+            expiryDate: data.insuranceExpiry,
+            provider: data.insuranceProvider,
+          },
+        });
+      }
+
+      if (data.agreementSigned) {
+        await storage.createAgreement({
+          entityType: "driver",
+          entityId: req.user!.id,
+          agreementType: "independent_contractor",
+          agreementText: "CryptoEats Independent Contractor Agreement — I acknowledge independent contractor status, agree to the Human-First policy, and consent to background check processing.",
+          signatureData: `digital-signature-${req.user!.email}-${Date.now()}`,
+          ipAddress: (req.ip as string) || "unknown",
+        });
+      }
+
+      res.json({ message: "Driver onboarding submitted for review", application: updated });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Driver onboarding failed" });
+    }
+  });
+
+  app.put("/api/onboarding/step", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { step } = req.body;
+      const onboarding = await storage.getOnboardingByUserId(req.user!.id);
+      if (!onboarding) {
+        return res.status(404).json({ message: "No onboarding application found" });
+      }
+      const updated = await storage.updateOnboarding(onboarding.id, {
+        step: step,
+        status: "in_progress",
+      });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to update step" });
+    }
+  });
+
+  app.get("/api/admin/onboarding", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const applications = await storage.getAllOnboardings();
+      res.json(applications);
+    } catch (err: any) {
+      res.status(500).json({ message: "Failed to fetch onboarding applications" });
+    }
+  });
+
+  app.get("/api/admin/onboarding/pending", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const applications = await storage.getPendingOnboardings();
+      res.json(applications);
+    } catch (err: any) {
+      res.status(500).json({ message: "Failed to fetch pending applications" });
+    }
+  });
+
+  app.put("/api/admin/onboarding/:id/review", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user!.role !== "admin") {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      const id = req.params.id as string;
+      const { status, reviewNotes } = req.body;
+      if (!["approved", "rejected"].includes(status)) {
+        return res.status(400).json({ message: "Status must be 'approved' or 'rejected'" });
+      }
+      const onboarding = await storage.getOnboardingById(id);
+      if (!onboarding) {
+        return res.status(404).json({ message: "Application not found" });
+      }
+
+      const updated = await storage.updateOnboarding(id, {
+        status,
+        reviewNotes: reviewNotes || null,
+        reviewedBy: req.user!.id,
+        reviewedAt: new Date(),
+      });
+
+      if (status === "approved" && onboarding.role === "restaurant" && onboarding.businessName) {
+        await storage.createRestaurant({
+          userId: onboarding.userId,
+          name: onboarding.businessName,
+          cuisineType: onboarding.cuisineType || "General",
+          address: onboarding.businessAddress || "",
+          phone: onboarding.businessPhone || "",
+          alcoholLicense: onboarding.hasAlcoholLicense || false,
+          operatingHours: onboarding.operatingHoursData || { open: "09:00", close: "22:00", days: ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"] },
+          isApproved: true,
+          agreementSignedDate: onboarding.agreementSignedAt,
+        });
+      }
+
+      if (status === "approved" && onboarding.role === "driver") {
+        const driver = await storage.getDriverByUserId(onboarding.userId);
+        if (driver) {
+          await storage.updateDriver(driver.id, { backgroundCheckStatus: "approved" });
+        }
+      }
+
+      await storage.createComplianceLog({
+        type: "agreement",
+        entityId: onboarding.userId,
+        details: { action: `onboarding_${status}`, role: onboarding.role, reviewNotes },
+        status,
+      });
+
+      res.json({ message: `Application ${status}`, application: updated });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Review failed" });
     }
   });
 

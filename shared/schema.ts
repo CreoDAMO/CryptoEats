@@ -19,6 +19,7 @@ export const complianceTypeEnum = pgEnum("compliance_type", ["license", "tax_fil
 export const chatTypeEnum = pgEnum("chat_type", ["text", "image", "system"]);
 export const verificationMethodEnum = pgEnum("verification_method", ["checkout", "delivery"]);
 export const onrampStatusEnum = pgEnum("onramp_status", ["pending", "processing", "completed", "failed"]);
+export const onboardingStatusEnum = pgEnum("onboarding_status", ["not_started", "in_progress", "pending_review", "approved", "rejected"]);
 
 // =================== USERS ===================
 export const users = pgTable("users", {
@@ -428,6 +429,42 @@ export const pushTokens = pgTable("push_tokens", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// =================== ONBOARDING APPLICATIONS ===================
+export const onboardingApplications = pgTable("onboarding_applications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  role: text("role").notNull(),
+  status: onboardingStatusEnum("status").notNull().default("not_started"),
+  step: integer("step").default(1),
+  businessName: text("business_name"),
+  businessAddress: text("business_address"),
+  businessPhone: text("business_phone"),
+  einNumber: text("ein_number"),
+  cuisineType: text("cuisine_type"),
+  hasAlcoholLicense: boolean("has_alcohol_license").default(false),
+  alcoholLicenseNumber: text("alcohol_license_number"),
+  operatingHoursData: json("operating_hours_data").$type<{ open: string; close: string; days: string[] }>(),
+  licenseNumber: text("license_number"),
+  vehicleType: text("vehicle_type"),
+  vehicleMake: text("vehicle_make"),
+  vehicleModel: text("vehicle_model"),
+  vehicleYear: text("vehicle_year"),
+  vehicleColor: text("vehicle_color"),
+  licensePlate: text("license_plate"),
+  insuranceProvider: text("insurance_provider"),
+  insurancePolicyNumber: text("insurance_policy_number"),
+  insuranceExpiry: text("insurance_expiry"),
+  backgroundCheckConsent: boolean("background_check_consent").default(false),
+  agreementSigned: boolean("agreement_signed").default(false),
+  agreementSignedAt: timestamp("agreement_signed_at"),
+  documents: json("documents").$type<{ type: string; name: string; uploadedAt: string }[]>().default([]),
+  reviewNotes: text("review_notes"),
+  reviewedBy: varchar("reviewed_by"),
+  reviewedAt: timestamp("reviewed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // =================== PHASE 4: API KEYS ===================
 export const apiKeyTierEnum = pgEnum("api_key_tier", ["free", "starter", "pro", "enterprise"]);
 
@@ -566,9 +603,40 @@ export const registerSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   phone: z.string().optional(),
-  role: z.enum(["customer", "driver"]).default("customer"),
+  role: z.enum(["customer", "driver", "restaurant"]).default("customer"),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
+});
+
+export const merchantOnboardingSchema = z.object({
+  businessName: z.string().min(1),
+  businessAddress: z.string().min(1),
+  businessPhone: z.string().min(1),
+  einNumber: z.string().optional(),
+  cuisineType: z.string().min(1),
+  hasAlcoholLicense: z.boolean().default(false),
+  alcoholLicenseNumber: z.string().optional(),
+  operatingHours: z.object({
+    open: z.string(),
+    close: z.string(),
+    days: z.array(z.string()),
+  }).optional(),
+  agreementSigned: z.boolean(),
+});
+
+export const driverOnboardingSchema = z.object({
+  licenseNumber: z.string().min(1),
+  vehicleType: z.enum(["car", "motorcycle", "bicycle", "scooter"]),
+  vehicleMake: z.string().min(1),
+  vehicleModel: z.string().min(1),
+  vehicleYear: z.string().min(1),
+  vehicleColor: z.string().min(1),
+  licensePlate: z.string().min(1),
+  insuranceProvider: z.string().min(1),
+  insurancePolicyNumber: z.string().min(1),
+  insuranceExpiry: z.string().min(1),
+  backgroundCheckConsent: z.boolean(),
+  agreementSigned: z.boolean(),
 });
 
 export const loginSchema = z.object({
@@ -625,3 +693,4 @@ export type IntegrationPartner = typeof integrationPartners.$inferSelect;
 export type WhiteLabelConfig = typeof whiteLabelConfigs.$inferSelect;
 export type ApiAuditLog = typeof apiAuditLogs.$inferSelect;
 export type InboundOrder = typeof inboundOrders.$inferSelect;
+export type OnboardingApplication = typeof onboardingApplications.$inferSelect;

@@ -6,12 +6,12 @@ import {
   driverStatusTable, driverSupportLog, driverEarnings, complianceLogs,
   deliveryWindows, referrals, digitalAgreements, bundles,
   wallets, escrowTransactions, nftRewards, nftListings,
-  onrampTransactions, pushTokens,
+  onrampTransactions, pushTokens, onboardingApplications,
   type User, type Customer, type Driver, type Restaurant, type MenuItem,
   type Order, type Review, type TaxJurisdiction, type TaxTransaction,
   type DriverStatus, type DriverSupportLogEntry, type ComplianceLog,
   type Wallet, type EscrowTransaction, type NftReward, type NftListing,
-  type OnrampTransaction, type PushToken,
+  type OnrampTransaction, type PushToken, type OnboardingApplication,
 } from "../shared/schema";
 
 export const storage = {
@@ -348,6 +348,11 @@ export const storage = {
     return db.select().from(orders).orderBy(desc(orders.createdAt));
   },
 
+  async createRestaurant(data: any): Promise<Restaurant> {
+    const [restaurant] = await db.insert(restaurants).values(data).returning();
+    return restaurant;
+  },
+
   async updateRestaurant(id: string, data: any): Promise<Restaurant | undefined> {
     const [restaurant] = await db.update(restaurants).set(data).where(eq(restaurants.id, id)).returning();
     return restaurant;
@@ -538,5 +543,44 @@ export const storage = {
 
   async deactivatePushToken(token: string): Promise<void> {
     await db.update(pushTokens).set({ active: false }).where(eq(pushTokens.token, token));
+  },
+
+  async createOnboardingApplication(data: { userId: string; role: string }): Promise<OnboardingApplication> {
+    const [app] = await db.insert(onboardingApplications).values({
+      userId: data.userId,
+      role: data.role,
+      status: "not_started",
+      step: 1,
+    }).returning();
+    return app;
+  },
+
+  async getOnboardingByUserId(userId: string): Promise<OnboardingApplication | undefined> {
+    const [app] = await db.select().from(onboardingApplications).where(eq(onboardingApplications.userId, userId)).limit(1);
+    return app;
+  },
+
+  async getOnboardingById(id: string): Promise<OnboardingApplication | undefined> {
+    const [app] = await db.select().from(onboardingApplications).where(eq(onboardingApplications.id, id)).limit(1);
+    return app;
+  },
+
+  async updateOnboarding(id: string, data: Partial<OnboardingApplication>): Promise<OnboardingApplication> {
+    const [app] = await db.update(onboardingApplications)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(onboardingApplications.id, id))
+      .returning();
+    return app;
+  },
+
+  async getPendingOnboardings(): Promise<OnboardingApplication[]> {
+    return db.select().from(onboardingApplications)
+      .where(eq(onboardingApplications.status, "pending_review"))
+      .orderBy(desc(onboardingApplications.createdAt));
+  },
+
+  async getAllOnboardings(): Promise<OnboardingApplication[]> {
+    return db.select().from(onboardingApplications)
+      .orderBy(desc(onboardingApplications.createdAt));
   },
 };
