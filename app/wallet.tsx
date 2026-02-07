@@ -149,9 +149,36 @@ export default function WalletScreen() {
               ) : null}
             </View>
 
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/buy-crypto'); }}
+              style={({ pressed }) => [styles.buyCryptoBtn, { backgroundColor: '#0052FF', opacity: pressed ? 0.85 : 1 }]}
+            >
+              <MaterialCommunityIcons name="plus-circle-outline" size={22} color="#fff" />
+              <Text style={[styles.buyCryptoBtnText, { fontFamily: 'DMSans_700Bold' }]}>Buy Crypto</Text>
+              <View style={[styles.coinbasePill, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                <Text style={[styles.coinbasePillText, { fontFamily: 'DMSans_500Medium' }]}>via Coinbase</Text>
+              </View>
+            </Pressable>
+
+            <View style={[styles.gaslessNote, { backgroundColor: c.greenLight, borderColor: c.green }]}>
+              <Ionicons name="flash" size={14} color={c.green} />
+              <Text style={[styles.gaslessNoteText, { color: c.green, fontFamily: 'DMSans_500Medium' }]}>
+                Gasless USDC transfers on Base - no ETH needed for transactions
+              </Text>
+            </View>
+
             <View style={[styles.section, { backgroundColor: c.surface }]}>
               <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Quick Actions</Text>
               <View style={styles.actionsGrid}>
+                <Pressable
+                  onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/buy-crypto'); }}
+                  style={[styles.actionCard, { backgroundColor: c.background }]}
+                >
+                  <View style={[styles.actionIcon, { backgroundColor: '#0052FF22' }]}>
+                    <Ionicons name="add-circle-outline" size={22} color="#0052FF" />
+                  </View>
+                  <Text style={[styles.actionLabel, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Fund</Text>
+                </Pressable>
                 <Pressable
                   onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/marketplace'); }}
                   style={[styles.actionCard, { backgroundColor: c.background }]}
@@ -466,4 +493,28 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   connectBtnText: { fontSize: 16, color: '#000' },
+  buyCryptoBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+    borderRadius: 14,
+    gap: 10,
+  },
+  buyCryptoBtnText: { fontSize: 16, color: '#fff' },
+  coinbasePill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  coinbasePillText: { fontSize: 11, color: 'rgba(255,255,255,0.9)' },
+  gaslessNote: {
+    flexDirection: 'row',
+    padding: 12,
+    borderRadius: 12,
+    gap: 8,
+    borderWidth: 1,
+    alignItems: 'center',
+  },
+  gaslessNoteText: { flex: 1, fontSize: 13 },
 });

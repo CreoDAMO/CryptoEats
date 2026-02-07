@@ -201,6 +201,16 @@ export default function CheckoutScreen() {
               </Text>
             </View>
           )}
+          {isEscrow && (
+            <Pressable
+              onPress={() => router.push({ pathname: '/buy-crypto', params: { prefill: Math.ceil(total).toString() } })}
+              style={[styles.fundWalletBtn, { backgroundColor: '#0052FF' }]}
+            >
+              <Ionicons name="add-circle-outline" size={18} color="#fff" />
+              <Text style={[styles.fundWalletText, { fontFamily: 'DMSans_600SemiBold' }]}>Need USDC? Buy crypto via Coinbase</Text>
+              <Feather name="arrow-right" size={16} color="#fff" />
+            </Pressable>
+          )}
         </View>
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
@@ -407,4 +417,14 @@ const styles = StyleSheet.create({
   },
   placeBtnText: { fontSize: 16, color: '#000' },
   placeBtnTotal: { fontSize: 16, color: '#000' },
+  fundWalletBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    gap: 8,
+  },
+  fundWalletText: { fontSize: 13, color: '#fff', flex: 1 },
 });

@@ -159,7 +159,7 @@ export default function ProfileScreen() {
           </Pressable>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/marketplace'); }}
-            style={styles.web3Row}
+            style={[styles.web3Row, { borderBottomColor: c.border }]}
           >
             <View style={[styles.web3Icon, { backgroundColor: c.accentLight }]}>
               <Ionicons name="storefront-outline" size={18} color={c.accent} />
@@ -167,6 +167,19 @@ export default function ProfileScreen() {
             <View style={styles.web3Info}>
               <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Marketplace</Text>
               <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Trade & collect NFTs</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/buy-crypto'); }}
+            style={styles.web3Row}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: '#0052FF22' }]}>
+              <Ionicons name="add-circle-outline" size={18} color="#0052FF" />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Buy Crypto</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Coinbase Onramp - cards, Apple Pay</Text>
             </View>
             <Feather name="chevron-right" size={18} color={c.textTertiary} />
           </Pressable>
