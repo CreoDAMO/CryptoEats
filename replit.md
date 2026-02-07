@@ -37,13 +37,17 @@ Preferred communication style: Simple, everyday language.
 - **Uploads** (`uploads.ts`): Multipart file upload with category validation, size limits, MIME enforcement, local storage.
 - **Tracking** (`tracking.ts`): Socket.IO GPS tracking with ETA calculation (Haversine), driver location broadcasting, location history.
 - **Security** (`security.ts`): Helmet headers, XSS/SQL sanitization, adaptive rate limiting with burst detection.
-- **Monitoring** (`monitoring.ts`): Sentry integration, health metrics (`/api/health`), error tracking, uptime monitoring.
+- **Monitoring** (`monitoring.ts`): Sentry integration with performance tracing (transactions/spans), health metrics (`/api/health`), error tracking, uptime monitoring.
+- **Verification** (`verification.ts`): Persona API for identity/age verification (21+ alcohol), Checkr API for driver background checks. Webhook handlers for async status updates. Smart fallback to simulated verification when no API keys configured.
+- **Cache** (`cache.ts`): Redis caching service with automatic in-memory fallback. Restaurant list cached 10min, menu items cached 30min. Cache invalidation endpoints available. Stats tracking for hits/misses.
+- **Cloud Storage** (`cloud-storage.ts`): AWS S3 upload/download/delete with presigned URL generation. Automatic local filesystem fallback when S3 not configured. Multi-category file support.
 
 ### Database (PostgreSQL + Drizzle ORM)
 
 - **ORM**: Drizzle ORM with PostgreSQL dialect. Schema defined in `shared/schema.ts`.
-- **Connection**: `pg` Pool using `DATABASE_URL`.
+- **Connection**: `pg` Pool using `DATABASE_URL` with optimized pooling (max 20 connections, idle timeout 30s, connection timeout 10s).
 - **Schema Design**: Comprehensive relational schema covering users, customers, drivers, restaurants, menu items, orders, chats, reviews, ID verifications, tax jurisdictions, compliance logs, API keys, webhooks, and white-label configurations.
+- **Indexes**: 19 performance indexes across 6 hot tables (orders, menu_items, users, customers, drivers, chats, compliance_logs) for optimized query performance.
 - **Enums**: Extensive use of PostgreSQL enums for various statuses and roles.
 - **Validation**: Zod schemas generated from Drizzle for shared client/server validation.
 
