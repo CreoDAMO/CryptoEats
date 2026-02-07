@@ -20,6 +20,13 @@ CryptoEats is a full-featured food and alcohol delivery platform built with Expo
   - Reorder from history, special instructions, referral codes
   - Safe delivery window enforcement for alcohol (8 AM - 10 PM)
   - Transparent SB 676-compliant pricing breakdown at checkout
+- **2026-02-07**: Paymaster error handling and chain validation
+  - Classified Paymaster errors (INTERNAL_ERROR, POLICY_REJECTED, GAS_ESTIMATION_FAILED, PAYMENT_REQUIRED, RATE_LIMITED, etc.) with user-friendly messages
+  - Exponential backoff retry logic for transient blockchain errors (up to 3 retries)
+  - Contract allowlist system for escrow, NFT, and USDC contracts with gas sponsorship tracking
+  - Base chain ID validation (8453 mainnet, 84532 Sepolia) with network switching support
+  - New API endpoints: /api/paymaster/status, /api/chain/validate, /api/contracts/allowlist, /api/contracts/check/:address, /api/gas/estimate, /api/escrow/release
+  - Frontend error messages enhanced for wallet connection, crypto purchase, and gasless transaction failures
 - **2026-02-07**: Driver app section built
   - 4-tab driver mode: Orders, Earnings, Dashboard, Support
   - Order accept/decline, status progression, age verification at delivery
