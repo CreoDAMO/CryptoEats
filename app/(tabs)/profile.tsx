@@ -128,6 +128,39 @@ export default function ProfileScreen() {
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
           <View style={styles.sectionHeader}>
+            <Feather name="briefcase" size={18} color={c.orange} />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Join CryptoEats</Text>
+          </View>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/onboarding/merchant'); }}
+            style={[styles.menuItem, { borderBottomWidth: 0 }]}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: c.orangeLight }]}>
+              <Ionicons name="restaurant-outline" size={18} color={c.orange} />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Become a Partner Restaurant</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>List your restaurant on CryptoEats</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/onboarding/driver'); }}
+            style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: c.border }]}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: c.accentLight }]}>
+              <Feather name="truck" size={18} color={c.accent} />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Become a Delivery Driver</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Earn on your schedule with tips</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
             <Ionicons name="diamond-outline" size={18} color="#7B61FF" />
             <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Web3</Text>
           </View>

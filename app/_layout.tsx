@@ -23,6 +23,7 @@ function RootLayoutNav() {
       <Stack.Screen name="chat/[orderId]" options={{ headerShown: false }} />
       <Stack.Screen name="review/[orderId]" options={{ headerShown: false }} />
       <Stack.Screen name="driver" options={{ headerShown: false }} />
+      <Stack.Screen name="onboarding" options={{ headerShown: false }} />
     </Stack>
   );
 }
