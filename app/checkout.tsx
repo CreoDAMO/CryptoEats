@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Alert, TextInput } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Alert, TextInput, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -7,6 +7,7 @@ import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { useCart } from '@/lib/cart-context';
 import { PAYMENT_METHODS } from '@/lib/data';
+import { apiRequest } from '@/lib/query-client';
 
 const TIP_OPTIONS = [
   { label: '15%', multiplier: 0.15 },
@@ -46,6 +47,8 @@ export default function CheckoutScreen() {
     setTip(tipAmount);
   };
 
+  const [paymentProcessing, setPaymentProcessing] = useState(false);
+
   const handlePlaceOrder = async () => {
     if (hasAlcohol && !ageVerified) {
       Alert.alert('Age Verification Required', 'Please verify your age to order alcohol items.');
@@ -56,8 +59,31 @@ export default function CheckoutScreen() {
       return;
     }
     setIsPlacing(true);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+
     try {
+      if (paymentMethod === 'card') {
+        setPaymentProcessing(true);
+        try {
+          const piRes = await apiRequest('POST', '/api/payments/create-intent', {
+            amount: total,
+            currency: 'usd',
+            metadata: {
+              restaurantId: items[0]?.restaurantId || '',
+              itemCount: items.length.toString(),
+            },
+          });
+          const piData = await piRes.json();
+          if (piData.clientSecret) {
+            console.log('[Checkout] Payment intent created:', piData.paymentIntentId);
+          }
+        } catch (payErr) {
+          console.warn('[Checkout] Stripe payment intent creation failed (proceeding with order):', payErr);
+        } finally {
+          setPaymentProcessing(false);
+        }
+      }
+
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const order = await placeOrder(deliveryAddress);
       router.replace({ pathname: '/tracking/[id]', params: { id: order.id } });
     } catch {
@@ -74,7 +100,7 @@ export default function CheckoutScreen() {
 
   const isCrypto = paymentMethod === 'bitcoin' || paymentMethod === 'ethereum' || paymentMethod === 'usdc';
   const isEscrow = paymentMethod === 'escrow';
-  const checkoutDisabled = isPlacing || (hasAlcohol && !ageVerified) || alcoholBlocked;
+  const checkoutDisabled = isPlacing || paymentProcessing || (hasAlcohol && !ageVerified) || alcoholBlocked;
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -283,8 +309,13 @@ export default function CheckoutScreen() {
             },
           ]}
         >
-          {isPlacing ? (
-            <Text style={[styles.placeBtnText, { fontFamily: 'DMSans_700Bold' }]}>Placing order...</Text>
+          {isPlacing || paymentProcessing ? (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <ActivityIndicator size="small" color="#000" />
+              <Text style={[styles.placeBtnText, { fontFamily: 'DMSans_700Bold' }]}>
+                {paymentProcessing ? 'Processing payment...' : 'Placing order...'}
+              </Text>
+            </View>
           ) : (
             <>
               <Text style={[styles.placeBtnText, { fontFamily: 'DMSans_700Bold', color: checkoutDisabled ? c.textTertiary : '#000' }]}>

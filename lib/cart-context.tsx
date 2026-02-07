@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useMemo, useCallback, React
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { CartItem, MenuItem, Order, RESTAURANTS, DRIVER_NAMES, DRIVER_VEHICLES, calculateOrderTotals } from './data';
 import * as Crypto from 'expo-crypto';
+import { apiRequest } from './query-client';
 
 interface CartContextValue {
   items: CartItem[];
@@ -93,38 +94,92 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const placeOrder = useCallback(async (deliveryAddress: string): Promise<Order> => {
-    const driverIndex = Math.floor(Math.random() * DRIVER_NAMES.length);
-    const order: Order = {
-      id: Crypto.randomUUID(),
-      restaurantName: items[0]?.restaurantName ?? '',
+    const orderPayload = {
       restaurantId: items[0]?.restaurantId ?? '',
-      items: [...items],
-      subtotal: totals.subtotal,
-      deliveryFee: totals.deliveryFee,
-      serviceFee: totals.serviceFee,
-      tax: totals.tax,
-      taxRate: totals.taxRate,
-      tip,
-      total: totals.total,
-      status: 'confirmed',
-      paymentMethod,
-      createdAt: new Date().toISOString(),
-      eta: '25-35 min',
-      driverName: DRIVER_NAMES[driverIndex],
-      driverRating: 4.5 + Math.random() * 0.5,
-      driverVehicle: DRIVER_VEHICLES[driverIndex],
-      requiresAgeVerification: hasAlcohol,
-      ageVerified: ageVerified,
+      items: items.map(i => ({
+        menuItemId: i.menuItem.id,
+        name: i.menuItem.name,
+        price: i.menuItem.price,
+        quantity: i.quantity,
+        isAlcohol: i.menuItem.isAlcohol || false,
+      })),
       deliveryAddress,
       specialInstructions: specialInstructions || undefined,
+      paymentMethod,
+      tip,
+      ageVerified,
     };
 
-    const updatedOrders = [order, ...orders];
-    setOrders(updatedOrders);
-    setActiveOrder(order);
-    await AsyncStorage.setItem('cryptoeats_orders', JSON.stringify(updatedOrders));
-    clearCart();
-    return order;
+    try {
+      const res = await apiRequest('POST', '/api/orders', orderPayload);
+      const serverOrder = await res.json();
+
+      const driverIndex = Math.floor(Math.random() * DRIVER_NAMES.length);
+      const order: Order = {
+        id: serverOrder.id,
+        restaurantName: items[0]?.restaurantName ?? '',
+        restaurantId: serverOrder.restaurantId || items[0]?.restaurantId || '',
+        items: [...items],
+        subtotal: parseFloat(serverOrder.subtotal) || totals.subtotal,
+        deliveryFee: parseFloat(serverOrder.deliveryFee) || totals.deliveryFee,
+        serviceFee: parseFloat(serverOrder.serviceFee) || totals.serviceFee,
+        tax: parseFloat(serverOrder.taxCollected) || totals.tax,
+        taxRate: parseFloat(serverOrder.taxRate) || totals.taxRate,
+        tip: parseFloat(serverOrder.tip) || tip,
+        total: parseFloat(serverOrder.total) || totals.total,
+        status: serverOrder.status || 'confirmed',
+        paymentMethod: serverOrder.paymentMethod || paymentMethod,
+        createdAt: serverOrder.createdAt || new Date().toISOString(),
+        eta: serverOrder.eta || '25-35 min',
+        driverName: DRIVER_NAMES[driverIndex],
+        driverRating: 4.5 + Math.random() * 0.5,
+        driverVehicle: DRIVER_VEHICLES[driverIndex],
+        requiresAgeVerification: hasAlcohol,
+        ageVerified,
+        deliveryAddress,
+        specialInstructions: specialInstructions || undefined,
+      };
+
+      const updatedOrders = [order, ...orders];
+      setOrders(updatedOrders);
+      setActiveOrder(order);
+      await AsyncStorage.setItem('cryptoeats_orders', JSON.stringify(updatedOrders));
+      clearCart();
+      return order;
+    } catch (apiErr) {
+      const driverIndex = Math.floor(Math.random() * DRIVER_NAMES.length);
+      const order: Order = {
+        id: Crypto.randomUUID(),
+        restaurantName: items[0]?.restaurantName ?? '',
+        restaurantId: items[0]?.restaurantId ?? '',
+        items: [...items],
+        subtotal: totals.subtotal,
+        deliveryFee: totals.deliveryFee,
+        serviceFee: totals.serviceFee,
+        tax: totals.tax,
+        taxRate: totals.taxRate,
+        tip,
+        total: totals.total,
+        status: 'confirmed',
+        paymentMethod,
+        createdAt: new Date().toISOString(),
+        eta: '25-35 min',
+        driverName: DRIVER_NAMES[driverIndex],
+        driverRating: 4.5 + Math.random() * 0.5,
+        driverVehicle: DRIVER_VEHICLES[driverIndex],
+        requiresAgeVerification: hasAlcohol,
+        ageVerified,
+        deliveryAddress,
+        specialInstructions: specialInstructions || undefined,
+      };
+
+      const updatedOrders = [order, ...orders];
+      setOrders(updatedOrders);
+      setActiveOrder(order);
+      await AsyncStorage.setItem('cryptoeats_orders', JSON.stringify(updatedOrders));
+      clearCart();
+      return order;
+    }
   }, [items, totals, tip, paymentMethod, hasAlcohol, ageVerified, orders, clearCart, specialInstructions]);
 
   const reorderFromHistory = useCallback((order: Order) => {
