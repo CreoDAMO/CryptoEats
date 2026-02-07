@@ -1,0 +1,185 @@
+### Troubleshooting Coinbase Paymaster Errors
+
+Based on the official Coinbase Developer Platform (CDP) documentation, Paymaster errors typically occur when sponsoring gas for user operations on Base (or other EVM chains). These are often related to configuration, policy violations, or simulation failures. I'll outline common errors, their codes, descriptions, and fixes from the CDP error reference and troubleshooting guides. If you're encountering these in your CryptoEats app (e.g., during gasless USDC transfers or escrow interactions), start by checking your CDP Portal configuration.
+
+#### Common Paymaster Errors and Fixes
+1. **INTERNAL_ERROR (-32000)**  
+   - **Description**: Internal service error on Coinbase's side (e.g., temporary outage).  
+   - **Fix**: Retry the request after a short delay. If it persists, check CDP status page or contact Coinbase support via their Discord or portal. Export logs from CDP Portal for details.
+
+2. **Transaction Rejected by Policy**  
+   - **Description**: User operation rejected before reaching the chain due to policy rules (e.g., spend limits exceeded, sender lacks attestation, or contract not allowlisted).  
+   - **Fix**: 
+     - Verify your Paymaster config in CDP Portal: Check per-user/global spend limits, ensure the sender address has required attestations (e.g., EAS on Base).
+     - Allowlist your contracts (e.g., escrow 0x7e1868430e86304Aac93a8964c4a1D5C12A76ED5, NFT 0x21Fb1fFaefA40c042276BB4Bcf8B826A647aE91E).
+     - Test on Base Sepolia first; use CDP Faucet for test funds.
+
+3. **Unable to Estimate Gas**  
+   - **Description**: Client-side EVM error (not directly Paymaster), but common when Paymaster is involved—wallet/provider can't simulate the tx (e.g., invalid call data or revert in contract).  
+   - **Fix**: 
+     - Ensure your user operation (via `useSendUserOperation` hook) has valid `calls` (e.g., correct ABI encoding for escrow `release`).
+     - Debug with `eth_estimateUserOperationGas` RPC call on Base RPC.
+     - If using custom RPC (e.g., https://api.developer.coinbase.com/rpc/v1/base-sepolia), confirm it's allowlisted for Paymaster.
+
+4. **402 Payment Required** (or Similar Auth Errors)  
+   - **Description**: Paymaster rejects due to invalid headers or missing payment signature (e.g., in x402 integrations).  
+   - **Fix**: Use the correct `PAYMENT-SIGNATURE` header (not `X-PAYMENT`). Verify USDC balance for payment if required. Check server JSON for details.
+
+5. **Gasless Transaction Fails with Custom RPC**  
+   - **Description**: UI shows "Sponsored by [Your App]", but tx loads indefinitely and cancels (common with custom Coinbase RPC URLs).  
+   - **Fix**: 
+     - Ensure `useCdpPaymaster: true` in hooks.
+     - Switch to official Base Paymaster sponsor (e.g., "Sponsored by Base") for testing.
+     - Verify API key in Paymaster URL; add contracts to sponsorship allowlist in CDP Portal.
+
+#### General Debugging Steps
+- **Export Logs**: From CDP Portal, download request logs for failed userOps (includes error fields).
+- **Test in Sandbox**: Use CDP Sandbox mode and Base Sepolia testnet. Faucet: Get test ETH/USDC from CDP tools.
+- **Network Check**: Confirm you're on Base (chainId 8453 for mainnet, 84532 for Sepolia).
+- **Retry Logic**: Implement exponential backoff in your app for transient errors.
+- **Support**: Join CDP Discord for community help; file a ticket if it's a platform bug.
+
+If you provide a specific error code or log snippet from your app, I can narrow it down further.
+
+### Integrating WalletConnect v2 with React Native + Expo
+
+WalletConnect v2 is the standard for connecting external wallets (e.g., MetaMask, Coinbase Wallet) in dApps, supporting multi-chain (including Base). It's chain-agnostic and works well with your embedded CDP wallets for fallback. Below is a step-by-step integration guide for React Native with Expo, based on official WalletConnect docs, community tutorials, and GitHub examples. This complements your Onramp by allowing users to connect existing wallets for payments/escrow/NFT interactions.
+
+#### Prerequisites
+- WalletConnect Project ID: Sign up at [cloud.walletconnect.com](https://cloud.walletconnect.com) and create a project (free).
+- Expo: Ensure your project uses Expo SDK 49+.
+- Environment: Add to `.env`: `WALLETCONNECT_PROJECT_ID=your_project_id`.
+
+#### Step 1: Installation
+Run:
+```bash
+npm install @walletconnect/react-native @walletconnect/core @walletconnect/utils @walletconnect/modal-react-native expo-linking expo-constants
+npx expo install @react-native-async-storage/async-storage
+```
+
+For Expo config (in `app.json`):
+```json
+"plugins": [
+  [
+    "@walletconnect/modal-react-native",
+    {
+      "projectId": "<YOUR_PROJECT_ID>",
+      "providerMetadata": {
+        "name": "CryptoEats",
+        "description": "Food Delivery dApp",
+        "url": "https://yourapp.com",
+        "icons": ["https://yourapp.com/icon.png"]
+      }
+    }
+  ]
+]
+```
+
+#### Step 2: Setup Provider and Modal
+Wrap your app with WalletConnect providers. In `app/_layout.tsx` (Expo Router):
+```tsx
+import { Provider as PaperProvider } from 'react-native-paper'; // Optional for UI
+import { WalletConnectModal, useWalletConnectModal } from '@walletconnect/modal-react-native';
+import { WalletConnectProvider } from '@walletconnect/react-native';
+import { Slot } from 'expo-router';
+import { useEffect } from 'react';
+
+const projectId = process.env.WALLETCONNECT_PROJECT_ID;
+
+const providerMetadata = {
+  name: 'CryptoEats',
+  description: 'Crypto-powered food delivery',
+  url: 'https://crypto-eats.com',
+  icons: ['https://crypto-eats.com/icon.png'],
+  redirect: { native: 'crypto-eats://' }, // Deep link scheme
+};
+
+export default function Layout() {
+  return (
+    <WalletConnectProvider
+      projectId={projectId}
+      providerMetadata={providerMetadata}
+      chains={['eip155:8453']} // Base mainnet chainId
+      optionalChains={['eip155:84532']} // Base Sepolia for test
+    >
+      <PaperProvider>
+        <Slot />
+        <WalletConnectModal projectId={projectId} providerMetadata={providerMetadata} />
+      </PaperProvider>
+    </WalletConnectProvider>
+  );
+}
+```
+
+#### Step 3: Connect Wallet and Sign Transactions
+Use the `useWalletConnectModal` hook for connection. Example in a component (e.g., Customer App payment screen):
+```tsx
+import { useWalletConnectModal } from '@walletconnect/modal-react-native';
+import { ethers } from 'ethers';
+import { Button, Text } from 'react-native';
+import { useEffect, useState } from 'react';
+
+export default function WalletConnectButton({ onConnect }) {
+  const { isOpen, open, close, provider, isConnected, address } = useWalletConnectModal();
+  const [signer, setSigner] = useState(null);
+
+  useEffect(() => {
+    if (isConnected && provider) {
+      const ethersProvider = new ethers.BrowserProvider(provider);
+      ethersProvider.getSigner().then(setSigner);
+      onConnect(address); // Pass address to app state
+    }
+  }, [isConnected, provider]);
+
+  const handleConnect = () => {
+    if (!isConnected) open();
+  };
+
+  const handleSignTx = async (tx) => {
+    if (!signer) return;
+    return signer.sendTransaction(tx); // e.g., for escrow deposit
+  };
+
+  return (
+    <>
+      <Button title={isConnected ? `Connected: ${address.slice(0, 6)}...` : 'Connect Wallet'} onPress={handleConnect} />
+      {isConnected && <Text>Ready for gasless tx via Paymaster!</Text>}
+    </>
+  );
+}
+```
+
+#### Step 4: Handle Deep Linking (Expo)
+In `app.json`:
+```json
+"scheme": "crypto-eats"
+```
+
+In app entry (e.g., `App.tsx`):
+```tsx
+import * as Linking from 'expo-linking';
+
+useEffect(() => {
+  const handleDeepLink = ({ url }) => {
+    // Handle WalletConnect redirects
+    if (url.includes('wc?')) {
+      // Process WalletConnect URI
+    }
+  };
+  Linking.addEventListener('url', handleDeepLink);
+  return () => Linking.removeEventListener('url', handleDeepLink);
+}, []);
+```
+
+#### Step 5: Integrate with Paymaster and Contracts
+- Use the connected signer with Paymaster-enabled RPC for gasless ops.
+- Example: Set custom RPC in ethers provider to your CDP Paymaster URL.
+- Test: Connect MetaMask, buy USDC via Onramp (if embedded), then send gasless tx to escrow.
+
+#### Common Issues and Fixes
+- **Deep Linking Fails (Android/iOS)**: Ensure scheme is correct; test with Expo Go.
+- **v1 vs v2**: Use v2 only; v1 is deprecated.
+- **Expo Compatibility**: Avoid bare workflow if possible; use managed Expo for simplicity.
+- **Errors**: "No provider" → Check projectId; "Session expired" → Implement reconnect logic.
+
+For full examples, clone: [WalletConnect React Native Example](https://github.com/nacerbeyabdenour/react-native-wallet-connect). If you run into specific errors, share logs!
