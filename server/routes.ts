@@ -12,6 +12,10 @@ import {
 
 const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
 
+function getParam(val: string | string[]): string {
+  return Array.isArray(val) ? val[0] : val;
+}
+
 interface AuthRequest extends Request {
   user?: { id: string; email: string; role: string };
 }
@@ -113,7 +117,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/restaurants/:id/menu", async (req: Request, res: Response) => {
     try {
-      const items = await storage.getMenuItems(req.params.id);
+      const items = await storage.getMenuItems(getParam(getParam(req.params.id)));
       res.json(items);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
@@ -196,7 +200,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/orders/:id", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const order = await storage.getOrderById(req.params.id);
+      const order = await storage.getOrderById(getParam(req.params.id));
       if (!order) return res.status(404).json({ message: "Order not found" });
       res.json(order);
     } catch (err: any) {
@@ -207,7 +211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/orders/:id/rate", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
       const data = rateOrderSchema.parse(req.body);
-      const order = await storage.getOrderById(req.params.id);
+      const order = await storage.getOrderById(getParam(req.params.id));
       if (!order) return res.status(404).json({ message: "Order not found" });
       const customer = await storage.getCustomerByUserId(req.user!.id);
       if (!customer) return res.status(404).json({ message: "Customer not found" });
@@ -267,7 +271,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =================== CUSTOMER FAVORITES ===================
   app.post("/api/customers/favorites/restaurant/:id", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const updated = await storage.toggleFavoriteRestaurant(req.user!.id, req.params.id);
+      const updated = await storage.toggleFavoriteRestaurant(req.user!.id, getParam(req.params.id));
       if (!updated) return res.status(404).json({ message: "Customer not found" });
       res.json(updated);
     } catch (err: any) {
@@ -277,7 +281,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/customers/favorites/item/:id", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const updated = await storage.toggleFavoriteItem(req.user!.id, req.params.id);
+      const updated = await storage.toggleFavoriteItem(req.user!.id, getParam(req.params.id));
       if (!updated) return res.status(404).json({ message: "Customer not found" });
       res.json(updated);
     } catch (err: any) {
@@ -321,7 +325,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const driver = await storage.getDriverByUserId(req.user!.id);
       if (!driver) return res.status(404).json({ message: "Driver profile not found" });
-      const order = await storage.assignDriver(req.params.id, driver.id);
+      const order = await storage.assignDriver(getParam(req.params.id), driver.id);
       if (!order) return res.status(404).json({ message: "Order not found" });
       res.json(order);
     } catch (err: any) {
@@ -334,7 +338,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { status } = req.body;
       const extra: any = {};
       if (status === "delivered") extra.deliveredAt = new Date();
-      const order = await storage.updateOrderStatus(req.params.id, status, extra);
+      const order = await storage.updateOrderStatus(getParam(req.params.id), status, extra);
       if (!order) return res.status(404).json({ message: "Order not found" });
       res.json(order);
     } catch (err: any) {
@@ -344,7 +348,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/driver/orders/:id/verify-age", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const order = await storage.updateOrderStatus(req.params.id, undefined as any, {
+      const order = await storage.updateOrderStatus(getParam(req.params.id), undefined as any, {
         ageVerifiedAtDelivery: true,
         signatureData: req.body.signatureData || null,
       });
@@ -501,7 +505,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/restaurants/:id/approve", async (req: Request, res: Response) => {
     try {
-      const updated = await storage.updateRestaurant(req.params.id, { isApproved: true });
+      const updated = await storage.updateRestaurant(getParam(req.params.id), { isApproved: true });
       if (!updated) return res.status(404).json({ message: "Restaurant not found" });
       res.json(updated);
     } catch (err: any) {
@@ -520,7 +524,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/admin/drivers/:id/approve", async (req: Request, res: Response) => {
     try {
-      const updated = await storage.updateDriver(req.params.id, { backgroundCheckStatus: "approved" });
+      const updated = await storage.updateDriver(getParam(req.params.id), { backgroundCheckStatus: "approved" });
       if (!updated) return res.status(404).json({ message: "Driver not found" });
       res.json(updated);
     } catch (err: any) {
@@ -594,7 +598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =================== CHAT ===================
   app.get("/api/chat/:orderId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const messages = await storage.getChatMessages(req.params.orderId);
+      const messages = await storage.getChatMessages(getParam(req.params.orderId));
       res.json(messages);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
@@ -604,7 +608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/chat/:orderId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
       const message = await storage.createChatMessage({
-        orderId: req.params.orderId,
+        orderId: getParam(req.params.orderId),
         senderId: req.user!.id,
         message: req.body.message,
         type: req.body.type || "text",

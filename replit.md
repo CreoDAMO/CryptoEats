@@ -4,6 +4,29 @@
 
 CryptoEats is a full-featured food and alcohol delivery platform built with Expo (React Native) for the frontend and Express.js for the backend, backed by PostgreSQL via Drizzle ORM. The app consists of three integrated parts: a **Customer App** (browse restaurants, order food/alcohol, track deliveries), a **Driver App** (accept deliveries, manage earnings, access support), and a **Backend API** (authentication, order management, tax calculations, compliance). The platform is Miami-focused with features like age verification for alcohol orders (21+), an AI sommelier for wine/spirit recommendations, real-time order tracking, driver-to-customer chat, and a compliance-aware tax engine for Florida regulations.
 
+## Recent Changes
+
+- **2026-02-07**: Full backend API implementation with PostgreSQL via Drizzle ORM
+  - 50+ API endpoints for auth, restaurants, orders, drivers, payments, tax, admin, compliance
+  - JWT authentication with bcryptjs password hashing and rate limiting
+  - Socket.IO for real-time order tracking, chat, and notifications
+  - Database seeded with 8 Miami restaurants, 50+ menu items, tax jurisdictions, delivery windows, bundles
+  - Tax engine: 7% Miami-Dade rate (6% state + 1% local), transaction logging, remittance simulation
+  - Human-first driver policy: engagement tiers, support logs, wellness checks, appeals, no-deactivation rules
+  - Admin dashboard at /admin with restaurant/driver/order/tax/compliance management
+- **2026-02-07**: Customer app feature completion
+  - In-app chat with driver (chat/[orderId].tsx)
+  - Rating & review screen with SB 676 restaurant response capability (review/[orderId].tsx)
+  - Reorder from history, special instructions, referral codes
+  - Safe delivery window enforcement for alcohol (8 AM - 10 PM)
+  - Transparent SB 676-compliant pricing breakdown at checkout
+- **2026-02-07**: Driver app section built
+  - 4-tab driver mode: Orders, Earnings, Dashboard, Support
+  - Order accept/decline, status progression, age verification at delivery
+  - Earnings tracker with daily/weekly breakdown, instant cashout, 1099 tracking
+  - Human-first dashboard with positive language, engagement tiers, no deactivation warnings
+  - Support hub: wellness checks, education, appeals, insurance upload, contractor agreement
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
