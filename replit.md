@@ -30,6 +30,15 @@ Preferred communication style: Simple, everyday language.
 - **Admin Dashboard**: Server-rendered HTML for managing platform operations.
 - **Open Platform API**: Versioned REST API (v1) with API key authentication for external developers, featuring webhook engine, Swagger UI, and a developer portal.
 
+### Production Services (`server/services/`)
+
+- **Payments** (`payments.ts`): Stripe PaymentIntents with authorize-on-order, capture-on-delivery flow. Refunds and webhook handling.
+- **Notifications** (`notifications.ts`): SendGrid email (HTML templates), Twilio SMS, Expo Push Notifications. Auto-dispatched on order status changes.
+- **Uploads** (`uploads.ts`): Multipart file upload with category validation, size limits, MIME enforcement, local storage.
+- **Tracking** (`tracking.ts`): Socket.IO GPS tracking with ETA calculation (Haversine), driver location broadcasting, location history.
+- **Security** (`security.ts`): Helmet headers, XSS/SQL sanitization, adaptive rate limiting with burst detection.
+- **Monitoring** (`monitoring.ts`): Sentry integration, health metrics (`/api/health`), error tracking, uptime monitoring.
+
 ### Database (PostgreSQL + Drizzle ORM)
 
 - **ORM**: Drizzle ORM with PostgreSQL dialect. Schema defined in `shared/schema.ts`.

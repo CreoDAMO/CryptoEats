@@ -132,7 +132,7 @@ The platform ships as four tightly integrated products:
 | `/api-docs` | Swagger UI — interactive API explorer |
 | `/widget.js` | Embeddable ordering widget |
 | `/api/v1/*` | Platform API (requires API key) |
-| `/api/health/metrics` | System health and uptime metrics |
+| `/api/health` | System health and uptime metrics |
 | `/api/payments/*` | Stripe payment processing endpoints |
 | `/api/uploads/*` | File upload and retrieval |
 | `/api/push-token` | Push notification token management |
