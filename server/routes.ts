@@ -15,7 +15,8 @@ import {
   prepareNFTMint, BASE_CHAIN_ID, MARKETPLACE_NFT_ADDRESS, MARKETPLACE_ESCROW_ADDRESS,
   validateChainId, isContractAllowlisted, getContractInfo, getAllowlistedContracts,
   isGasSponsored, estimateGas, getPaymasterStatus, classifyPaymasterError,
-  prepareEscrowRelease, type PaymasterError,
+  prepareEscrowRelease, prepareEscrowDispute, prepareAdminRefund, getEscrowDetails,
+  type PaymasterError,
 } from "./blockchain";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
@@ -1044,7 +1045,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const walletAddress = userWallets[0].walletAddress;
       const metadataUri = reward.metadataUri || `ipfs://cryptoeats/${reward.milestoneType}/${reward.name}`;
-      const txData = prepareNFTMint(walletAddress, metadataUri);
+      const mintOrderId = `nft-mint-${nftRewardId}-${Date.now()}`;
+      const txData = prepareNFTMint(mintOrderId, walletAddress, walletAddress, metadataUri);
       res.json(txData);
     } catch (err: any) {
       res.status(400).json({ message: err.message || "Failed to prepare mint" });
@@ -1367,9 +1369,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // =================== ESCROW RELEASE (with Paymaster error handling) ===================
   app.post("/api/escrow/release", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const { escrowId } = req.body;
-      if (!escrowId) return res.status(400).json({ message: "escrowId is required" });
-      const txData = prepareEscrowRelease(escrowId);
+      const { orderId } = req.body;
+      if (!orderId) return res.status(400).json({ message: "orderId is required" });
+      const txData = prepareEscrowRelease(orderId);
       res.json({
         ...txData,
         message: txData.gasSponsored
@@ -1384,6 +1386,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
         retryable: classified.retryable,
         suggestion: classified.suggestion,
       });
+    }
+  });
+
+  app.post("/api/escrow/dispute", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) return res.status(400).json({ message: "orderId is required" });
+      const txData = prepareEscrowDispute(orderId);
+      res.json({
+        ...txData,
+        message: "Dispute transaction prepared. The escrow will be flagged for admin review.",
+      });
+    } catch (error: any) {
+      const classified = error.paymasterError || classifyPaymasterError(error);
+      res.status(500).json({
+        error: classified.userMessage,
+        code: classified.code,
+        retryable: classified.retryable,
+      });
+    }
+  });
+
+  app.post("/api/escrow/refund", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) return res.status(400).json({ message: "orderId is required" });
+      const txData = prepareAdminRefund(orderId);
+      res.json({
+        ...txData,
+        message: "Admin refund transaction prepared. Funds will be returned to the buyer.",
+      });
+    } catch (error: any) {
+      const classified = error.paymasterError || classifyPaymasterError(error);
+      res.status(500).json({
+        error: classified.userMessage,
+        code: classified.code,
+        retryable: classified.retryable,
+      });
+    }
+  });
+
+  app.get("/api/escrow/status/:orderId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const orderId = getParam(req.params.orderId);
+      const details = await getEscrowDetails(orderId);
+      if (!details) return res.status(404).json({ message: "Escrow not found for this order" });
+      res.json(details);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message || "Failed to get escrow status" });
     }
   });
 

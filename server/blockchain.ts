@@ -212,22 +212,36 @@ export function isGasSponsored(contractAddress: string): boolean {
 }
 
 const MARKETPLACE_NFT_ABI = [
-  "function mintAndTransfer(address to, string uri) external",
+  "function mintAndTransfer(bytes32 orderId, address creator, address to, string tokenURI, uint256 royaltyBps_) external returns (uint256)",
+  "function royaltyInfo(uint256 tokenId, uint256 salePrice) external view returns (address receiver, uint256 royaltyAmount)",
+  "function updateEscrow(address newEscrow) external",
+  "function creatorOf(uint256 tokenId) external view returns (address)",
+  "function royaltyBps(uint256 tokenId) external view returns (uint256)",
+  "function escrowContract() external view returns (address)",
   "function tokenURI(uint256 tokenId) view returns (string)",
   "function balanceOf(address owner) view returns (uint256)",
   "function ownerOf(uint256 tokenId) view returns (address)",
+  "event Minted(uint256 indexed tokenId, address indexed creator, bytes32 indexed orderId)",
+  "event EscrowUpdated(address indexed newEscrow)",
   "event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)",
 ];
 
 const MARKETPLACE_ESCROW_ABI = [
-  "function deposit(bytes32 orderId, address seller, uint256 amount, uint256 timeout, bool isNFT) external payable",
-  "function release(bytes32 escrowId) external",
-  "function dispute(bytes32 escrowId) external",
-  "function refund(bytes32 escrowId) external",
-  "event Deposited(bytes32 indexed escrowId, bytes32 indexed orderId, address depositor, address seller, uint256 amount)",
-  "event Released(bytes32 indexed escrowId, address seller, uint256 amount)",
-  "event Disputed(bytes32 indexed escrowId, address disputant)",
-  "event Refunded(bytes32 indexed escrowId, address depositor, uint256 amount)",
+  "function deposit(bytes32 orderId, address seller, uint256 amount, uint256 timeout, bool isNFT) external",
+  "function release(bytes32 orderId) external",
+  "function dispute(bytes32 orderId) external",
+  "function adminRefund(bytes32 orderId) external",
+  "function updateFee(uint256 newBps) external",
+  "function updateFeeRecipient(address newRecipient) external",
+  "function escrows(bytes32 orderId) external view returns (address buyer, address seller, uint256 amount, uint256 timeout, uint8 status)",
+  "function paymentToken() external view returns (address)",
+  "function nftContract() external view returns (address)",
+  "function platformFeeBps() external view returns (uint256)",
+  "function feeRecipient() external view returns (address)",
+  "event Deposited(bytes32 indexed orderId, address indexed buyer, uint256 amount)",
+  "event Released(bytes32 indexed orderId, address indexed seller, uint256 payout, uint256 fee)",
+  "event Disputed(bytes32 indexed orderId)",
+  "event Refunded(bytes32 indexed orderId, address indexed buyer, uint256 amount)",
 ];
 
 const USDC_ABI = [
@@ -326,37 +340,29 @@ export async function getNFTsForOwner(address: string): Promise<string[]> {
   });
 }
 
-export async function getEscrowDetails(escrowId: string): Promise<any> {
+const ESCROW_STATUS_MAP: Record<number, string> = {
+  0: "none",
+  1: "deposited",
+  2: "disputed",
+  3: "released",
+  4: "refunded",
+};
+
+export async function getEscrowDetails(orderId: string): Promise<any> {
   return withRetry(async () => {
     const contract = getEscrowContract();
-    const filter = contract.filters.Deposited(escrowId);
-    const events = await contract.queryFilter(filter, 0, "latest");
-    if (events.length === 0) return null;
-    const lastEvent = events[events.length - 1];
-    const parsed = contract.interface.parseLog({
-      topics: lastEvent.topics as string[],
-      data: lastEvent.data,
-    });
-    if (!parsed) return null;
-    const releasedFilter = contract.filters.Released(escrowId);
-    const releasedEvents = await contract.queryFilter(releasedFilter, 0, "latest");
-    const disputedFilter = contract.filters.Disputed(escrowId);
-    const disputedEvents = await contract.queryFilter(disputedFilter, 0, "latest");
-    const refundedFilter = contract.filters.Refunded(escrowId);
-    const refundedEvents = await contract.queryFilter(refundedFilter, 0, "latest");
-
-    let status = "deposited";
-    if (releasedEvents.length > 0) status = "released";
-    if (disputedEvents.length > 0) status = "disputed";
-    if (refundedEvents.length > 0) status = "refunded";
+    const orderIdBytes = ethers.id(orderId);
+    const escrow = await contract.escrows(orderIdBytes);
+    if (!escrow || escrow.buyer === ethers.ZeroAddress) return null;
 
     return {
-      escrowId,
-      orderId: parsed.args.orderId,
-      depositor: parsed.args.depositor,
-      seller: parsed.args.seller,
-      amount: formatUnits(parsed.args.amount, 6),
-      status,
+      orderId,
+      orderIdBytes: orderIdBytes,
+      buyer: escrow.buyer,
+      seller: escrow.seller,
+      amount: formatUnits(escrow.amount, 6),
+      timeout: Number(escrow.timeout),
+      status: ESCROW_STATUS_MAP[Number(escrow.status)] || "unknown",
     };
   }, {
     maxRetries: 2,
@@ -403,11 +409,50 @@ export function prepareEscrowDeposit(
 }
 
 export function prepareEscrowRelease(
-  escrowId: string
+  orderId: string
 ): { to: string; data: string; chainId: number; gasSponsored: boolean } {
   try {
     const contract = getEscrowContract();
-    const data = contract.interface.encodeFunctionData("release", [escrowId]);
+    const orderIdBytes = ethers.id(orderId);
+    const data = contract.interface.encodeFunctionData("release", [orderIdBytes]);
+    return {
+      to: MARKETPLACE_ESCROW_ADDRESS,
+      data,
+      chainId: BASE_CHAIN_ID,
+      gasSponsored: isGasSponsored(MARKETPLACE_ESCROW_ADDRESS),
+    };
+  } catch (error: any) {
+    const classified = classifyPaymasterError(error);
+    throw Object.assign(new Error(classified.userMessage), { paymasterError: classified });
+  }
+}
+
+export function prepareEscrowDispute(
+  orderId: string
+): { to: string; data: string; chainId: number; gasSponsored: boolean } {
+  try {
+    const contract = getEscrowContract();
+    const orderIdBytes = ethers.id(orderId);
+    const data = contract.interface.encodeFunctionData("dispute", [orderIdBytes]);
+    return {
+      to: MARKETPLACE_ESCROW_ADDRESS,
+      data,
+      chainId: BASE_CHAIN_ID,
+      gasSponsored: isGasSponsored(MARKETPLACE_ESCROW_ADDRESS),
+    };
+  } catch (error: any) {
+    const classified = classifyPaymasterError(error);
+    throw Object.assign(new Error(classified.userMessage), { paymasterError: classified });
+  }
+}
+
+export function prepareAdminRefund(
+  orderId: string
+): { to: string; data: string; chainId: number; gasSponsored: boolean } {
+  try {
+    const contract = getEscrowContract();
+    const orderIdBytes = ethers.id(orderId);
+    const data = contract.interface.encodeFunctionData("adminRefund", [orderIdBytes]);
     return {
       to: MARKETPLACE_ESCROW_ADDRESS,
       data,
@@ -421,15 +466,25 @@ export function prepareEscrowRelease(
 }
 
 export function prepareNFTMint(
+  orderId: string,
+  creator: string,
   to: string,
-  metadataUri: string
+  metadataUri: string,
+  royaltyBps: number = 250
 ): { to: string; data: string; chainId: number; gasSponsored: boolean; contractName: string } {
   try {
     if (!isContractAllowlisted(MARKETPLACE_NFT_ADDRESS)) {
       throw new Error("NFT contract is not in the allowlist");
     }
     const contract = getNFTContract();
-    const data = contract.interface.encodeFunctionData("mintAndTransfer", [to, metadataUri]);
+    const orderIdBytes = ethers.id(orderId);
+    const data = contract.interface.encodeFunctionData("mintAndTransfer", [
+      orderIdBytes,
+      creator,
+      to,
+      metadataUri,
+      royaltyBps,
+    ]);
     return {
       to: MARKETPLACE_NFT_ADDRESS,
       data,
@@ -539,4 +594,5 @@ export {
   MARKETPLACE_ESCROW_ADDRESS,
   USDC_ADDRESS,
   BASE_PAYMASTER_ADDRESS,
+  ESCROW_STATUS_MAP,
 };
