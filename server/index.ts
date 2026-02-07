@@ -235,6 +235,11 @@ function setupErrorHandler(app: express.Application) {
     res.sendFile(adminPath);
   });
 
+  app.get('/merchant', (req, res) => {
+    const merchantPath = path.resolve(process.cwd(), 'server', 'templates', 'merchant-dashboard.html');
+    res.sendFile(merchantPath);
+  });
+
   configureExpoAndLanding(app);
 
   const server = await registerRoutes(app);
