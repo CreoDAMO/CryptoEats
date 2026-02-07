@@ -121,6 +121,57 @@ The platform ships as four tightly integrated products:
 
 ---
 
+## Current Status: Functional MVP
+
+CryptoEats is a fully functional MVP with the complete user experience mapped out — browsing, ordering, checkout, driver mode, onboarding, admin tools, and blockchain integration. The platform demonstrates every core workflow end-to-end. Below is a clear breakdown of what is live today versus what is needed for production launch.
+
+### What's Working Now
+
+| Area | Status |
+|------|--------|
+| Customer app (browse, cart, checkout, order tracking) | Live |
+| Driver app (accept orders, earnings, support) | Live |
+| Merchant & driver onboarding flows (3-step wizards, admin review) | Live |
+| Admin dashboard (orders, drivers, compliance, tax) | Live |
+| Database with seeded restaurant/menu data (8 Miami restaurants, 50+ items) | Live |
+| Authentication (JWT login/signup with rate limiting) | Live |
+| Tax calculation engine (Florida/Miami-Dade compliant — 7% combined rate) | Live |
+| Open Platform API (API keys, webhooks, developer portal, Swagger UI) | Live |
+| Blockchain contracts on Base mainnet (USDC escrow, NFT rewards) | Live |
+| Gasless transactions via Base Paymaster with contract allowlisting | Live |
+| Coinbase Commerce API and CDP API keys configured | Live |
+
+### What's Needed for Production
+
+| Priority | Area | What's Needed | Notes |
+|----------|------|--------------|-------|
+| **1** | **Payment Processing** | Real payment processor (Stripe — optional, user has keys ready). Crypto payments need live wallet connections to deployed Base contracts. Coinbase Commerce API and CDP API keys are configured, plus Onramper for fiat-to-crypto. | Checkout currently simulates payment. Can't take real orders without this. |
+| **2** | **Email & SMS** | Real email/SMS service (Twilio or SendGrid) for account verification, password resets, and order confirmations. | Needed for account verification and order status updates. |
+| **3** | **Image Storage** | Real file storage (e.g., cloud object storage) so restaurants can upload actual photos and drivers can submit license/insurance documents. | Currently uses placeholder image URLs. |
+| **4** | **Push Notifications** | Real push notification delivery (Expo Push Notification service) for order updates, driver assignments, and delivery alerts. | Customers and drivers need real-time alerts on their phones. |
+| **5** | **Maps & GPS Tracking** | Real GPS tracking from driver devices and a mapping service (Google Maps or Mapbox) for route calculation and live delivery tracking. | Driver tracking currently uses simulated coordinates. |
+| **6** | **Identity Verification** | Integration with a real identity verification service for age verification (alcohol, 21+) and driver background checks. | Required for alcohol delivery compliance. |
+| **7** | **Security Hardening** | Rate limiting tuning, input sanitization review, HTTPS enforcement, security audit, proper secret rotation, and environment-specific configuration. | Required before opening to real users. |
+| **8** | **Scaling & Performance** | Database indexing optimization, connection pooling, caching layer (Redis), load testing, CDN for static assets and images. | Important for handling production traffic. |
+| **9** | **Legal & Compliance** | Real Florida liquor license verification, Terms of Service, Privacy Policy, contractor agreements reviewed by legal counsel, PCI compliance for payments. | Legal review required before launch. |
+| **10** | **Monitoring & Error Tracking** | Production error tracking (Sentry or similar), performance monitoring, alerting systems, and structured logging infrastructure. | Needed for debugging production issues. |
+
+### Production Launch Priorities (Minimum Viable for Real Orders)
+
+The following are the **critical path items** — without these, real orders cannot be processed:
+
+1. **Payment processing** — Can't accept real money without it
+2. **Email/SMS verification** — Account security and order confirmations
+3. **Image storage** — Restaurants need to upload real photos
+4. **Push notifications** — Real-time updates for customers and drivers
+5. **Maps & GPS tracking** — Real delivery routing and live tracking
+6. **Identity verification** — Required for alcohol compliance
+7. **Security audit & monitoring** — Required before exposing to real users
+
+---
+
 ## Conclusion
 
-CryptoEats is a production-ready delivery platform that combines consumer convenience, regulatory compliance, blockchain payments, and an open developer ecosystem into a single cohesive system. The four-phase build progressed from a core ordering app to a full infrastructure layer — "The Delivery Layer" — that positions CryptoEats not as a competitor to existing delivery apps, but as the rails they can build on.
+CryptoEats is a comprehensive delivery platform MVP that combines consumer convenience, regulatory compliance, blockchain payments, and an open developer ecosystem into a single cohesive system. The four-phase build progressed from a core ordering app to a full infrastructure layer — "The Delivery Layer" — that positions CryptoEats not as a competitor to existing delivery apps, but as the rails they can build on.
+
+The platform is architecturally complete and functionally demonstrated. The path to production is a defined set of service integrations (payments, notifications, mapping, identity) and operational hardening (security, scaling, legal) — not a rebuild. The foundation is solid, the contracts are deployed, and the roadmap is clear.
