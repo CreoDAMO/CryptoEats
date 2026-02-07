@@ -1,0 +1,429 @@
+# CryptoEats - Food & Alcohol Delivery Platform with Automated Tax Engine, Human-First Driver Policy, and Legal Compliance Integration
+
+Build a complete, full-featured three-part food and alcohol delivery system consisting of a Customer App, Driver App, and Backend API. Implement all specified features without phasing; create a comprehensive application ready for production-level use, including advanced AI, payment integrations, compliance tools, analytics, automated tax collection and remittance engine tailored for Florida (Miami-Dade) operations in 2026, "Human-First Performance" driver policy that emphasizes empathy, fairness, and support over deactivation, and integrated legal/regulatory compliance features based on Miami-Dade requirements (e.g., SB 676 compliance, insurance verification, agreements, transparent pricing, review responses, and compliance dashboard). Ensure the system supports marketplace provider classification, with no deactivations for poor performance—only for safety, legal, or integrity violations. Include features like digital agreements, insurance auto-verification, tax registration reminders, and SB 676 elements (customer-restaurant contact, review responses, written agreements, transparent pricing).
+
+## Core Architecture
+
+**Tech Stack:**
+- Backend: Node.js with Express
+- Database: PostgreSQL with Prisma ORM
+- Real-time: Socket.io for live tracking and chat
+- Customer App: React with React Native (mobile-ready)
+- Driver App: React Native
+- Authentication: JWT tokens
+- File Storage: Cloud storage (e.g., AWS S3 or Firebase) for ID scans, signatures, receipts, support documents, insurance certificates, and agreements
+- Additional: Redis for caching and session management, BullMQ for background jobs (e.g., order assignment, notifications, monthly tax aggregation, wellness checks, insurance expiration checks)
+- Tax Integration: Use TaxJar API for automatic tax rate lookups and calculations (fallback to custom jurisdiction table for Florida-specific rules); integrate with Florida DOR e-Services for electronic filing via XML/EDI if available, or simulate with webhooks/alerts for manual review
+- Driver Policy Integration: Implement "Human-First Performance" logic in backend and driver app, with automated check-ins, support tiers, and no performance-based deactivations
+- Legal Integration: Build in SB 676 compliance (restaurant-customer messaging, review responses, digital agreements, transparent pricing); insurance verification with auto-holds; compliance dashboard for tracking licenses, taxes, and agreements
+
+## Customer App Features
+
+### Age Verification & Alcohol Orders
+- Integrated ID scanning at checkout for alcohol orders using OCR library (Tesseract.js) or third-party API (Onfido or Jumio)
+- Validate age (21+ for alcohol) from scanned ID, extracting DOB and other details
+- Store encrypted verification status and data with order
+- Require digital signature confirmation on delivery for alcohol using an e-signature library (e.g., react-native-signature-capture)
+- Configurable safe delivery windows based on local regulations (e.g., no alcohol delivery after 10 PM); block checkout outside allowed times and display available slots
+- Enforce alcohol-specific compliance: Log verifications for 3 years, integrate with excise tax tracking if applicable
+
+### AI Sommelier
+- AI-powered wine/spirit recommendations based on:
+  - User taste preferences (sweet, dry, bold, light)
+  - Occasion type (dinner party, casual, celebration)
+  - Food pairings from cart
+- Integration with OpenAI API or Anthropic Claude API for personalized suggestions, including reasoning and confidence scores
+- Store user preference history in database for improved recommendations over time; implement basic preference learning algorithm (e.g., collaborative filtering using user data)
+
+### Smart Ordering
+- **Auto-generated pairing bundles**: Dynamically suggest and add mixers, garnishes, snacks when alcohol is added (e.g., wine → cheese board, tequila → lime + salt + chips); calculate and display increased average order value
+- **Smart substitutions**: Based on per-item dietary preferences (vegan, gluten-free, nut-free, halal, kosher) stored in user profile, suggest and auto-apply alternatives for out-of-stock items
+- **Dynamic bundle deals**: Analyze order history and commonly bought items to group them with instant percentage savings (10-20%); apply surge pricing during peak hours if configured
+- **Cart optimization**: Suggest items to reach free delivery threshold, including upsell prompts
+- Transparent Pricing: Clearly display breakdown of fees, taxes, and totals at checkout (SB 676 compliance)
+
+### Real-time Tracking
+- Live map showing driver location using Google Maps API or Mapbox
+- Accurate ETA calculations based on traffic, route, and historical data using Distance Matrix API
+- Push notifications for order status updates (confirmed, preparing, picked up, arriving) via Firebase Cloud Messaging or similar
+- Display driver photo, vehicle info, and contact details
+
+### In-app Shopper Chat
+- Real-time messaging with driver/shopper using Socket.io
+- Photo sharing for substitution approval (upload to cloud storage)
+- Quick reply templates ("Out of stock - OK to substitute?")
+- Order-specific chat rooms that archive after delivery; include moderation for abuse
+- SB 676: Extend chat to include restaurant-customer messaging for order issues
+
+### Payment Integration
+- **Stripe**: Credit/debit cards, Apple Pay, Google Pay; implement Payment Intents API and Stripe.js for PCI compliance
+- **Cash App Pay**: Direct integration via Stripe (add as a payment method in checkout flows)
+- **Coinbase Commerce**: Bitcoin, Ethereum, USDC, other cryptocurrencies; implement Charge creation and handle price volatility by locking rates for 15 minutes
+- Save payment methods securely for quick checkout
+- Split payment option (pay with multiple methods)
+- Tip calculation (percentage or custom amount); process tips separately if needed
+- Webhooks for all payment providers to handle confirmations and updates
+- Special crypto handling: Record USD fair market value at transaction time for tax purposes
+- Transparent Receipts: Include detailed breakdown with taxes and fees (SB 676)
+
+### User Features
+- Account creation with email/phone verification (using Twilio or similar for SMS)
+- Delivery address management with saved locations and geocoding validation
+- Order history with reorder functionality and detailed receipts (including tax breakdown)
+- Favorite items and restaurants
+- Ratings and reviews for restaurants and drivers, with restaurant response capability (SB 676)
+- Referral program with credit rewards (track referrals and apply discounts)
+
+## Driver App Features
+
+### Order Management
+- Accept/decline incoming delivery requests with notifications
+- View order details including restaurant, customer address, items, and special instructions
+- Turn availability on/off (go online/offline) with location updates
+- Multiple order batching for efficient routing using optimized algorithms (e.g., via Google Directions API)
+
+### Age Verification at Delivery
+- ID scanner for alcohol delivery verification using device camera and OCR
+- Compare scanned ID to customer account data
+- Signature capture on device
+- Refuse delivery protocol if customer fails verification, with automated refund trigger
+- Photo documentation for compliance (upload to secure storage)
+
+### Navigation & Tracking
+- Turn-by-turn navigation to restaurant and customer using Google Maps SDK
+- Optimized multi-stop routing for batched orders
+- Real-time location sharing with customer via Socket.io
+- Arrival notifications (at restaurant, at customer) with timestamps
+
+### Communication
+- In-app chat with customer
+- Quick status updates ("Picking up order", "5 minutes away")
+- Call customer directly (masked phone number via Twilio)
+- Contact support button for issues, with ticket creation
+- SB 676: Facilitate restaurant-customer contact via relay if needed
+
+### Earnings & Payments
+- Real-time earnings tracker (base pay + tips + bonuses)
+- Daily/weekly earnings summary with breakdowns
+- Instant cashout option (via Stripe Connect Express for drivers)
+- Tax document generation (1099 forms) based on earnings data; track for IRS compliance (report if over $600)
+
+### Driver Features
+- Profile with photo, bio, and ratings
+- Delivery history and statistics (e.g., total miles, earnings per hour)
+- Performance metrics (acceptance rate, on-time delivery, customer satisfaction) displayed supportively, without threats
+- In-app training modules for alcohol delivery compliance, with quizzes and certification tracking
+- "Human-First Performance" Dashboard: Show stats with positive, empathetic language (e.g., "Take all the time you need"); no deactivation warnings
+- Support Hub: Access to wellness checks, education resources, appeals submission, and self-service for status updates (e.g., "On Break")
+- Insurance Upload: Self-service upload and verification of insurance documents; auto-hold if expired
+- Digital Agreement: Sign independent contractor agreement on onboarding
+
+## Backend API & Admin
+
+### API Endpoints
+
+**Authentication:**
+- POST /api/auth/register (customer/driver)
+- POST /api/auth/login
+- POST /api/auth/verify-phone
+- POST /api/auth/refresh-token
+
+**Customer:**
+- GET /api/restaurants (with filters: cuisine, rating, delivery time, location)
+- GET /api/restaurants/:id/menu
+- POST /api/orders (create order with validation)
+- GET /api/orders/:id (order details)
+- GET /api/orders (order history)
+- POST /api/orders/:id/rate
+- POST /api/id-verification (upload and process ID scan)
+- GET /api/recommendations (AI sommelier with query params)
+
+**Driver:**
+- GET /api/driver/available-orders (nearest first)
+- POST /api/driver/orders/:id/accept
+- PUT /api/driver/orders/:id/status
+- POST /api/driver/orders/:id/verify-age
+- POST /api/driver/orders/:id/signature
+- GET /api/driver/earnings (with filters)
+- GET /api/driver/status (fetch current status, tier, support logs)
+- POST /api/driver/support (submit appeals, respond to check-ins)
+- PUT /api/driver/break (set "On Break" status voluntarily)
+- POST /api/driver/insurance (upload and verify insurance docs)
+
+**Payments:**
+- POST /api/payments/stripe/create-intent
+- POST /api/payments/cashapp/create (via Stripe)
+- POST /api/payments/coinbase/create-charge
+- POST /api/payments/webhooks/stripe
+- POST /api/payments/webhooks/coinbase
+
+**Real-time (Socket.io):**
+- driver:location:update
+- order:status:changed
+- chat:message
+- eta:updated
+- notification:push (e.g., for wellness checks, insurance reminders)
+
+**Admin:**
+- GET /api/admin/restaurants (manage approve/suspend)
+- GET /api/admin/drivers (approve, background checks)
+- GET /api/admin/orders (monitor, intervene)
+- POST /api/admin/bundles (create/manage)
+- GET /api/admin/reports (compliance, analytics)
+- PUT /api/admin/delivery-windows (configure by region)
+- GET /api/admin/tax/summary (real-time tax tracking)
+- POST /api/admin/tax/file (initiate Florida DOR filing)
+- POST /api/admin/tax/pay (initiate ACH payment)
+- GET /api/admin/drivers/status (monitor driver statuses, tiers)
+- POST /api/admin/drivers/support (initiate check-ins, reviews)
+- POST /api/admin/drivers/appeal (review and resolve appeals)
+- GET /api/admin/compliance (dashboard for licenses, taxes, agreements)
+- POST /api/admin/restaurants/agreement (manage digital agreements)
+
+**Tax:**
+- POST /api/tax/calculate (compute tax for order)
+- GET /api/tax/jurisdictions (manage tax rates)
+- GET /api/tax/reports (monthly aggregations)
+- POST /api/tax/remit (file and pay to Florida DOR)
+
+### Database Schema
+
+**Users:**
+- id, email, phone, password_hash, role (customer/driver/admin/restaurant)
+- created_at, updated_at
+
+**Customers:**
+- user_id, first_name, last_name, id_verified, id_verification_data (encrypted)
+- taste_preferences (JSON), dietary_restrictions (JSON), referral_code
+
+**Drivers:**
+- user_id, first_name, last_name, license_number, vehicle_info
+- background_check_status, is_available, current_location (lat/lng)
+- rating, total_deliveries, earnings_data (JSON)
+- insurance_data (encrypted JSON: policy_number, expiry_date, provider)
+
+**Restaurants:**
+- user_id, name, cuisine_type, address, phone, rating
+- delivery_fee, min_order, estimated_prep_time
+- alcohol_license, operating_hours (JSON)
+- agreement_signed_date, agreement_data (encrypted)
+
+**MenuItems:**
+- id, restaurant_id, name, description, price, category
+- is_alcohol, age_verification_required
+- dietary_tags (JSON), available, pairing_suggestions (JSON)
+
+**Orders:**
+- id, customer_id, driver_id, restaurant_id, status
+- items (JSON), subtotal, delivery_fee, service_fee, tip, total
+- payment_method, payment_status, payment_intent_id
+- delivery_address, special_instructions
+- requires_age_verification, age_verified_at_delivery
+- signature_data, created_at, delivered_at, eta
+- taxable_amount, tax_collected, tax_rate
+
+**Bundles:**
+- id, name, items (JSON), discount_percentage, active, conditions (JSON)
+
+**Chats:**
+- id, order_id, sender_id, message, timestamp, type (text/image)
+
+**IDVerifications:**
+- id, customer_id, order_id, scan_data (encrypted), verified, verified_at, method (checkout/delivery)
+
+**Analytics:**
+- id, metric_type (GMV, AOV, etc.), value, timestamp
+
+**Tax Jurisdictions:**
+- id, zip_code, city, county, state
+- state_rate (e.g., 0.0600), local_rate (e.g., 0.0100), total_rate (e.g., 0.0700)
+- effective_date, last_updated
+
+**Tax Transactions:**
+- id, order_id, jurisdiction_id
+- subtotal, delivery_fee, service_fee, taxable_amount
+- tax_rate, tax_collected, tax_status ('collected', 'remitted', 'pending')
+- payment_method, crypto_currency, crypto_amount, usd_value
+- created_at
+
+**Tax Remittances:**
+- id, jurisdiction_id, period_start, period_end
+- total_collected, total_crypto_usd, total_fiat_usd
+- remittance_status ('pending', 'filed', 'paid')
+- confirmation_number, filed_date, paid_date
+- created_at
+
+**Driver Earnings:**
+- id, driver_id, order_id
+- base_pay, mileage_pay, time_pay, tip_amount, bonus_amount, total_payout
+- payment_method, crypto_currency, crypto_amount, usd_value
+- payout_status, paid_at, tax_year
+
+**Driver Status:**
+- id, driver_id
+- status ('active', 'on_break', 'suspended_review', 'suspended_safety')
+- engagement_tier ('active', 'regular', 'casual', 'on_break')
+- suspension_reason (text, only if suspended)
+- suspension_date, review_status ('pending_review', 'under_investigation', 'resolved')
+- appeal_deadline, support_notes, return_date (optional)
+- created_at, updated_at
+
+**Driver Support Log:**
+- id, driver_id
+- interaction_type ('wellness_check', 'education', 'investigation', 'appeal')
+- notes, outcome, support_rep
+- created_at
+
+**Compliance Logs:**
+- id, type (e.g., 'license', 'tax_filing', 'agreement')
+- details (JSON), status, expiry_date
+- created_at, updated_at
+
+### Business Logic
+
+**Order Flow:**
+1. Customer browses and creates order → validate items, check alcohol, apply bundles/deals
+2. If alcohol → require ID verification at checkout; enforce safe delivery windows
+3. Calculate dynamic pricing (bundles, surge, fees based on distance)
+4. Use TaxJar or custom logic to compute tax: Tax delivery/service fees if mandatory (7% in Miami-Dade: 6% state + 1% local); restaurant handles food tax
+5. Process payment (Stripe/Cash App/Coinbase) with split options; record crypto USD value
+6. Assign to nearest available driver via background job
+7. Driver accepts → navigate to restaurant with routing
+8. Driver picks up → enable real-time tracking
+9. If alcohol → driver verifies ID + captures signature at delivery
+10. Complete delivery → release payment, enable rating, update analytics, log tax transaction
+
+**Age Verification:**
+- At checkout: Scan ID, extract DOB, verify age ≥ 21 using OCR and logic
+- At delivery: Driver scans ID, compares to stored data
+- Log both verifications with timestamps and audit trail
+- Failed verification = order cancelled, automated refund via payment provider
+
+**AI Recommendations:**
+- Analyze cart contents and user history
+- Query AI with preferences + occasion + food items
+- Return 3-5 suggestions with reasoning, pairings, and bundle options
+- Update user preferences based on accepted recommendations
+
+**Dynamic Pricing:**
+- Bundle detection: Identify "commonly bought together" from historical data
+- Apply instant discounts and upsells
+- Surge pricing: Configure multipliers for peak times
+- Delivery fee: Calculate based on distance and traffic
+
+**Safe Delivery Windows:**
+- Admin-configurable by jurisdiction
+- Block alcohol checkout outside windows
+- Display and enforce allowed delivery times at checkout
+
+**Automated Tax Engine:**
+- On order: Fetch jurisdiction by zip (Miami-Dade: 7%); tax delivery/service fees (taxable if not optional/separate); log transaction with USD value for crypto
+- Monthly job: Aggregate by jurisdiction; generate report with breakdowns
+- Filing: Integrate with Florida DOR XML/EDI for e-filing; simulate if no direct API
+- Payment: Use Stripe ACH to remit USD (convert crypto if needed)
+- Driver 1099: Track earnings; generate if >$600; e-file via IRS FIRE or third-party
+
+**Human-First Driver Policy:**
+- No deactivations for: Low acceptance, inactivity, slow months, bad reviews, late deliveries, declining orders, multi-platform work
+- Deactivations only for: Safety violations (e.g., DUI, violence—immediate suspension with review), legal issues (e.g., expired license—temporary hold), integrity breaches (e.g., fraud—warning then review)
+- Support Tiers: Tier 1 (Education: In-app tips for issues), Tier 2 (Check-in: Personal support message), Tier 3 (Wellness Check: Empathetic outreach for drops in activity)
+- Fair Ratings: Auto-flag/exclude unfair reviews based on context (e.g., restaurant delays, weather); allow driver responses
+- Complaint Resolution: Investigate with data (GPS, logs); driver input required; resolutions focus on education/refunds, not punishment
+- Positive Incentives: Engagement tiers with bonuses for active drivers, but no penalties for casual/on-break
+- Appeals: 14-day window, human review, evidence sharing, reinstatement path
+- Background Jobs: Monitor for activity drops and trigger automated check-ins; log all interactions
+
+**Legal Compliance Logic:**
+- Restaurant Onboarding: Require digital signed agreement before listing (SB 676: permission for name/menu/likeness)
+- Driver Onboarding: Require digital contractor agreement, insurance upload; auto-verify/hold on expiry; send reminders (30/14/7 days)
+- SB 676: Implement restaurant review responses, customer-restaurant contact methods, transparent pricing/receipts
+- Compliance Dashboard: Track business licenses (e.g., BTR expiry), tax filings, agreements, insurance; send admin alerts
+- Independent Contractor Rules: Enforce via agreements (no exclusivity, own equipment, tax responsibility); avoid employee-like controls
+
+### Admin Dashboard
+
+- Full restaurant management (add/edit/approve/suspend, agreement workflows)
+- Driver approval, background check integration, performance monitoring, insurance verification
+- Order monitoring with real-time intervention (e.g., reassign driver)
+- Bundle creation and management with conditions
+- Compliance reports (age verification logs, retain for 3 years)
+- Analytics dashboard (GMV, AOV, delivery times, ratings, user retention)
+- Tax management: Real-time summaries, monthly reports, file/pay buttons
+- Driver Policy Tools: Monitor statuses, initiate check-ins, review appeals, view support logs
+- Compliance Section: Track licenses (CU, BTR, marketplace reg), insurance, agreements; reminders for renewals
+
+## Key Integration Requirements
+
+**Stripe:**
+- Setup API keys, implement Payment Intents, add Cash App Pay
+- Stripe Connect for driver payouts and instant cashouts
+- Webhooks for confirmations, disputes, and refunds
+- Stripe Identity for optional enhanced ID verification
+- ACH for tax remittances to Florida DOR
+
+**Coinbase Commerce:**
+- API key setup, Charge creation for crypto
+- Webhooks for confirmations
+- Handle volatility with rate locking and timeouts
+
+**Maps & Location:**
+- Google Maps API for mapping, Distance Matrix for ETAs, Geocoding for validation, Directions for routing
+
+**AI/ML:**
+- OpenAI or Claude API for sommelier
+- Basic ML for preference learning (e.g., using Prisma queries for collaborative filtering)
+
+**ID Verification:**
+- Tesseract.js or Jumio/Onfido for OCR and scanning
+- Secure encrypted storage (comply with GDPR/CCPA)
+- Audit trail for all verifications
+
+**Tax Services:**
+- TaxJar API for rate lookups/calculations
+- Florida DOR XML/EDI for e-filing (use axios for submissions)
+- CoinTracker or TaxBit for crypto tax tracking
+
+**Driver Support:**
+- Twilio for SMS/phone check-ins
+- Email integration (e.g., SendGrid) for supportive messages
+
+**Legal Tools:**
+- E-signature library (e.g., DocuSign API or pdf-lib for digital agreements)
+- Reminder system for license/insurance expiries
+
+## Security & Compliance
+
+- Encrypt sensitive data (IDs, payments, agreements) at rest using Prisma encryption
+- PCI DSS compliance: Use Stripe.js/Coinbase SDKs, no card/crypto data on server
+- HTTPS only, SSL certificates via Let's Encrypt
+- Rate limiting (express-rate-limit), input validation (Joi or Zod)
+- JWT with expiration, refresh, and blacklisting
+- GDPR/CCPA: User data export/deletion endpoints
+- Alcohol compliance: Logs, reports, and automated checks
+- OWASP top 10 protections (e.g., SQL injection prevention via Prisma)
+- Florida sales tax: Collect on delivery/service fees (taxable); remit monthly via e-Services
+- Driver Policy Compliance: Audit trails for all status changes, appeals, and support interactions
+- SB 676: Ensure all required features; log agreements for audits
+
+## Testing Requirements
+
+- Unit tests: Payment processing, AI logic, pricing calculations, tax computations, driver status logic, agreement workflows
+- Integration tests: Order flow, real-time sockets, webhooks, tax filing, support workflows, insurance verification
+- End-to-end tests: Complete delivery cycle with simulated users, including tax logging, activity drops triggering check-ins, agreement signing
+- Load testing: Real-time tracking under high traffic
+- Security testing: Penetration testing for ID system, API vulnerabilities
+- Payment testing: Use Stripe CLI and Coinbase sandbox
+- Compliance testing: Simulate insurance expiry, tax filing, SB 676 flows
+
+## Deployment
+
+- Use Replit's deployment for backend API
+- Configure environment variables for all API keys (e.g., STRIPE_SECRET_KEY, COINBASE_API_KEY, GOOGLE_MAPS_API_KEY, OPENAI_API_KEY, TAXJAR_API_KEY, FL_DOR_API_KEY, TWILIO_SID, DOCUSIGN_API_KEY)
+- Setup PostgreSQL database connection
+- Configure Redis for caching/sessions
+- Implement logging (Winston) and monitoring (Sentry or similar)
+- Background jobs for non-real-time tasks (e.g., analytics updates, tax aggregation, driver activity monitoring, license reminders)
+
+---
+
+Generate full code for the entire system, including setup instructions for Replit (environment variables, package installations via package.json). Ensure all features are implemented with basic security best practices. Provide sample data and test scripts for an end-to-end alcohol order flow, including age verification, AI recommendations, payments (with crypto), tracking, delivery completion, tax calculation/logging, simulated monthly remittance, a driver activity drop triggering a wellness check with support log updates, digital agreement signing, and insurance verification/expiry hold.
