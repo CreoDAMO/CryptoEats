@@ -1,41 +1,79 @@
-# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+# ============================================================
+# CryptoEats .gitignore
+# ============================================================
 
-# dependencies
+# ── Dependencies ─────────────────────────────────────────────
 node_modules/
+.pnp
+.pnp.js
 
-# Expo
+# ── Environment Variables & Secrets ──────────────────────────
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+*.key
+*.p8
+*.p12
+*.jks
+*.mobileprovision
+
+# ── Expo / React Native ─────────────────────────────────────
 .expo/
 dist/
 web-build/
 expo-env.d.ts
 
-# Native
+# ── Native Builds ────────────────────────────────────────────
 ios/
 android/
 *.orig.*
-*.jks
-*.p8
-*.p12
-*.key
-*.mobileprovision
+*.hprof
 
-# Metro
+# ── Metro Bundler ────────────────────────────────────────────
 .metro-health-check*
 
-# debug
+# ── Build Outputs ────────────────────────────────────────────
+build/
+out/
+*.tsbuildinfo
+
+# ── Database ─────────────────────────────────────────────────
+*.sql.bak
+*.dump
+
+# ── Debug Logs ───────────────────────────────────────────────
 npm-debug.*
 yarn-debug.*
 yarn-error.*
+lerna-debug.log*
+*.log
 
-# macOS
+# ── OS Files ─────────────────────────────────────────────────
 .DS_Store
-*.pem
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+*.swp
+*.swo
+*~
 
-# local env files
-.env*.local
+# ── IDE / Editor ─────────────────────────────────────────────
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
 
-# typescript
-*.tsbuildinfo
+# ── Testing / Coverage ──────────────────────────────────────
+coverage/
+.nyc_output/
+*.lcov
+
+# ── Misc ─────────────────────────────────────────────────────
 .vercel
-
-.env
+.cache/
+tmp/
+temp/
+*.tgz
