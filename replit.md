@@ -41,12 +41,15 @@ Preferred communication style: Simple, everyday language.
 - **Verification** (`verification.ts`): Persona API for identity/age verification (21+ alcohol), Checkr API for driver background checks. Webhook handlers for async status updates. Smart fallback to simulated verification when no API keys configured.
 - **Cache** (`cache.ts`): Redis caching service with automatic in-memory fallback. Restaurant list cached 10min, menu items cached 30min. Cache invalidation endpoints available. Stats tracking for hits/misses.
 - **Cloud Storage** (`cloud-storage.ts`): AWS S3 upload/download/delete with presigned URL generation. Automatic local filesystem fallback when S3 not configured. Multi-category file support.
+- **License Verification** (`license-verification.ts`): Florida DBPR liquor license lookup with simulation fallback. Auto-runs during restaurant onboarding when alcohol license is provided. Stores results in `license_verifications` table.
+- **Legal Documents**: Server-rendered HTML pages at `/legal/tos`, `/legal/privacy`, `/legal/contractor`. Digital agreement acceptance tracked in `legal_agreements` table.
+- **Compliance**: Alcohol delivery compliance (FL FS 561.57, FS 565.045, SB 676). 8AM-10PM delivery window, 40% food ratio, sealed container requirements. PCI SAQ-A compliance via Stripe Elements.
 
 ### Database (PostgreSQL + Drizzle ORM)
 
 - **ORM**: Drizzle ORM with PostgreSQL dialect. Schema defined in `shared/schema.ts`.
 - **Connection**: `pg` Pool using `DATABASE_URL` with optimized pooling (max 20 connections, idle timeout 30s, connection timeout 10s).
-- **Schema Design**: Comprehensive relational schema covering users, customers, drivers, restaurants, menu items, orders, chats, reviews, ID verifications, tax jurisdictions, compliance logs, API keys, webhooks, and white-label configurations.
+- **Schema Design**: Comprehensive relational schema covering users, customers, drivers, restaurants, menu items, orders, chats, reviews, ID verifications, tax jurisdictions, compliance logs, API keys, webhooks, white-label configurations, legal agreements, and license verifications.
 - **Indexes**: 19 performance indexes across 6 hot tables (orders, menu_items, users, customers, drivers, chats, compliance_logs) for optimized query performance.
 - **Enums**: Extensive use of PostgreSQL enums for various statuses and roles.
 - **Validation**: Zod schemas generated from Drizzle for shared client/server validation.
