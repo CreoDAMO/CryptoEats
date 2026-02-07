@@ -29,6 +29,10 @@ interface CartContextValue {
   activeOrder: Order | null;
   setActiveOrder: (order: Order | null) => void;
   updateOrderStatus: (orderId: string, status: Order['status']) => void;
+  specialInstructions: string;
+  setSpecialInstructions: (v: string) => void;
+  reorderFromHistory: (order: Order) => void;
+  markOrderRated: (orderId: string) => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -40,6 +44,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [ageVerified, setAgeVerified] = useState(false);
   const [orders, setOrders] = useState<Order[]>([]);
   const [activeOrder, setActiveOrder] = useState<Order | null>(null);
+  const [specialInstructions, setSpecialInstructions] = useState('');
 
   const currentRestaurantId = items.length > 0 ? items[0].restaurantId : null;
 
@@ -77,6 +82,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setItems([]);
     setTip(0);
     setAgeVerified(false);
+    setSpecialInstructions('');
   }, []);
 
   const loadOrders = useCallback(async () => {
@@ -110,6 +116,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
       requiresAgeVerification: hasAlcohol,
       ageVerified: ageVerified,
       deliveryAddress,
+      specialInstructions: specialInstructions || undefined,
     };
 
     const updatedOrders = [order, ...orders];
@@ -118,7 +125,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
     await AsyncStorage.setItem('cryptoeats_orders', JSON.stringify(updatedOrders));
     clearCart();
     return order;
-  }, [items, totals, tip, paymentMethod, hasAlcohol, ageVerified, orders, clearCart]);
+  }, [items, totals, tip, paymentMethod, hasAlcohol, ageVerified, orders, clearCart, specialInstructions]);
+
+  const reorderFromHistory = useCallback((order: Order) => {
+    setItems(order.items.map(i => ({ ...i })));
+  }, []);
+
+  const markOrderRated = useCallback((orderId: string) => {
+    setOrders(prev => {
+      const updated = prev.map(o => o.id === orderId ? { ...o, rated: true } : o);
+      AsyncStorage.setItem('cryptoeats_orders', JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
 
   const updateOrderStatus = useCallback((orderId: string, status: Order['status']) => {
     setOrders(prev => {
@@ -137,9 +156,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     serviceFee: totals.serviceFee, tax: totals.tax, total: totals.total,
     taxRate: totals.taxRate, currentRestaurantId,
     placeOrder, orders, loadOrders, activeOrder, setActiveOrder, updateOrderStatus,
+    specialInstructions, setSpecialInstructions, reorderFromHistory, markOrderRated,
   }), [items, addItem, removeItem, updateQuantity, clearCart, tip, paymentMethod,
     hasAlcohol, ageVerified, totals, currentRestaurantId, placeOrder, orders,
-    loadOrders, activeOrder, updateOrderStatus]);
+    loadOrders, activeOrder, updateOrderStatus, specialInstructions, reorderFromHistory, markOrderRated]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

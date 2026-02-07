@@ -57,6 +57,8 @@ export interface Order {
   requiresAgeVerification: boolean;
   ageVerified: boolean;
   deliveryAddress: string;
+  specialInstructions?: string;
+  rated?: boolean;
 }
 
 export interface UserProfile {

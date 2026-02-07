@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Switch } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { UserProfile } from '@/lib/data';
 
@@ -22,16 +23,35 @@ const DEFAULT_PROFILE: UserProfile = {
 const TASTE_OPTIONS = ['Sweet', 'Dry', 'Bold', 'Light', 'Fruity', 'Smoky', 'Spicy', 'Mellow'];
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-free', 'Halal', 'Kosher', 'Nut-free'];
 
+function generateReferralCode(): string {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+  let code = '';
+  for (let i = 0; i < 8; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
 export default function ProfileScreen() {
   const c = Colors.dark;
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === 'web';
   const topPad = isWeb ? 67 : insets.top;
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
+  const [referralCode, setReferralCode] = useState('');
 
   useEffect(() => {
     AsyncStorage.getItem('cryptoeats_profile').then(data => {
       if (data) setProfile(JSON.parse(data));
+    });
+    AsyncStorage.getItem('cryptoeats_referral').then(code => {
+      if (code) {
+        setReferralCode(code);
+      } else {
+        const newCode = generateReferralCode();
+        setReferralCode(newCode);
+        AsyncStorage.setItem('cryptoeats_referral', newCode);
+      }
     });
   }, []);
 
@@ -52,6 +72,15 @@ export default function ProfileScreen() {
       ? profile.dietaryRestrictions.filter(d => d !== diet)
       : [...profile.dietaryRestrictions, diet];
     saveProfile({ ...profile, dietaryRestrictions: restrictions });
+  };
+
+  const handleShareReferral = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      await Share.share({
+        message: `Use my CryptoEats referral code ${referralCode} to get $10 off your first order!`,
+      });
+    } catch {}
   };
 
   return (
@@ -79,6 +108,53 @@ export default function ProfileScreen() {
               <Text style={[styles.verifiedText, { color: c.green, fontFamily: 'DMSans_600SemiBold' }]}>ID Verified</Text>
             </View>
           )}
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="shield-checkmark-outline" size={18} color={c.accent} />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>ID Verification</Text>
+          </View>
+          <View style={styles.verificationRow}>
+            <View style={[styles.verificationDot, { backgroundColor: profile.idVerified ? c.green : c.red }]} />
+            <Text style={[styles.verificationStatus, { color: profile.idVerified ? c.green : c.red, fontFamily: 'DMSans_500Medium' }]}>
+              {profile.idVerified ? 'Verified' : 'Not Verified'}
+            </Text>
+          </View>
+          <Text style={[styles.verificationDesc, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>
+            {profile.idVerified ? 'Your identity has been verified for alcohol delivery.' : 'Verify your ID to order alcohol items.'}
+          </Text>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Feather name="gift" size={18} color={c.accent} />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Referral</Text>
+          </View>
+          <View style={styles.referralRow}>
+            <View style={[styles.referralCodeBox, { backgroundColor: c.background }]}>
+              <Text style={[styles.referralCode, { color: c.accent, fontFamily: 'DMSans_700Bold' }]}>{referralCode}</Text>
+            </View>
+            <Pressable onPress={handleShareReferral} style={({ pressed }) => [styles.shareBtn, { backgroundColor: c.accent, opacity: pressed ? 0.8 : 1 }]}>
+              <Feather name="share-2" size={18} color="#000" />
+            </Pressable>
+          </View>
+          <Text style={[styles.referralHint, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>
+            Share your code and both get $10 off
+          </Text>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="heart-outline" size={18} color={c.accent} />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Favorites</Text>
+          </View>
+          <View style={styles.favoritesEmpty}>
+            <Feather name="heart" size={28} color={c.textTertiary} />
+            <Text style={[styles.favoritesEmptyText, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>
+              No favorites yet
+            </Text>
+          </View>
         </View>
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
@@ -228,8 +304,54 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
   },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 10,
+  },
   sectionTitle: { fontSize: 16, marginBottom: 4 },
   sectionSubtitle: { fontSize: 12, marginBottom: 12 },
+  verificationRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
+  },
+  verificationDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  verificationStatus: { fontSize: 14 },
+  verificationDesc: { fontSize: 12 },
+  referralRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  referralCodeBox: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  referralCode: { fontSize: 20, letterSpacing: 3 },
+  shareBtn: {
+    width: 46,
+    height: 46,
+    borderRadius: 23,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  referralHint: { fontSize: 12, marginTop: 8 },
+  favoritesEmpty: {
+    alignItems: 'center',
+    paddingVertical: 20,
+    gap: 8,
+  },
+  favoritesEmptyText: { fontSize: 14 },
   chipGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 14,

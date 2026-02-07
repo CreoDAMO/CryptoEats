@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Alert } from 'react-native';
+import React, { useState, useMemo } from 'react';
+import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Alert, TextInput } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons, Feather } from '@expo/vector-icons';
@@ -15,6 +15,11 @@ const TIP_OPTIONS = [
   { label: '25%', multiplier: 0.25 },
 ];
 
+function isAlcoholWindowOpen(): boolean {
+  const hour = new Date().getHours();
+  return hour >= 8 && hour < 22;
+}
+
 export default function CheckoutScreen() {
   const c = Colors.dark;
   const insets = useSafeAreaInsets();
@@ -25,11 +30,15 @@ export default function CheckoutScreen() {
     items, subtotal, deliveryFee, serviceFee, tax, total, taxRate,
     tip, setTip, paymentMethod, setPaymentMethod,
     hasAlcohol, ageVerified, setAgeVerified, placeOrder,
+    specialInstructions, setSpecialInstructions,
   } = useCart();
 
   const [selectedTipIndex, setSelectedTipIndex] = useState(1);
   const [isPlacing, setIsPlacing] = useState(false);
   const deliveryAddress = '420 Ocean Dr, Miami Beach, FL 33139';
+
+  const alcoholWindowOpen = useMemo(() => isAlcoholWindowOpen(), []);
+  const alcoholBlocked = hasAlcohol && !alcoholWindowOpen;
 
   const handleTipSelect = (index: number) => {
     setSelectedTipIndex(index);
@@ -40,6 +49,10 @@ export default function CheckoutScreen() {
   const handlePlaceOrder = async () => {
     if (hasAlcohol && !ageVerified) {
       Alert.alert('Age Verification Required', 'Please verify your age to order alcohol items.');
+      return;
+    }
+    if (alcoholBlocked) {
+      Alert.alert('Alcohol Delivery Unavailable', 'Alcohol delivery is only available between 8 AM and 10 PM.');
       return;
     }
     setIsPlacing(true);
@@ -60,6 +73,7 @@ export default function CheckoutScreen() {
   }
 
   const isCrypto = paymentMethod === 'bitcoin' || paymentMethod === 'ethereum' || paymentMethod === 'usdc';
+  const checkoutDisabled = isPlacing || (hasAlcohol && !ageVerified) || alcoholBlocked;
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -81,6 +95,23 @@ export default function CheckoutScreen() {
             <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Delivery address</Text>
           </View>
           <Text style={[styles.address, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>{deliveryAddress}</Text>
+        </View>
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Feather name="edit-3" size={16} color={c.accent} />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Special instructions</Text>
+          </View>
+          <TextInput
+            style={[styles.instructionsInput, { color: c.text, backgroundColor: c.background, fontFamily: 'DMSans_400Regular' }]}
+            placeholder="Add delivery instructions, allergies, etc."
+            placeholderTextColor={c.textTertiary}
+            value={specialInstructions}
+            onChangeText={setSpecialInstructions}
+            multiline
+            numberOfLines={3}
+            textAlignVertical="top"
+          />
         </View>
 
         {hasAlcohol && (
@@ -111,6 +142,17 @@ export default function CheckoutScreen() {
                 I confirm I am 21 years or older
               </Text>
             </Pressable>
+          </View>
+        )}
+
+        {hasAlcohol && (
+          <View style={[styles.alcoholNotice, { backgroundColor: alcoholBlocked ? c.redLight : c.accentSoft }]}>
+            <Feather name="clock" size={14} color={alcoholBlocked ? c.red : c.accent} />
+            <Text style={[styles.alcoholNoticeText, { color: alcoholBlocked ? c.red : c.accent, fontFamily: 'DMSans_500Medium' }]}>
+              {alcoholBlocked
+                ? 'Alcohol delivery is unavailable right now (8 AM - 10 PM only)'
+                : 'Alcohol delivery available 8 AM - 10 PM'}
+            </Text>
           </View>
         )}
 
@@ -179,7 +221,10 @@ export default function CheckoutScreen() {
         </View>
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
-          <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold', marginBottom: 12 }]}>Price breakdown</Text>
+          <View style={styles.sectionHeader}>
+            <Feather name="file-text" size={16} color={c.accent} />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Price breakdown (SB 676)</Text>
+          </View>
           <View style={styles.priceRow}>
             <Text style={[styles.priceLabel, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>Subtotal</Text>
             <Text style={[styles.priceValue, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>${subtotal.toFixed(2)}</Text>
@@ -189,7 +234,7 @@ export default function CheckoutScreen() {
             <Text style={[styles.priceValue, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>${deliveryFee.toFixed(2)}</Text>
           </View>
           <View style={styles.priceRow}>
-            <Text style={[styles.priceLabel, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>Service fee</Text>
+            <Text style={[styles.priceLabel, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>Service fee (12%)</Text>
             <Text style={[styles.priceValue, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>${serviceFee.toFixed(2)}</Text>
           </View>
           <View style={styles.priceRow}>
@@ -210,11 +255,11 @@ export default function CheckoutScreen() {
       <View style={[styles.bottomBar, { backgroundColor: c.surface, paddingBottom: isWeb ? 34 : Math.max(insets.bottom, 16) }]}>
         <Pressable
           onPress={handlePlaceOrder}
-          disabled={isPlacing || (hasAlcohol && !ageVerified)}
+          disabled={checkoutDisabled}
           style={({ pressed }) => [
             styles.placeBtn,
             {
-              backgroundColor: (hasAlcohol && !ageVerified) ? c.surfaceElevated : c.accent,
+              backgroundColor: checkoutDisabled ? c.surfaceElevated : c.accent,
               opacity: pressed ? 0.85 : isPlacing ? 0.7 : 1,
             },
           ]}
@@ -223,10 +268,10 @@ export default function CheckoutScreen() {
             <Text style={[styles.placeBtnText, { fontFamily: 'DMSans_700Bold' }]}>Placing order...</Text>
           ) : (
             <>
-              <Text style={[styles.placeBtnText, { fontFamily: 'DMSans_700Bold', color: (hasAlcohol && !ageVerified) ? c.textTertiary : '#000' }]}>
+              <Text style={[styles.placeBtnText, { fontFamily: 'DMSans_700Bold', color: checkoutDisabled ? c.textTertiary : '#000' }]}>
                 Place order
               </Text>
-              <Text style={[styles.placeBtnTotal, { fontFamily: 'DMSans_700Bold', color: (hasAlcohol && !ageVerified) ? c.textTertiary : '#000' }]}>
+              <Text style={[styles.placeBtnTotal, { fontFamily: 'DMSans_700Bold', color: checkoutDisabled ? c.textTertiary : '#000' }]}>
                 ${total.toFixed(2)}
               </Text>
             </>
@@ -260,6 +305,13 @@ const styles = StyleSheet.create({
   },
   sectionTitle: { fontSize: 16 },
   address: { fontSize: 14, marginLeft: 24 },
+  instructionsInput: {
+    minHeight: 70,
+    borderRadius: 12,
+    padding: 12,
+    fontSize: 14,
+    lineHeight: 20,
+  },
   ageDesc: { fontSize: 13, lineHeight: 18 },
   ageBtn: {
     flexDirection: 'row',
@@ -276,6 +328,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderWidth: 2,
   },
+  alcoholNotice: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 12,
+    gap: 8,
+  },
+  alcoholNoticeText: { flex: 1, fontSize: 13 },
   paymentOption: {
     flexDirection: 'row',
     alignItems: 'center',

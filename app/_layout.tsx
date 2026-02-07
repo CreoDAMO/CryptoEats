@@ -20,6 +20,8 @@ function RootLayoutNav() {
       <Stack.Screen name="checkout" options={{ headerShown: false }} />
       <Stack.Screen name="tracking/[id]" options={{ headerShown: false }} />
       <Stack.Screen name="sommelier" options={{ headerShown: false, presentation: 'modal' }} />
+      <Stack.Screen name="chat/[orderId]" options={{ headerShown: false }} />
+      <Stack.Screen name="review/[orderId]" options={{ headerShown: false }} />
     </Stack>
   );
 }
