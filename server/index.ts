@@ -274,6 +274,21 @@ function setupErrorHandler(app: express.Application) {
     res.status(200).send(html);
   });
 
+  app.get('/legal/tos', (_req, res) => {
+    const tosPath = path.resolve(process.cwd(), 'server', 'templates', 'terms-of-service.html');
+    res.sendFile(tosPath);
+  });
+
+  app.get('/legal/privacy', (_req, res) => {
+    const privacyPath = path.resolve(process.cwd(), 'server', 'templates', 'privacy-policy.html');
+    res.sendFile(privacyPath);
+  });
+
+  app.get('/legal/contractor', (_req, res) => {
+    const contractorPath = path.resolve(process.cwd(), 'server', 'templates', 'contractor-agreement.html');
+    res.sendFile(contractorPath);
+  });
+
   app.get('/widget.js', (req, res) => {
     const widgetPath = path.resolve(process.cwd(), 'server', 'templates', 'widget.js');
     res.setHeader('Content-Type', 'application/javascript');

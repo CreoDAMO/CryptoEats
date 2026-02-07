@@ -617,6 +617,43 @@ export const inboundOrders = pgTable("inbound_orders", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// =================== LEGAL AGREEMENT ACCEPTANCES ===================
+export const agreementTypeEnum = pgEnum("agreement_type", [
+  "terms_of_service",
+  "privacy_policy",
+  "contractor_agreement",
+  "restaurant_partner_agreement",
+  "alcohol_delivery_consent",
+]);
+
+export const legalAgreements = pgTable("legal_agreements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  agreementType: agreementTypeEnum("agreement_type").notNull(),
+  version: text("version").notNull().default("1.0"),
+  acceptedAt: timestamp("accepted_at").defaultNow().notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  documentHash: text("document_hash"),
+  metadata: json("metadata").$type<Record<string, unknown>>(),
+});
+
+export const licenseVerifications = pgTable("license_verifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  restaurantId: varchar("restaurant_id"),
+  onboardingId: varchar("onboarding_id"),
+  licenseNumber: text("license_number").notNull(),
+  businessName: text("business_name"),
+  verificationMethod: text("verification_method").notNull(),
+  status: text("status").notNull().default("pending"),
+  licenseType: text("license_type"),
+  expirationDate: text("expiration_date"),
+  county: text("county"),
+  details: json("details").$type<Record<string, unknown>>(),
+  verifiedAt: timestamp("verified_at").defaultNow().notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // =================== ZOD SCHEMAS ===================
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -720,3 +757,5 @@ export type WhiteLabelConfig = typeof whiteLabelConfigs.$inferSelect;
 export type ApiAuditLog = typeof apiAuditLogs.$inferSelect;
 export type InboundOrder = typeof inboundOrders.$inferSelect;
 export type OnboardingApplication = typeof onboardingApplications.$inferSelect;
+export type LegalAgreement = typeof legalAgreements.$inferSelect;
+export type LicenseVerification = typeof licenseVerifications.$inferSelect;

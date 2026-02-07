@@ -7,11 +7,13 @@ import {
   deliveryWindows, referrals, digitalAgreements, bundles,
   wallets, escrowTransactions, nftRewards, nftListings,
   onrampTransactions, pushTokens, onboardingApplications,
+  legalAgreements, licenseVerifications,
   type User, type Customer, type Driver, type Restaurant, type MenuItem,
   type Order, type Review, type TaxJurisdiction, type TaxTransaction,
   type DriverStatus, type DriverSupportLogEntry, type ComplianceLog,
   type Wallet, type EscrowTransaction, type NftReward, type NftListing,
   type OnrampTransaction, type PushToken, type OnboardingApplication,
+  type LegalAgreement, type LicenseVerification,
 } from "../shared/schema";
 
 export const storage = {
@@ -587,5 +589,64 @@ export const storage = {
   async getAllOnboardings(): Promise<OnboardingApplication[]> {
     return db.select().from(onboardingApplications)
       .orderBy(desc(onboardingApplications.createdAt));
+  },
+
+  async createLegalAgreement(data: {
+    userId: string;
+    agreementType: "terms_of_service" | "privacy_policy" | "contractor_agreement" | "restaurant_partner_agreement" | "alcohol_delivery_consent";
+    version?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    documentHash?: string;
+    metadata?: Record<string, unknown>;
+  }): Promise<LegalAgreement> {
+    const [agreement] = await db.insert(legalAgreements).values(data).returning();
+    return agreement;
+  },
+
+  async getLegalAgreementsByUser(userId: string): Promise<LegalAgreement[]> {
+    return db.select().from(legalAgreements)
+      .where(eq(legalAgreements.userId, userId))
+      .orderBy(desc(legalAgreements.acceptedAt));
+  },
+
+  async hasAcceptedAgreement(userId: string, agreementType: string, version?: string): Promise<boolean> {
+    const conditions = [
+      eq(legalAgreements.userId, userId),
+      eq(legalAgreements.agreementType, agreementType as any),
+    ];
+    if (version) conditions.push(eq(legalAgreements.version, version));
+    const results = await db.select().from(legalAgreements).where(and(...conditions)).limit(1);
+    return results.length > 0;
+  },
+
+  async getAllLegalAgreements(): Promise<LegalAgreement[]> {
+    return db.select().from(legalAgreements).orderBy(desc(legalAgreements.acceptedAt));
+  },
+
+  async createLicenseVerification(data: {
+    restaurantId?: string;
+    onboardingId?: string;
+    licenseNumber: string;
+    businessName?: string;
+    verificationMethod: string;
+    status: string;
+    licenseType?: string;
+    expirationDate?: string;
+    county?: string;
+    details?: Record<string, unknown>;
+  }): Promise<LicenseVerification> {
+    const [verification] = await db.insert(licenseVerifications).values(data).returning();
+    return verification;
+  },
+
+  async getLicenseVerificationsByRestaurant(restaurantId: string): Promise<LicenseVerification[]> {
+    return db.select().from(licenseVerifications)
+      .where(eq(licenseVerifications.restaurantId, restaurantId))
+      .orderBy(desc(licenseVerifications.createdAt));
+  },
+
+  async getAllLicenseVerifications(): Promise<LicenseVerification[]> {
+    return db.select().from(licenseVerifications).orderBy(desc(licenseVerifications.createdAt));
   },
 };
