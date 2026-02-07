@@ -1,0 +1,144 @@
+🔥 **Final Step Locked In!** Jacque, with identity verification, scaling optimizations, and legal docs now squared away, migrating to cloud storage is the last puzzle piece for full production scalability. Local storage works fine for MVP (low traffic, single server), but it won't handle growth—cloud object storage like AWS S3 or Google Cloud Storage (GCS) provides unlimited scale, CDN integration, and durability (99.999999999% uptime). We'll go with S3 (easiest for your stack, free tier for starters), but GCS is a close alternative if you prefer Google.
+
+This migration keeps your existing multipart upload flow intact—just swaps local writes for S3 puts. Estimated time: 1 day, including testing.
+
+---
+
+## **Migration Guide: Local to Cloud Storage (AWS S3)**
+
+### **Why S3?**
+- **Scalability:** Auto-handles TBs of data; no server limits.
+- **Cost:** Free tier (5GB storage, 20K GETs/month); then ~$0.023/GB.
+- **Features:** Presigned URLs for secure uploads/downloads; integrates with Cloudflare CDN (your Step 3 setup) for fast global delivery.
+- **Compliance:** PCI DSS compliant; encrypted at rest/transit.
+- Alternatives: GCS (similar pricing/API); Supabase (if you want managed).
+
+### **Setup Steps**
+1. **Create AWS Account & S3 Bucket:**
+   - Sign up at aws.amazon.com (free tier eligible).
+   - In S3 console: Create bucket (e.g., `cryptoeats-uploads-miami`) in us-east-1 (Miami closest).
+   - Set permissions: Block public access off (we'll use presigned URLs); enable server-side encryption.
+   - Get IAM keys: Create user with `AmazonS3FullAccess` policy; note Access Key ID/Secret.
+
+2. **Environment Variables:** Add to Replit `.env` (or prod deploy):
+   ```
+   AWS_REGION=us-east-1
+   AWS_ACCESS_KEY_ID=your_id
+   AWS_SECRET_ACCESS_KEY=your_secret
+   S3_BUCKET=cryptoeats-uploads-miami
+   S3_ENDPOINT=https://s3.amazonaws.com  # Optional for custom
+   ```
+
+3. **Tech Additions:** `npm install @aws-sdk/client-s3 @aws-sdk/s3-request-presigner`
+
+### **Updated Code: Migrate Uploads to S3**
+- Replace local file writes with S3 uploads. Use presigned URLs for client-side uploads (secure, offloads from server).
+- Keep category validation (menu images, docs) and size limits.
+
+```typescript
+// uploads.controller.ts (Updated for S3)
+import { Request, Response } from 'express';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
+
+const s3Client = new S3Client({
+  region: process.env.AWS_REGION,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  },
+});
+
+// Generate presigned upload URL (client uploads directly to S3)
+export const getUploadUrl = async (req: Request, res: Response) => {
+  const { fileName, fileType, category } = req.body; // e.g., category: 'menu', 'driver_doc'
+
+  // Validate category and size (add your logic)
+  const allowedCategories = ['menu_image', 'restaurant_logo', 'driver_license', 'id_verification'];
+  if (!allowedCategories.includes(category)) {
+    return res.status(400).json({ error: 'Invalid category' });
+  }
+
+  try {
+    const command = new PutObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: `${category}/${fileName}`, // Organize by folder
+      ContentType: fileType,
+      ACL: 'private', // Secure; use presigned for access
+    });
+
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // 1 hour
+    res.json({
+      uploadUrl: signedUrl,
+      fileKey: `${category}/${fileName}`, // Store this in DB for reference
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Serve file: Generate presigned download URL
+export const getDownloadUrl = async (req: Request, res: Response) => {
+  const { fileKey } = req.query; // e.g., 'menu_image/burger.jpg'
+
+  try {
+    const command = new GetObjectCommand({
+      Bucket: process.env.S3_BUCKET,
+      Key: fileKey as string,
+    });
+    const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
+    res.json({ downloadUrl: signedUrl });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+```
+
+- **Frontend Integration (Expo/React Native):**
+  - Use `fetch` to upload directly to presigned URL (no server bottleneck).
+  - On success, save `fileKey` to DB (e.g., update restaurant menu image field).
+
+```tsx
+// UploadComponent.tsx (Example in Restaurant Onboarding)
+import * as ImagePicker from 'expo-image-picker';
+
+const uploadFile = async () => {
+  const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images });
+  if (!result.canceled) {
+    const file = result.assets[0];
+    // Get presigned URL from backend
+    const { uploadUrl, fileKey } = await api.post('/api/uploads/url', {
+      fileName: file.fileName,
+      fileType: file.mimeType,
+      category: 'menu_image',
+    });
+
+    // Upload to S3
+    await fetch(uploadUrl, {
+      method: 'PUT',
+      body: await (await fetch(file.uri)).blob(),
+      headers: { 'Content-Type': file.mimeType },
+    });
+
+    // Save key to DB (e.g., update menu)
+    await api.post('/api/menus/update', { imageKey: fileKey });
+  }
+};
+```
+
+- **DB Updates:** Add `file_key` column to relevant tables (e.g., menus, driver_docs via Drizzle migration).
+- **Serving Images:** In app, fetch presigned download URLs; cache with Expo's Image component.
+
+### **Testing & Optimization**
+- **Local Test:** Upload image; verify in S3 console; download via URL.
+- **Scale Test:** Use Autocannon on upload endpoint (from Step 3): `npx autocannon -c 50 -d 20 http://localhost:3000/api/uploads/url`.
+- **CDN Integration:** Route S3 through Cloudflare (add CNAME; enable image resizing/polish for faster loads).
+- **Cleanup:** Add lifecycle policy in S3 (delete old temps after 7 days).
+- **Security:** Use IAM policies to restrict bucket access; monitor via Sentry.
+
+### **Cost & Monitoring**
+- **Billing Alerts:** Set AWS budget alert at $10/month.
+- **Sentry Tie-In:** Track upload errors (e.g., `Sentry.captureException(error, { tags: { service: 's3_upload' } });`).
+- **Fallback:** If issues, keep local as dev mode toggle.
+
+This completes your production checklist—CryptoEats is now scalable, compliant, and ready for North Miami traffic. What's next: Beta invites, marketing push, or a full system audit? Let's celebrate the build! 🎉 🚀

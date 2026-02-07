@@ -1,7 +1,7 @@
 import { sql } from "drizzle-orm";
 import {
   pgTable, text, varchar, integer, boolean, timestamp, decimal,
-  json, pgEnum, serial, real
+  json, pgEnum, serial, real, index
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -30,7 +30,10 @@ export const users = pgTable("users", {
   role: userRoleEnum("role").notNull().default("customer"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("users_email_idx").on(table.email),
+  index("users_role_idx").on(table.role),
+]);
 
 // =================== CUSTOMERS ===================
 export const customers = pgTable("customers", {
@@ -46,7 +49,9 @@ export const customers = pgTable("customers", {
   savedAddresses: json("saved_addresses").$type<{ label: string; address: string }[]>().default([]),
   favoriteRestaurants: json("favorite_restaurants").$type<string[]>().default([]),
   favoriteItems: json("favorite_items").$type<string[]>().default([]),
-});
+}, (table) => [
+  index("customers_user_idx").on(table.userId),
+]);
 
 // =================== DRIVERS ===================
 export const drivers = pgTable("drivers", {
@@ -66,7 +71,10 @@ export const drivers = pgTable("drivers", {
   insuranceData: json("insurance_data").$type<{ policyNumber: string; expiryDate: string; provider: string }>(),
   photoUrl: text("photo_url"),
   bio: text("bio"),
-});
+}, (table) => [
+  index("drivers_user_idx").on(table.userId),
+  index("drivers_available_idx").on(table.isAvailable),
+]);
 
 // =================== DRIVER STATUS ===================
 export const driverStatusTable = pgTable("driver_status_records", {
@@ -155,7 +163,11 @@ export const menuItems = pgTable("menu_items", {
   available: boolean("available").default(true),
   pairingSuggestions: json("pairing_suggestions").$type<string[]>().default([]),
   imageUrl: text("image_url"),
-});
+}, (table) => [
+  index("menu_items_restaurant_idx").on(table.restaurantId),
+  index("menu_items_category_idx").on(table.category),
+  index("menu_items_available_idx").on(table.available),
+]);
 
 // =================== ORDERS ===================
 export const orders = pgTable("orders", {
@@ -184,7 +196,14 @@ export const orders = pgTable("orders", {
   eta: text("eta"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   deliveredAt: timestamp("delivered_at"),
-});
+}, (table) => [
+  index("orders_status_idx").on(table.status),
+  index("orders_customer_idx").on(table.customerId),
+  index("orders_driver_idx").on(table.driverId),
+  index("orders_restaurant_idx").on(table.restaurantId),
+  index("orders_created_at_idx").on(table.createdAt),
+  index("orders_payment_status_idx").on(table.paymentStatus),
+]);
 
 // =================== BUNDLES ===================
 export const bundles = pgTable("bundles", {
@@ -205,7 +224,10 @@ export const chats = pgTable("chats", {
   message: text("message").notNull(),
   type: chatTypeEnum("type").default("text"),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
-});
+}, (table) => [
+  index("chats_order_idx").on(table.orderId),
+  index("chats_timestamp_idx").on(table.timestamp),
+]);
 
 // =================== ID VERIFICATIONS ===================
 export const idVerifications = pgTable("id_verifications", {
@@ -301,7 +323,11 @@ export const complianceLogs = pgTable("compliance_logs", {
   expiryDate: timestamp("expiry_date"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
+}, (table) => [
+  index("compliance_entity_idx").on(table.entityId),
+  index("compliance_type_idx").on(table.type),
+  index("compliance_status_idx").on(table.status),
+]);
 
 // =================== DELIVERY WINDOWS ===================
 export const deliveryWindows = pgTable("delivery_windows", {
