@@ -6,6 +6,9 @@ import { swaggerSpec } from "./swagger";
 import swaggerUi from "swagger-ui-express";
 import * as fs from "fs";
 import * as path from "path";
+import { securityHeaders, inputSanitizationMiddleware } from "./services/security";
+import { monitoringMiddleware, getHealthMetrics, getRecentErrors, getErrorStats } from "./services/monitoring";
+import { getUploadPath } from "./services/uploads";
 
 const app = express();
 const log = console.log;
@@ -229,9 +232,26 @@ function setupErrorHandler(app: express.Application) {
 }
 
 (async () => {
+  app.use(securityHeaders());
   setupCors(app);
   setupBodyParsing(app);
+  app.use(inputSanitizationMiddleware());
+  app.use(monitoringMiddleware());
   setupRequestLogging(app);
+
+  app.use("/uploads", express.static(getUploadPath()));
+
+  app.get("/api/health", (_req, res) => {
+    res.json(getHealthMetrics());
+  });
+
+  app.get("/api/health/errors", (_req, res) => {
+    res.json(getRecentErrors(50));
+  });
+
+  app.get("/api/health/stats", (_req, res) => {
+    res.json(getErrorStats());
+  });
 
   app.get('/admin', (req, res) => {
     const adminPath = path.resolve(process.cwd(), 'server', 'templates', 'admin-dashboard.html');

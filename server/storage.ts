@@ -49,6 +49,11 @@ export const storage = {
     return customer;
   },
 
+  async getCustomerById(id: string): Promise<Customer | undefined> {
+    const [customer] = await db.select().from(customers).where(eq(customers.id, id)).limit(1);
+    return customer;
+  },
+
   async updateCustomer(id: string, data: Partial<Customer>): Promise<Customer | undefined> {
     const [customer] = await db.update(customers).set(data).where(eq(customers.id, id)).returning();
     return customer;

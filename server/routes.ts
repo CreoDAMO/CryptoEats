@@ -4,6 +4,7 @@ import { Server as SocketIOServer } from "socket.io";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
+import multer from "multer";
 import { storage } from "./storage";
 import { seedDatabase } from "./seed";
 import {
@@ -18,6 +19,18 @@ import {
   prepareEscrowRelease, prepareEscrowDispute, prepareAdminRefund, getEscrowDetails,
   type PaymasterError,
 } from "./blockchain";
+import {
+  createPaymentIntent, capturePayment, cancelPayment, createRefund,
+  getPaymentStatus, isStripeConfigured, constructWebhookEvent,
+} from "./services/payments";
+import {
+  sendEmail, sendSMS, sendPushNotification,
+  isSendGridConfigured, isTwilioConfigured,
+  buildOrderConfirmationEmail, buildOrderStatusEmail, buildOrderStatusSMS,
+} from "./services/notifications";
+import { saveUpload, validateUpload, getUploadCategories } from "./services/uploads";
+import { setupTrackingSocket, getOrderDriverLocation, getActiveDriverCount, getAllActiveDrivers, getDirectionsETA, assignDriverToOrder } from "./services/tracking";
+import { reportError } from "./services/monitoring";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
 
@@ -54,6 +67,8 @@ const authLimiter = rateLimit({
   max: 20,
   message: { message: "Too many requests, please try again later" },
 });
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 export async function registerRoutes(app: Express): Promise<Server> {
   await seedDatabase();
@@ -1438,6 +1453,225 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =================== STRIPE PAYMENTS ===================
+  app.get("/api/payments/status", (_req: Request, res: Response) => {
+    res.json({
+      stripe: isStripeConfigured(),
+      sendgrid: isSendGridConfigured(),
+      twilio: isTwilioConfigured(),
+    });
+  });
+
+  app.post("/api/payments/create-intent", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { amount, orderId, metadata } = req.body;
+      if (!amount || !orderId) return res.status(400).json({ message: "amount and orderId are required" });
+      const result = await createPaymentIntent(amount, orderId, req.user!.email, metadata);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "payments/create-intent", userId: req.user?.id });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/capture", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { intentId } = req.body;
+      if (!intentId) return res.status(400).json({ message: "intentId is required" });
+      const result = await capturePayment(intentId);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "payments/capture" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/cancel", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { intentId, reason } = req.body;
+      if (!intentId) return res.status(400).json({ message: "intentId is required" });
+      const result = await cancelPayment(intentId, reason);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "payments/cancel" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/refund", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { intentId, amount } = req.body;
+      if (!intentId) return res.status(400).json({ message: "intentId is required" });
+      const result = await createRefund(intentId, amount);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "payments/refund" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/payments/:intentId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const intentId = getParam(req.params.intentId);
+      const result = await getPaymentStatus(intentId);
+      res.json(result);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/webhook", async (req: Request, res: Response) => {
+    try {
+      const sig = req.headers["stripe-signature"] as string;
+      if (!sig || !req.rawBody) return res.status(400).json({ message: "Missing signature" });
+      const event = await constructWebhookEvent(req.rawBody as Buffer, sig);
+      console.log(`[Stripe Webhook] ${event.type}:`, (event.data.object as any).id);
+      res.json({ received: true });
+    } catch (err: any) {
+      reportError(err, { route: "payments/webhook" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  // =================== NOTIFICATIONS ===================
+  app.post("/api/notifications/email", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { to, subject, html } = req.body;
+      if (!to || !subject || !html) return res.status(400).json({ message: "to, subject, and html are required" });
+      const result = await sendEmail(to, subject, html);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "notifications/email" });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/notifications/sms", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { to, body } = req.body;
+      if (!to || !body) return res.status(400).json({ message: "to and body are required" });
+      const result = await sendSMS(to, body);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "notifications/sms" });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/notifications/push", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { tokens, title, body, data } = req.body;
+      if (!tokens || !title || !body) return res.status(400).json({ message: "tokens, title, and body are required" });
+      const result = await sendPushNotification(tokens, title, body, data);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "notifications/push" });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/push-tokens", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { token, platform } = req.body;
+      if (!token) return res.status(400).json({ message: "token is required" });
+      await storage.savePushToken(req.user!.id, token, platform || "unknown");
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== FILE UPLOADS ===================
+  app.get("/api/uploads/categories", (_req: Request, res: Response) => {
+    res.json(getUploadCategories());
+  });
+
+  app.post("/api/uploads/:category", authMiddleware as any, upload.single("file"), async (req: AuthRequest, res: Response) => {
+    try {
+      const category = getParam(req.params.category) as any;
+      const file = (req as any).file;
+      if (!file) return res.status(400).json({ message: "No file uploaded" });
+
+      const validation = validateUpload(file.size, file.mimetype, category);
+      if (!validation.valid) return res.status(400).json({ message: validation.error });
+
+      const result = await saveUpload(file.buffer, file.originalname, file.mimetype, category);
+      res.json(result);
+    } catch (err: any) {
+      reportError(err, { route: "uploads", userId: req.user?.id });
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== TRACKING ===================
+  app.get("/api/tracking/:orderId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const orderId = getParam(req.params.orderId);
+      const location = getOrderDriverLocation(orderId);
+      if (!location) return res.json({ tracking: false, message: "Driver location not available yet" });
+      res.json({ tracking: true, ...location });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/tracking/drivers/active", authMiddleware as any, async (_req: AuthRequest, res: Response) => {
+    res.json({
+      count: getActiveDriverCount(),
+      drivers: getAllActiveDrivers(),
+    });
+  });
+
+  app.post("/api/tracking/eta", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { originLat, originLng, destLat, destLng } = req.body;
+      if (!originLat || !originLng || !destLat || !destLng) {
+        return res.status(400).json({ message: "Origin and destination coordinates required" });
+      }
+      const eta = await getDirectionsETA(originLat, originLng, destLat, destLng);
+      res.json(eta);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/tracking/assign", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId, driverId } = req.body;
+      if (!orderId || !driverId) return res.status(400).json({ message: "orderId and driverId required" });
+      assignDriverToOrder(orderId, driverId);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== SERVICES STATUS ===================
+  app.get("/api/services/status", (_req: Request, res: Response) => {
+    res.json({
+      payments: {
+        stripe: isStripeConfigured(),
+        crypto: true,
+        escrow: true,
+      },
+      notifications: {
+        email: isSendGridConfigured(),
+        sms: isTwilioConfigured(),
+        push: true,
+      },
+      tracking: {
+        gps: true,
+        googleMaps: !!process.env.GOOGLE_MAPS_API_KEY,
+        activeDrivers: getActiveDriverCount(),
+      },
+      blockchain: {
+        network: process.env.BASE_NETWORK || "mainnet",
+        nftContract: MARKETPLACE_NFT_ADDRESS,
+        escrowContract: MARKETPLACE_ESCROW_ADDRESS,
+      },
+    });
+  });
+
   // =================== HTTP & SOCKET.IO ===================
   const httpServer = createServer(app);
 
@@ -1451,6 +1685,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     },
   });
 
+  setupTrackingSocket(io);
+
   io.on("connection", (socket) => {
     console.log("Socket connected:", socket.id);
 
@@ -1458,12 +1694,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       socket.join(`order:${orderId}`);
     });
 
-    socket.on("driver:location:update", (data: { orderId: string; lat: number; lng: number }) => {
-      io.to(`order:${data.orderId}`).emit("driver:location:update", data);
-    });
-
-    socket.on("order:status:changed", (data: { orderId: string; status: string }) => {
+    socket.on("order:status:changed", async (data: { orderId: string; status: string; driverName?: string }) => {
       io.to(`order:${data.orderId}`).emit("order:status:changed", data);
+
+      try {
+        const order = await storage.getOrderById(data.orderId);
+        if (order) {
+          const customer = await storage.getCustomerById(order.customerId);
+          if (customer) {
+            const user = await storage.getUserById(customer.userId);
+            if (user) {
+              const tokens = await storage.getPushTokensByUserId(user.id);
+              if (tokens.length > 0) {
+                await sendPushNotification(
+                  tokens.map(t => t.token),
+                  `Order ${data.status.replace("_", " ")}`,
+                  buildOrderStatusSMS(data.orderId, data.status)
+                );
+              }
+              if (user.email && isSendGridConfigured()) {
+                await sendEmail(
+                  user.email,
+                  `Order Update: ${data.status.replace("_", " ")}`,
+                  buildOrderStatusEmail(data.orderId, data.status, data.driverName)
+                ).catch(err => console.warn("[Notification] Email failed:", err));
+              }
+              if (user.phone && isTwilioConfigured()) {
+                await sendSMS(user.phone, buildOrderStatusSMS(data.orderId, data.status))
+                  .catch(err => console.warn("[Notification] SMS failed:", err));
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error("[Notification] Error sending order notifications:", err);
+      }
     });
 
     socket.on("chat:message", async (data: { orderId: string; senderId: string; message: string }) => {
