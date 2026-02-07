@@ -15,7 +15,7 @@ The platform ships as four tightly integrated products:
 |---------|-------------|
 | **Customer App** | Mobile-first ordering experience (iOS, Android, Web) with restaurant browsing, cart management, real-time tracking, and AI-powered recommendations |
 | **Driver App** | Dedicated driver interface for accepting deliveries, tracking earnings, managing compliance, and accessing support — built on a "Human-First" policy with no punitive deactivation |
-| **Backend API** | 111 REST endpoints powering authentication, order orchestration, tax collection, compliance logging, and real-time communication via WebSockets |
+| **Backend API** | 109 REST endpoints powering authentication, order orchestration, tax collection, compliance logging, and real-time communication via WebSockets |
 | **Open Platform** | Versioned developer API (v1) with API key management, webhooks, embeddable widgets, white-label branding, and bidirectional integrations for external systems |
 
 ---
@@ -26,7 +26,7 @@ The platform ships as four tightly integrated products:
 |-------|------------|
 | Frontend | Expo (React Native) — single codebase for iOS, Android, and Web |
 | Backend | Express.js with TypeScript |
-| Database | PostgreSQL via Drizzle ORM — 30+ tables, full relational schema |
+| Database | PostgreSQL via Drizzle ORM — 36 tables, full relational schema |
 | Real-Time | Socket.IO for order tracking, GPS location updates, driver-customer chat, and push notifications |
 | Auth | JWT with bcrypt password hashing, rate-limited login |
 | Payments | Stripe (PaymentIntents with authorize + capture on delivery, refunds, webhooks) + Base chain crypto |
@@ -43,7 +43,7 @@ The platform ships as four tightly integrated products:
 ### Phase 1 — Core Platform
 - Customer app with restaurant browsing, menu exploration, cart, and checkout
 - Backend API with user auth, restaurant/menu CRUD, order management
-- PostgreSQL database with 20+ tables seeded with 8 Miami restaurants and 50+ menu items
+- PostgreSQL database with 36 tables seeded with 8 Miami restaurants and 50+ menu items
 - Real-time order tracking with animated status progression
 - Customer-driver in-app chat
 - Rating and review system
@@ -82,7 +82,7 @@ The platform ships as four tightly integrated products:
 - **File Upload Service** — Multipart file upload with category validation (menu images, restaurant logos, driver documents, ID verification photos). Size limits and MIME type enforcement. Local storage with serve endpoints.
 - **Real-Time GPS Tracking** — Socket.IO-powered driver location tracking with ETA calculation using Haversine distance formula. Driver location updates broadcast to customers in real time. Location history storage for delivery analytics.
 - **Security Hardening** — Helmet HTTP headers (HSTS, XSS protection, content security policy), HTML/SQL injection sanitization on all inputs, adaptive rate limiting (burst detection with progressive throttling), request fingerprinting.
-- **Error Monitoring** — Sentry integration for error capture and reporting. Health metrics endpoint (`/api/health/metrics`) tracking uptime, request counts, error rates, and response times. Automated error classification and alerting.
+- **Error Monitoring** — Sentry integration for error capture and reporting. Health metrics endpoint (`/api/health`) tracking uptime, request counts, error rates, and response times. Automated error classification and alerting.
 - **Push Token Management** — Device push token registration API with platform detection. Automatic push notification delivery on order status changes (confirmed, preparing, picked up, delivered).
 
 ---
@@ -105,18 +105,20 @@ The platform ships as four tightly integrated products:
 
 | Metric | Value |
 |--------|-------|
-| API Endpoints | 120+ (74 core + 37 platform + 10 production services) |
-| Database Tables | 30+ |
+| API Endpoints | 109 (102 in routes + 7 in index) |
+| Database Tables | 36 |
 | Seeded Restaurants | 8 (Miami-based) |
 | Seeded Menu Items | 50+ |
 | Webhook Event Types | 12 |
 | API Tier Levels | 4 (Free / Starter / Pro / Enterprise) |
 | Platform SDK Languages | 3 (Node.js, Python, PHP) |
 | Supported Integrations | 3 (Shopify, WooCommerce, Toast POS) |
-| Production Services | 7 (Payments, Email, SMS, Push, GPS, Security, Monitoring) |
-| Frontend Screens | 15+ |
-| Lines of Schema Code | 627 |
-| Lines of Backend Code | ~6,000+ |
+| Production Services | 6 (Payments, Notifications, Uploads, Tracking, Security, Monitoring) |
+| Frontend Screens | 22 |
+| Lines of Schema Code | 696 |
+| Lines of Backend Code | 9,911 |
+| Lines of Frontend Code | 9,423 |
+| Total Lines of Code | 20,030+ |
 
 ---
 
