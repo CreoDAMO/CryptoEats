@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
@@ -37,6 +38,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === 'web';
   const topPad = isWeb ? 67 : insets.top;
+  const router = useRouter();
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [referralCode, setReferralCode] = useState('');
 
@@ -109,6 +111,20 @@ export default function ProfileScreen() {
             </View>
           )}
         </View>
+
+        <Pressable
+          onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/driver'); }}
+          style={({ pressed }) => [styles.driverCard, { backgroundColor: c.surface, borderColor: c.accent, borderWidth: 1, opacity: pressed ? 0.85 : 1 }]}
+        >
+          <View style={[styles.driverIconWrap, { backgroundColor: c.accentLight }]}>
+            <Ionicons name="car-outline" size={24} color={c.accent} />
+          </View>
+          <View style={styles.driverCardInfo}>
+            <Text style={[styles.driverCardTitle, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>Switch to Driver Mode</Text>
+            <Text style={[styles.driverCardDesc, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>Manage deliveries, earnings & more</Text>
+          </View>
+          <Feather name="chevron-right" size={20} color={c.accent} />
+        </Pressable>
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
           <View style={styles.sectionHeader}>
@@ -384,4 +400,21 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   menuItemText: { flex: 1, fontSize: 15 },
+  driverCard: {
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+  },
+  driverIconWrap: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  driverCardInfo: { flex: 1, gap: 2 },
+  driverCardTitle: { fontSize: 16 },
+  driverCardDesc: { fontSize: 12 },
 });
