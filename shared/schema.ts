@@ -18,6 +18,7 @@ export const interactionTypeEnum = pgEnum("interaction_type", ["wellness_check",
 export const complianceTypeEnum = pgEnum("compliance_type", ["license", "tax_filing", "agreement", "insurance"]);
 export const chatTypeEnum = pgEnum("chat_type", ["text", "image", "system"]);
 export const verificationMethodEnum = pgEnum("verification_method", ["checkout", "delivery"]);
+export const onrampStatusEnum = pgEnum("onramp_status", ["pending", "processing", "completed", "failed"]);
 
 // =================== USERS ===================
 export const users = pgTable("users", {
@@ -400,6 +401,33 @@ export const nftListings = pgTable("nft_listings", {
   soldAt: timestamp("sold_at"),
 });
 
+// =================== PHASE 3: COINBASE ONRAMP ===================
+export const onrampTransactions = pgTable("onramp_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  walletAddress: text("wallet_address").notNull(),
+  fiatCurrency: text("fiat_currency").default("USD"),
+  fiatAmount: decimal("fiat_amount", { precision: 18, scale: 2 }).notNull(),
+  cryptoCurrency: text("crypto_currency").default("USDC"),
+  cryptoAmount: decimal("crypto_amount", { precision: 18, scale: 8 }),
+  network: text("network").default("base"),
+  paymentMethod: text("payment_method"),
+  coinbaseTransactionId: text("coinbase_transaction_id"),
+  status: onrampStatusEnum("status").default("pending"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const pushTokens = pgTable("push_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  token: text("token").notNull(),
+  platform: text("platform").default("expo"),
+  active: boolean("active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // =================== ZOD SCHEMAS ===================
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -462,3 +490,5 @@ export type Wallet = typeof wallets.$inferSelect;
 export type EscrowTransaction = typeof escrowTransactions.$inferSelect;
 export type NftReward = typeof nftRewards.$inferSelect;
 export type NftListing = typeof nftListings.$inferSelect;
+export type OnrampTransaction = typeof onrampTransactions.$inferSelect;
+export type PushToken = typeof pushTokens.$inferSelect;

@@ -6,10 +6,12 @@ import {
   driverStatusTable, driverSupportLog, driverEarnings, complianceLogs,
   deliveryWindows, referrals, digitalAgreements, bundles,
   wallets, escrowTransactions, nftRewards, nftListings,
+  onrampTransactions, pushTokens,
   type User, type Customer, type Driver, type Restaurant, type MenuItem,
   type Order, type Review, type TaxJurisdiction, type TaxTransaction,
   type DriverStatus, type DriverSupportLogEntry, type ComplianceLog,
   type Wallet, type EscrowTransaction, type NftReward, type NftListing,
+  type OnrampTransaction, type PushToken,
 } from "../shared/schema";
 
 export const storage = {
@@ -497,5 +499,44 @@ export const storage = {
       console.error("Error checking milestone NFT:", error.message);
       return null;
     }
+  },
+
+  // =================== ONRAMP TRANSACTIONS ===================
+  async createOnrampTransaction(data: any): Promise<OnrampTransaction> {
+    const [tx] = await db.insert(onrampTransactions).values(data).returning();
+    return tx;
+  },
+
+  async getOnrampTransactionsByUser(userId: string): Promise<OnrampTransaction[]> {
+    return db.select().from(onrampTransactions).where(eq(onrampTransactions.userId, userId)).orderBy(desc(onrampTransactions.createdAt));
+  },
+
+  async updateOnrampTransaction(id: string, data: any): Promise<OnrampTransaction | undefined> {
+    const [tx] = await db.update(onrampTransactions).set(data).where(eq(onrampTransactions.id, id)).returning();
+    return tx;
+  },
+
+  async getOnrampTransactionById(id: string): Promise<OnrampTransaction | undefined> {
+    const [tx] = await db.select().from(onrampTransactions).where(eq(onrampTransactions.id, id)).limit(1);
+    return tx;
+  },
+
+  // =================== PUSH TOKENS ===================
+  async savePushToken(userId: string, token: string, platform?: string): Promise<PushToken> {
+    const existing = await db.select().from(pushTokens).where(and(eq(pushTokens.userId, userId), eq(pushTokens.token, token))).limit(1);
+    if (existing.length > 0) {
+      const [updated] = await db.update(pushTokens).set({ active: true, updatedAt: new Date() }).where(eq(pushTokens.id, existing[0].id)).returning();
+      return updated;
+    }
+    const [pt] = await db.insert(pushTokens).values({ userId, token, platform: platform || "expo" }).returning();
+    return pt;
+  },
+
+  async getPushTokensByUserId(userId: string): Promise<PushToken[]> {
+    return db.select().from(pushTokens).where(and(eq(pushTokens.userId, userId), eq(pushTokens.active, true)));
+  },
+
+  async deactivatePushToken(token: string): Promise<void> {
+    await db.update(pushTokens).set({ active: false }).where(eq(pushTokens.token, token));
   },
 };

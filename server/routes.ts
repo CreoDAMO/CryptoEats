@@ -70,6 +70,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.createCustomer({ userId: user.id, firstName: data.firstName, lastName: data.lastName });
       }
 
+      // Auto-create embedded wallet for new users
+      const walletPlaceholder = `0x${Array.from({length: 40}, () => Math.floor(Math.random() * 16).toString(16)).join('')}`;
+      await storage.createWallet({
+        userId: user.id,
+        walletAddress: walletPlaceholder,
+        walletType: "embedded",
+        chainId: 8453,
+      });
+
       const token = generateToken({ id: user.id, email: user.email, role: user.role });
       res.status(201).json({ token, user: { id: user.id, email: user.email, role: user.role } });
     } catch (err: any) {
@@ -911,6 +920,170 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
+  });
+
+  // =================== PHASE 3: COINBASE ONRAMP ===================
+  app.get("/api/onramp/buy-options", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const country = (req.query.country as string) || "US";
+      const subdivision = (req.query.subdivision as string) || "FL";
+      res.json({
+        paymentMethods: [
+          { id: "CARD", name: "Credit/Debit Card", minAmount: 5, maxAmount: 5000 },
+          { id: "APPLE_PAY", name: "Apple Pay", minAmount: 1, maxAmount: 10000 },
+          { id: "GOOGLE_PAY", name: "Google Pay", minAmount: 1, maxAmount: 10000 },
+          { id: "PAYPAL", name: "PayPal", minAmount: 5, maxAmount: 2500 },
+        ],
+        purchaseCurrencies: [
+          { code: "USDC", name: "USD Coin", network: "base", decimals: 6, minAmount: 1, contractAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" },
+          { code: "ETH", name: "Ethereum", network: "base", decimals: 18, minAmount: 0.001 },
+          { code: "cbBTC", name: "Coinbase Wrapped BTC", network: "base", decimals: 8, minAmount: 0.0001 },
+        ],
+        country,
+        subdivision,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/onramp/buy-quote", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { purchaseCurrency, paymentAmount, paymentCurrency, paymentMethod, network } = req.body;
+      if (!purchaseCurrency || !paymentAmount) {
+        return res.status(400).json({ message: "purchaseCurrency and paymentAmount are required" });
+      }
+      const fiatAmount = parseFloat(paymentAmount);
+      let rate = 1.0;
+      let fee = 0;
+      if (purchaseCurrency === "USDC") {
+        fee = Math.max(0.99, fiatAmount * 0.015);
+        rate = 1.0;
+      } else if (purchaseCurrency === "ETH") {
+        rate = 0.000385;
+        fee = Math.max(0.99, fiatAmount * 0.02);
+      } else if (purchaseCurrency === "cbBTC") {
+        rate = 0.0000105;
+        fee = Math.max(0.99, fiatAmount * 0.02);
+      }
+      const netAmount = fiatAmount - fee;
+      const cryptoAmount = netAmount * rate;
+      res.json({
+        purchaseCurrency: purchaseCurrency || "USDC",
+        purchaseNetwork: network || "base",
+        paymentAmount: fiatAmount.toFixed(2),
+        paymentCurrency: paymentCurrency || "USD",
+        quotePrice: cryptoAmount.toFixed(8),
+        coinbaseFee: fee.toFixed(2),
+        networkFee: "0.00",
+        totalFee: fee.toFixed(2),
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+        paymentMethod: paymentMethod || "CARD",
+        gasless: purchaseCurrency === "USDC" && (network || "base") === "base",
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/onramp/initiate", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { fiatAmount, cryptoCurrency, paymentMethod, walletAddress } = req.body;
+      if (!fiatAmount || !walletAddress) {
+        return res.status(400).json({ message: "fiatAmount and walletAddress are required" });
+      }
+      const tx = await storage.createOnrampTransaction({
+        userId: req.user!.id,
+        walletAddress,
+        fiatAmount: fiatAmount.toString(),
+        cryptoCurrency: cryptoCurrency || "USDC",
+        paymentMethod: paymentMethod || "CARD",
+        network: "base",
+        status: "pending",
+      });
+      const onrampUrl = `https://pay.coinbase.com/buy/select-asset?appId=CryptoEats&addresses={"${walletAddress}":["base"]}&assets=["USDC"]&presetFiatAmount=${fiatAmount}&fiatCurrency=USD`;
+      res.status(201).json({ transaction: tx, onrampUrl });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/onramp/webhook", async (req: Request, res: Response) => {
+    try {
+      const { transactionId, status, cryptoAmount } = req.body;
+      if (!transactionId) return res.status(400).json({ message: "transactionId is required" });
+      const tx = await storage.getOnrampTransactionById(transactionId);
+      if (!tx) return res.status(404).json({ message: "Transaction not found" });
+      const updateData: any = { status };
+      if (cryptoAmount) updateData.cryptoAmount = cryptoAmount.toString();
+      if (status === "completed") updateData.completedAt = new Date();
+      await storage.updateOnrampTransaction(transactionId, updateData);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/onramp/simulate-complete", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { transactionId, cryptoAmount } = req.body;
+      if (!transactionId) return res.status(400).json({ message: "transactionId is required" });
+      const updated = await storage.updateOnrampTransaction(transactionId, {
+        status: "completed",
+        cryptoAmount: cryptoAmount?.toString() || "0",
+        completedAt: new Date(),
+        coinbaseTransactionId: `cb_sim_${Date.now()}`,
+      });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/onramp/history", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const txs = await storage.getOnrampTransactionsByUser(req.user!.id);
+      res.json(txs);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== PUSH NOTIFICATIONS ===================
+  app.post("/api/push/register", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { token, platform } = req.body;
+      if (!token) return res.status(400).json({ message: "token is required" });
+      const saved = await storage.savePushToken(req.user!.id, token, platform);
+      res.status(201).json(saved);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.delete("/api/push/unregister", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { token } = req.body;
+      if (!token) return res.status(400).json({ message: "token is required" });
+      await storage.deactivatePushToken(token);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  // =================== GASLESS TRANSACTION INFO ===================
+  app.get("/api/gasless/info", async (_req: Request, res: Response) => {
+    res.json({
+      supported: true,
+      network: "base",
+      chainId: 8453,
+      sponsoredTokens: ["USDC"],
+      paymasterAddress: "0x2FAEB0760D4230Ef2aC21496Bb4F0b47D634FD4c",
+      description: "Gas fees are sponsored for USDC transfers on Base network. No ETH needed for transactions.",
+      maxSponsoredAmount: "10000",
+      currency: "USDC",
+    });
   });
 
   // =================== HTTP & SOCKET.IO ===================
