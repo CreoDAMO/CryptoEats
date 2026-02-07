@@ -68,3 +68,9 @@ task = "shell.exec"
 args = "npm run expo:dev"
 waitForPort = 8081
 ensurePreviewReachable = "/status"
+
+[userenv]
+
+[userenv.shared]
+API_PLAYGROUND_ENABLED = "true"
+WEBHOOK_SECRET = "cryptoeats-webhook-secret-v1"

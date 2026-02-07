@@ -1,6 +1,9 @@
 import express from "express";
 import type { Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+import { registerPlatformRoutes } from "./platform-routes";
+import { swaggerSpec } from "./swagger";
+import swaggerUi from "swagger-ui-express";
 import * as fs from "fs";
 import * as path from "path";
 
@@ -239,6 +242,31 @@ function setupErrorHandler(app: express.Application) {
     const merchantPath = path.resolve(process.cwd(), 'server', 'templates', 'merchant-dashboard.html');
     res.sendFile(merchantPath);
   });
+
+  app.get('/developers', (req, res) => {
+    const devPortalPath = path.resolve(process.cwd(), 'server', 'templates', 'developer-portal.html');
+    let html = fs.readFileSync(devPortalPath, 'utf-8');
+    const forwardedProto = req.header('x-forwarded-proto') || req.protocol || 'https';
+    const forwardedHost = req.header('x-forwarded-host') || req.get('host');
+    const baseUrl = `${forwardedProto}://${forwardedHost}`;
+    html = html.replace(/BASE_URL_PLACEHOLDER/g, baseUrl);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.status(200).send(html);
+  });
+
+  app.get('/widget.js', (req, res) => {
+    const widgetPath = path.resolve(process.cwd(), 'server', 'templates', 'widget.js');
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.sendFile(widgetPath);
+  });
+
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'CryptoEats API Docs',
+  }));
+
+  registerPlatformRoutes(app);
 
   configureExpoAndLanding(app);
 

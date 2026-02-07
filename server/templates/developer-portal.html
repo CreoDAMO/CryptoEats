@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CryptoEats Developer Portal</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0a0a1a;
+    --surface: #12122a;
+    --card: #1a1a3a;
+    --border: #2a2a4a;
+    --primary: #FF6B00;
+    --accent: #00D4AA;
+    --text: #e0e0f0;
+    --muted: #888;
+    --code-bg: #0d0d20;
+  }
+  body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .header {
+    background: linear-gradient(135deg, var(--primary), #FF8C3A);
+    padding: 60px 20px 50px;
+    text-align: center;
+  }
+  .header h1 { font-size: 42px; font-weight: 800; margin-bottom: 12px; color: #fff; }
+  .header p { font-size: 18px; color: rgba(255,255,255,0.85); max-width: 600px; margin: 0 auto 24px; }
+  .header-badges { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .badge { background: rgba(255,255,255,0.15); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 13px; font-weight: 500; }
+
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 20px; position: sticky; top: 0; z-index: 100; }
+  .nav-inner { max-width: 1100px; margin: 0 auto; display: flex; gap: 0; overflow-x: auto; }
+  .nav a { padding: 14px 20px; color: var(--muted); font-size: 14px; font-weight: 500; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .nav a:hover, .nav a.active { color: var(--accent); border-bottom-color: var(--accent); text-decoration: none; }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+
+  .section { margin-bottom: 60px; }
+  .section h2 { font-size: 28px; font-weight: 700; margin-bottom: 8px; color: #fff; }
+  .section h3 { font-size: 20px; font-weight: 600; margin: 24px 0 12px; color: #fff; }
+  .section p { color: var(--muted); margin-bottom: 16px; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; margin-top: 20px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .card h4 { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: #fff; }
+  .card p { font-size: 14px; color: var(--muted); }
+  .card .price { font-size: 24px; font-weight: 700; color: var(--primary); margin: 8px 0; }
+  .card ul { list-style: none; margin-top: 12px; }
+  .card ul li { padding: 4px 0; font-size: 13px; color: var(--text); }
+  .card ul li:before { content: "✓ "; color: var(--accent); font-weight: 700; }
+
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #c0c0e0;
+    margin: 16px 0;
+  }
+  code { font-family: 'SF Mono', 'Fira Code', monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+
+  .tab-container { margin: 20px 0; }
+  .tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 0; }
+  .tabs button {
+    background: none; border: none; color: var(--muted); padding: 10px 20px; font-size: 14px;
+    cursor: pointer; border-bottom: 2px solid transparent; font-family: inherit;
+  }
+  .tabs button.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .endpoint { background: var(--card); border: 1px solid var(--border); border-radius: 12px; margin: 16px 0; overflow: hidden; }
+  .endpoint-header { padding: 16px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; }
+  .endpoint-method {
+    font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 6px; min-width: 55px; text-align: center;
+  }
+  .method-get { background: #1a3a2a; color: #00D4AA; }
+  .method-post { background: #2a2a1a; color: #FFB347; }
+  .method-put { background: #1a1a3a; color: #7B8CFF; }
+  .method-delete { background: #3a1a1a; color: #FF6B6B; }
+  .endpoint-path { font-family: 'SF Mono', monospace; font-size: 14px; color: #fff; }
+  .endpoint-desc { font-size: 13px; color: var(--muted); margin-left: auto; }
+
+  .btn {
+    display: inline-block; padding: 12px 28px; border-radius: 10px; font-weight: 600; font-size: 14px;
+    border: none; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #e85d00; text-decoration: none; }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
+  .btn-outline:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  .alert { background: rgba(0,212,170,0.1); border: 1px solid rgba(0,212,170,0.3); border-radius: 12px; padding: 16px 20px; margin: 16px 0; }
+  .alert p { color: var(--accent); margin: 0; font-size: 14px; }
+
+  .footer { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; border-top: 1px solid var(--border); }
+
+  .widget-demo { background: var(--card); border-radius: 16px; padding: 24px; margin: 20px 0; }
+
+  @media (max-width: 768px) {
+    .header h1 { font-size: 28px; }
+    .card-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>CryptoEats Developer Portal</h1>
+  <p>The Delivery Layer — Build on top of our food & alcohol delivery infrastructure with blockchain-powered payments, NFT rewards, and real-time tracking.</p>
+  <div class="header-badges">
+    <span class="badge">REST API</span>
+    <span class="badge">Webhooks</span>
+    <span class="badge">SDKs</span>
+    <span class="badge">Widgets</span>
+    <span class="badge">White-Label</span>
+    <span class="badge">Blockchain</span>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-inner">
+    <a href="#quickstart" class="active">Quick Start</a>
+    <a href="#authentication">Authentication</a>
+    <a href="#endpoints">API Reference</a>
+    <a href="#webhooks">Webhooks</a>
+    <a href="#sdks">SDKs</a>
+    <a href="#widgets">Widgets</a>
+    <a href="#whitelabel">White-Label</a>
+    <a href="#integrations">Integrations</a>
+    <a href="#pricing">Pricing</a>
+    <a href="/api-docs" target="_blank">API Playground</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- QUICK START -->
+  <div class="section" id="quickstart">
+    <h2>Quick Start</h2>
+    <p>Get started with the CryptoEats API in minutes. Create an account, get your API keys, and start building.</p>
+
+    <h3>1. Create API Keys</h3>
+    <pre>curl -X POST BASE_URL_PLACEHOLDER/api/developer/keys \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My App", "tier": "free"}'</pre>
+
+    <div class="alert">
+      <p>Save your secret key immediately — it's only shown once. You'll receive a public key (ce_pk_...) and secret key (ce_sk_...).</p>
+    </div>
+
+    <h3>2. Make Your First Request</h3>
+    <pre>curl BASE_URL_PLACEHOLDER/api/v1/restaurants \
+  -H "X-API-Key: ce_pk_your_public_key"</pre>
+
+    <h3>3. Set Up Webhooks</h3>
+    <pre>curl -X POST BASE_URL_PLACEHOLDER/api/developer/webhooks \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://your-app.com/webhooks/cryptoeats",
+    "events": ["order.created", "delivery.completed"]
+  }'</pre>
+  </div>
+
+  <!-- AUTHENTICATION -->
+  <div class="section" id="authentication">
+    <h2>Authentication</h2>
+    <p>CryptoEats uses two authentication methods depending on the context.</p>
+
+    <h3>API Key Authentication (Platform API)</h3>
+    <p>For accessing the Platform API v1 endpoints, include your API keys in the request headers:</p>
+    <pre>X-API-Key: ce_pk_your_public_key
+X-API-Secret: ce_sk_your_secret_key  (required for write operations)</pre>
+
+    <h3>JWT Bearer Token (Developer Management)</h3>
+    <p>For managing API keys, webhooks, and configurations, use JWT authentication:</p>
+    <pre>Authorization: Bearer eyJhbGciOiJIUzI1NiIs...</pre>
+
+    <h3>Rate Limiting</h3>
+    <p>Rate limits are applied per API key based on your tier. Response headers include:</p>
+    <pre>X-RateLimit-Limit: 1000        # Daily request limit
+X-RateLimit-Remaining: 950     # Remaining requests
+X-RateLimit-Reset: 2026-02-08T00:00:00Z  # Reset time</pre>
+  </div>
+
+  <!-- API REFERENCE -->
+  <div class="section" id="endpoints">
+    <h2>API Reference</h2>
+    <p>All Platform API endpoints are prefixed with <code>/api/v1</code>. For interactive exploration, visit the <a href="/api-docs" target="_blank">API Playground (Swagger UI)</a>.</p>
+
+    <h3>Restaurants</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/restaurants</span><span class="endpoint-desc">List all restaurants</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/restaurants/:id</span><span class="endpoint-desc">Get restaurant by ID</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/restaurants/:id/menu</span><span class="endpoint-desc">Get restaurant menu</span></div></div>
+
+    <h3>Orders</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/orders</span><span class="endpoint-desc">List all orders</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/orders/:id</span><span class="endpoint-desc">Get order by ID</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-put">PUT</span><span class="endpoint-path">/api/v1/orders/:id/status</span><span class="endpoint-desc">Update order status</span></div></div>
+
+    <h3>Drivers</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/drivers</span><span class="endpoint-desc">List all drivers</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/drivers/available</span><span class="endpoint-desc">List available drivers</span></div></div>
+
+    <h3>Tax</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/tax/jurisdictions</span><span class="endpoint-desc">List tax jurisdictions</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/v1/tax/calculate</span><span class="endpoint-desc">Calculate tax</span></div></div>
+
+    <h3>NFT Marketplace</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/nft/marketplace</span><span class="endpoint-desc">List NFT marketplace listings</span></div></div>
+
+    <h3>Integrations (Bidirectional)</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/v1/integrations/orders/inbound</span><span class="endpoint-desc">Submit inbound order from external system</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/integrations/orders/inbound</span><span class="endpoint-desc">List inbound orders</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/v1/webhooks/external/order</span><span class="endpoint-desc">Receive order update from external POS</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-post">POST</span><span class="endpoint-path">/api/v1/webhooks/external/inventory</span><span class="endpoint-desc">Receive inventory sync</span></div></div>
+
+    <h3>Platform</h3>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/platform/status</span><span class="endpoint-desc">Platform status &amp; features</span></div></div>
+    <div class="endpoint"><div class="endpoint-header"><span class="endpoint-method method-get">GET</span><span class="endpoint-path">/api/v1/usage</span><span class="endpoint-desc">API key usage info</span></div></div>
+  </div>
+
+  <!-- WEBHOOKS -->
+  <div class="section" id="webhooks">
+    <h2>Webhooks</h2>
+    <p>Subscribe to real-time events from CryptoEats. Webhooks are delivered via POST with HMAC-SHA256 signature verification.</p>
+
+    <h3>Available Events</h3>
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+      <div class="card"><h4>order.created</h4><p>New order placed</p></div>
+      <div class="card"><h4>order.confirmed</h4><p>Order confirmed by restaurant</p></div>
+      <div class="card"><h4>order.preparing</h4><p>Restaurant started preparing</p></div>
+      <div class="card"><h4>order.picked_up</h4><p>Driver picked up the order</p></div>
+      <div class="card"><h4>order.delivered</h4><p>Order delivered to customer</p></div>
+      <div class="card"><h4>order.cancelled</h4><p>Order was cancelled</p></div>
+      <div class="card"><h4>delivery.completed</h4><p>Delivery flow completed</p></div>
+      <div class="card"><h4>payment.completed</h4><p>Payment processed</p></div>
+      <div class="card"><h4>nft.minted</h4><p>NFT reward minted</p></div>
+      <div class="card"><h4>escrow.deposited</h4><p>Escrow funds deposited</p></div>
+      <div class="card"><h4>escrow.released</h4><p>Escrow funds released</p></div>
+      <div class="card"><h4>driver.assigned</h4><p>Driver assigned to order</p></div>
+    </div>
+
+    <h3>Webhook Payload</h3>
+    <pre>{
+  "event": "order.created",
+  "data": {
+    "orderId": "abc-123",
+    "restaurantId": "rest-456",
+    "status": "pending",
+    "total": "45.99"
+  },
+  "timestamp": "2026-02-07T12:00:00.000Z"
+}</pre>
+
+    <h3>Signature Verification</h3>
+    <pre>// Node.js verification example
+const crypto = require('crypto');
+
+function verifySignature(payload, signature, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+  return `sha256=${expected}` === signature;
+}
+
+// In your webhook handler:
+app.post('/webhooks/cryptoeats', (req, res) => {
+  const signature = req.headers['x-cryptoeats-signature'];
+  const isValid = verifySignature(
+    JSON.stringify(req.body),
+    signature,
+    'whsec_your_webhook_secret'
+  );
+  if (!isValid) return res.status(401).send('Invalid signature');
+  // Process event...
+  res.status(200).send('OK');
+});</pre>
+  </div>
+
+  <!-- SDKS -->
+  <div class="section" id="sdks">
+    <h2>SDKs</h2>
+    <p>Use our client libraries to integrate CryptoEats into your application.</p>
+
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="active" onclick="switchTab(event, 'sdk-node')">Node.js</button>
+        <button onclick="switchTab(event, 'sdk-python')">Python</button>
+        <button onclick="switchTab(event, 'sdk-php')">PHP</button>
+      </div>
+
+      <div class="tab-content active" id="sdk-node">
+        <pre>// npm install @cryptoeats/sdk
+
+const CryptoEats = require('@cryptoeats/sdk');
+
+const client = new CryptoEats({
+  apiKey: 'ce_pk_your_public_key',
+  apiSecret: 'ce_sk_your_secret_key',
+  sandbox: true,
+});
+
+// List restaurants
+const restaurants = await client.restaurants.list({ featured: true });
+console.log(restaurants.data);
+
+// Get restaurant menu
+const menu = await client.restaurants.menu('restaurant-id');
+
+// Submit inbound order (from your POS/store)
+const order = await client.integrations.createInboundOrder({
+  externalOrderId: 'SHOP-12345',
+  source: 'shopify',
+  customerName: 'John Doe',
+  deliveryAddress: '123 Main St, Miami, FL 33101',
+  items: [
+    { name: 'Margherita Pizza', price: 14.99, quantity: 2 },
+    { name: 'Craft Beer', price: 8.99, quantity: 1, isAlcohol: true },
+  ],
+  subtotal: 38.97,
+  total: 41.99,
+});
+
+// Calculate tax
+const tax = await client.tax.calculate({ subtotal: 38.97, rate: 0.07 });
+
+// Mint NFT reward
+const nft = await client.nft.mint({ wallet: '0x...', type: 'milestone' });
+
+// Set up webhook listener
+client.webhooks.on('order.delivered', (event) => {
+  console.log('Order delivered:', event.data.orderId);
+});</pre>
+      </div>
+
+      <div class="tab-content" id="sdk-python">
+        <pre># pip install cryptoeats
+
+from cryptoeats import CryptoEats
+
+client = CryptoEats(
+    api_key='ce_pk_your_public_key',
+    api_secret='ce_sk_your_secret_key',
+    sandbox=True,
+)
+
+# List restaurants
+restaurants = client.restaurants.list(featured=True)
+print(restaurants['data'])
+
+# Submit inbound order
+order = client.integrations.create_inbound_order(
+    external_order_id='SHOP-12345',
+    source='shopify',
+    customer_name='John Doe',
+    delivery_address='123 Main St, Miami, FL 33101',
+    items=[
+        {'name': 'Margherita Pizza', 'price': 14.99, 'quantity': 2},
+        {'name': 'Craft Beer', 'price': 8.99, 'quantity': 1, 'is_alcohol': True},
+    ],
+    subtotal=38.97,
+    total=41.99,
+)
+
+# Calculate tax
+tax = client.tax.calculate(subtotal=38.97, rate=0.07)
+
+# Webhook verification
+from cryptoeats.webhooks import verify_signature
+
+is_valid = verify_signature(
+    payload=request.body,
+    signature=request.headers['X-CryptoEats-Signature'],
+    secret='whsec_your_secret'
+)</pre>
+      </div>
+
+      <div class="tab-content" id="sdk-php">
+        <pre>&lt;?php
+// composer require cryptoeats/sdk
+
+use CryptoEats\Client;
+
+$client = new Client([
+    'apiKey' => 'ce_pk_your_public_key',
+    'apiSecret' => 'ce_sk_your_secret_key',
+    'sandbox' => true,
+]);
+
+// List restaurants
+$restaurants = $client->restaurants->list(['featured' => true]);
+
+// Submit inbound order
+$order = $client->integrations->createInboundOrder([
+    'externalOrderId' => 'SHOP-12345',
+    'source' => 'woocommerce',
+    'customerName' => 'John Doe',
+    'deliveryAddress' => '123 Main St, Miami, FL 33101',
+    'items' => [
+        ['name' => 'Margherita Pizza', 'price' => 14.99, 'quantity' => 2],
+    ],
+    'subtotal' => 29.98,
+    'total' => 32.08,
+]);
+
+// Webhook verification
+$signature = $_SERVER['HTTP_X_CRYPTOEATS_SIGNATURE'];
+$payload = file_get_contents('php://input');
+$expected = 'sha256=' . hash_hmac('sha256', $payload, $webhookSecret);
+$isValid = hash_equals($expected, $signature);
+?&gt;</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- WIDGETS -->
+  <div class="section" id="widgets">
+    <h2>Embeddable Widget</h2>
+    <p>Add CryptoEats delivery to any website with a single script tag.</p>
+
+    <h3>Installation</h3>
+    <pre>&lt;!-- Add to your HTML --&gt;
+&lt;div class="cryptoeats-delivery"&gt;&lt;/div&gt;
+
+&lt;script src="BASE_URL_PLACEHOLDER/widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+  new CryptoEatsWidget({
+    apiKey: 'ce_pk_your_public_key',
+    container: '.cryptoeats-delivery',
+    // Optional: custom API base URL
+    // apiBase: 'https://your-custom-domain.com'
+  });
+&lt;/script&gt;</pre>
+
+    <h3>Live Preview</h3>
+    <div class="widget-demo">
+      <div class="cryptoeats-delivery"></div>
+    </div>
+  </div>
+
+  <!-- WHITE-LABEL -->
+  <div class="section" id="whitelabel">
+    <h2>White-Label</h2>
+    <p>Customize the entire CryptoEats experience with your own branding. Available on Pro and Enterprise tiers.</p>
+
+    <h3>Configuration</h3>
+    <pre>curl -X POST BASE_URL_PLACEHOLDER/api/developer/whitelabel \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "brandName": "MyDelivery",
+    "primaryColor": "#3B82F6",
+    "secondaryColor": "#111827",
+    "accentColor": "#10B981",
+    "logoUrl": "https://mydelivery.com/logo.png",
+    "customDomain": "delivery.myrestaurant.com",
+    "supportEmail": "support@mydelivery.com"
+  }'</pre>
+
+    <h3>Features</h3>
+    <div class="card-grid">
+      <div class="card"><h4>Custom Branding</h4><p>Your logo, colors, and typography across the entire delivery experience.</p></div>
+      <div class="card"><h4>Custom Domain</h4><p>Use your own domain for a seamless brand experience.</p></div>
+      <div class="card"><h4>Widget Theming</h4><p>Embeddable widgets automatically adapt to your brand colors.</p></div>
+      <div class="card"><h4>API Responses</h4><p>White-label metadata included in all API responses for branded UIs.</p></div>
+    </div>
+  </div>
+
+  <!-- INTEGRATIONS -->
+  <div class="section" id="integrations">
+    <h2>Bidirectional Integrations</h2>
+    <p>Connect CryptoEats with your existing tools and platforms.</p>
+
+    <div class="card-grid">
+      <div class="card">
+        <h4>Shopify</h4>
+        <p>Automatically route Shopify orders to CryptoEats for delivery. Accept crypto payments through your store.</p>
+      </div>
+      <div class="card">
+        <h4>WooCommerce</h4>
+        <p>WordPress plugin for seamless delivery integration. Sync products and orders bidirectionally.</p>
+      </div>
+      <div class="card">
+        <h4>Toast POS</h4>
+        <p>Restaurant POS integration for real-time menu sync, order routing, and inventory management.</p>
+      </div>
+      <div class="card">
+        <h4>Square</h4>
+        <p>Accept payments and manage delivery orders through Square's ecosystem.</p>
+      </div>
+      <div class="card">
+        <h4>DoorDash (Aggregation)</h4>
+        <p>Aggregate orders from DoorDash into CryptoEats for unified tracking and driver management.</p>
+      </div>
+      <div class="card">
+        <h4>Custom POS</h4>
+        <p>Use our inbound webhook endpoints to connect any POS or ordering system.</p>
+      </div>
+    </div>
+
+    <h3>Inbound Order Example (Shopify)</h3>
+    <pre>// When a Shopify order is placed, send it to CryptoEats for delivery
+POST /api/v1/integrations/orders/inbound
+{
+  "externalOrderId": "shopify-order-789",
+  "source": "shopify",
+  "customerName": "Jane Smith",
+  "customerEmail": "jane@example.com",
+  "deliveryAddress": "456 Ocean Dr, Miami Beach, FL 33139",
+  "items": [
+    { "name": "Artisan Bread", "price": 12.99, "quantity": 1 },
+    { "name": "Organic Wine", "price": 24.99, "quantity": 1, "isAlcohol": true }
+  ],
+  "subtotal": 37.98,
+  "deliveryFee": 4.99,
+  "total": 42.97
+}</pre>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section" id="pricing">
+    <h2>API Pricing Tiers</h2>
+    <p>Choose the plan that fits your needs. All plans include sandbox access for testing.</p>
+
+    <div class="card-grid" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+      <div class="card">
+        <h4>Free</h4>
+        <div class="price">$0/mo</div>
+        <p>1,000 requests/day</p>
+        <ul>
+          <li>Read-only API access</li>
+          <li>Restaurant & menu data</li>
+          <li>Tax calculations</li>
+          <li>Sandbox environment</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color: var(--primary);">
+        <h4>Starter</h4>
+        <div class="price">$99/mo</div>
+        <p>10,000 requests/day</p>
+        <ul>
+          <li>Read + Write access</li>
+          <li>Order management</li>
+          <li>Basic webhooks</li>
+          <li>Inbound integrations</li>
+          <li>Email support</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color: var(--accent);">
+        <h4>Pro</h4>
+        <div class="price">$499/mo</div>
+        <p>100,000 requests/day</p>
+        <ul>
+          <li>Full API access</li>
+          <li>Webhooks & widgets</li>
+          <li>NFT & blockchain APIs</li>
+          <li>Priority support</li>
+          <li>Custom integrations</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Enterprise</h4>
+        <div class="price">Custom</div>
+        <p>1,000,000+ requests/day</p>
+        <ul>
+          <li>Unlimited access</li>
+          <li>White-label branding</li>
+          <li>Dedicated support</li>
+          <li>Custom SLA</li>
+          <li>Admin API access</li>
+          <li>On-premise option</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <p>CryptoEats Developer Platform v1.0 — <a href="/api-docs">API Docs</a> | <a href="mailto:developers@cryptoeats.io">Contact</a></p>
+</div>
+
+<script>
+function switchTab(e, tabId) {
+  var container = e.target.closest('.tab-container');
+  container.querySelectorAll('.tabs button').forEach(function(b) { b.classList.remove('active'); });
+  container.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+  e.target.classList.add('active');
+  document.getElementById(tabId).classList.add('active');
+}
+
+document.querySelectorAll('.nav a[href^="#"]').forEach(function(link) {
+  link.addEventListener('click', function(e) {
+    document.querySelectorAll('.nav a').forEach(function(a) { a.classList.remove('active'); });
+    this.classList.add('active');
+  });
+});
+</script>
+
+</body>
+</html>
