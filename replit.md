@@ -33,6 +33,19 @@ CryptoEats is a full-featured food and alcohol delivery platform built with Expo
   - Earnings tracker with daily/weekly breakdown, instant cashout, 1099 tracking
   - Human-first dashboard with positive language, engagement tiers, no deactivation warnings
   - Support hub: wellness checks, education, appeals, insurance upload, contractor agreement
+- **2026-02-07**: Phase 4 — Open Platform ("The Delivery Layer")
+  - 9 new database tables: apiKeys, webhooks, webhookDeliveries, integrationPartners, whiteLabelConfigs, apiAuditLogs, inboundOrders
+  - API key system with 4 tiers: Free (1K/day), Starter (10K/day), Pro (100K/day), Enterprise (1M/day)
+  - Permission-based access control (read, write, webhook, widget, admin, whitelabel)
+  - Webhook engine with HMAC-SHA256 signatures, exponential backoff retry (3 attempts), 12 event types
+  - 30+ Platform API v1 endpoints: /api/v1/restaurants, /api/v1/orders, /api/v1/drivers, /api/v1/tax, /api/v1/nft, /api/v1/integrations
+  - Bidirectional integrations: inbound order reception from Shopify/WooCommerce/Toast POS
+  - Developer portal at /developers with docs, SDK examples (Node/Python/PHP), pricing, playground
+  - Swagger UI at /api-docs for interactive API exploration
+  - Embeddable widget.js for adding CryptoEats delivery to any website
+  - White-label configuration system for Pro/Enterprise tiers (custom branding, colors, logos, domains)
+  - API audit logging with method, path, status, response time, IP, user agent
+  - Developer management endpoints: /api/developer/keys, /api/developer/webhooks, /api/developer/usage
 
 ## User Preferences
 
@@ -69,6 +82,13 @@ Preferred communication style: Simple, everyday language.
 - **Storage Layer**: `server/storage.ts` — Data access layer using Drizzle ORM queries with functions for users, customers, drivers, restaurants, orders, reviews, tax calculations, compliance logs, etc.
 - **Database Seeding**: `server/seed.ts` seeds initial restaurant and menu data on first run.
 - **Admin Dashboard**: Server-rendered HTML template at `server/templates/admin-dashboard.html` for compliance and management.
+- **Platform API (Open Platform)**: `server/platform-routes.ts` — Versioned REST API (v1) with API key authentication for external developers.
+  - API key middleware validates X-API-Key/X-API-Secret headers, enforces rate limits per tier, checks permissions
+  - Platform storage layer: `server/platform-storage.ts` — CRUD for API keys, webhooks, inbound orders, audit logs, white-label configs
+  - Webhook engine: `server/webhook-engine.ts` — HMAC-SHA256 signed event delivery with exponential backoff retry
+  - Swagger/OpenAPI: `server/swagger.ts` — Auto-generated API docs served at /api-docs
+  - Developer Portal: `server/templates/developer-portal.html` — Full documentation portal at /developers
+  - Widget: `server/templates/widget.js` — Embeddable restaurant listing widget
 
 ### Database (PostgreSQL + Drizzle ORM)
 
@@ -92,6 +112,13 @@ Preferred communication style: Simple, everyday language.
   - `referrals` — Referral program tracking
   - `digitalAgreements` — SB 676 compliance agreements
   - `bundles` — Dynamic bundle deals
+  - `apiKeys` — Developer API keys with tier, permissions, rate limits, usage tracking
+  - `webhooks` — Webhook subscriptions with URL, events, secret, active status
+  - `webhookDeliveries` — Webhook delivery log with status, attempts, response
+  - `integrationPartners` — External integration partner registrations (Shopify, Toast, WooCommerce)
+  - `whiteLabelConfigs` — White-label branding configs (colors, logos, domains) for Pro/Enterprise
+  - `apiAuditLogs` — API request audit trail (method, path, status, response time, IP)
+  - `inboundOrders` — Orders received from external systems via platform API
 - **Enums**: PostgreSQL enums for user roles, order status, payment status, tax status, driver status, engagement tiers, etc.
 - **Validation**: Zod schemas generated from Drizzle schema using `drizzle-zod` for shared validation between client and server.
 - **Push command**: Use `npm run db:push` (drizzle-kit push) to sync schema to database.
