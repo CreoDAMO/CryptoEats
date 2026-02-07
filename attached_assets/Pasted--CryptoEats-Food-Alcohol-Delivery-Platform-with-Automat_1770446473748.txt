@@ -1,0 +1,80 @@
+# CryptoEats - Food & Alcohol Delivery Platform with Automated Tax Engine, Human-First Driver Policy, Legal Compliance, and Blockchain Integration (Phase 1 & 2)
+
+Build a complete, full-featured three-part food and alcohol delivery system consisting of a Customer App, Driver App, and Backend API. Start with Phase 1 (core delivery features) and layer in Phase 2 (smart contract integration for NFT rewards and escrow payments) to push beyond MVP. Implement all specified features, including advanced AI, payment integrations, compliance tools, analytics, automated tax collection and remittance engine tailored for Florida (Miami-Dade) operations in 2026, "Human-First Performance" driver policy, legal/regulatory compliance (e.g., SB 676, insurance verification, agreements, transparent pricing, review responses), and blockchain integration using the provided Base network contracts:
+
+- **MarketplaceNFT Contract**: Address 0x21Fb1fFaefA40c042276BB4Bcf8B826A647aE91E (for minting and managing NFTs as rewards/achievements)
+- **MarketplaceEscrow Contract**: Address 0x7e1868430e86304Aac93a8964c4a1D5C12A76ED5 (for secure escrow of payments, supporting tokens and NFTs)
+
+Use ethers.js for contract interactions, WalletConnect for wallet connections in apps, and Base RPC (e.g., https://mainnet.base.org) for blockchain connectivity. Ensure escrow locks payments until delivery confirmation, and NFTs are minted for milestones (e.g., deliveries completed). Prepare for Phase 3 (Coinbase Onramp) by including wallet setup hooks.
+
+## Core Architecture
+
+**Tech Stack:**
+- Backend: Node.js with Express
+- Database: PostgreSQL with Prisma ORM
+- Real-time: Socket.io for live tracking and chat
+- Customer App: React with React Native (mobile-ready)
+- Driver App: React Native
+- Authentication: JWT tokens
+- File Storage: Cloud storage (e.g., AWS S3 or Firebase) for ID scans, signatures, receipts, support documents, insurance certificates, and agreements
+- Additional: Redis for caching and session management, BullMQ for background jobs (e.g., order assignment, notifications, monthly tax aggregation, wellness checks, insurance expiration checks, NFT minting)
+- Tax Integration: Use TaxJar API for automatic tax rate lookups and calculations (fallback to custom jurisdiction table for Florida-specific rules); integrate with Florida DOR e-Services for electronic filing via XML/EDI if available, or simulate with webhooks/alerts for manual review
+- Driver Policy Integration: Implement "Human-First Performance" logic in backend and driver app, with automated check-ins, support tiers, and no performance-based deactivations
+- Legal Integration: Build in SB 676 compliance (restaurant-customer messaging, review responses, digital agreements, transparent pricing); insurance verification with auto-holds; compliance dashboard for tracking licenses, taxes, and agreements
+- Blockchain Integration: ethers.js for Base contracts; WalletConnect for user wallets; support USDC (or ERC20) for escrow deposits; mint NFTs via MarketplaceNFT on milestones
+
+## Phase 1: Core Features (Delivery MVP)
+
+Implement as base, then extend with Phase 2.
+
+### Customer App Features
+- Integrated ID scanning and age verification for alcohol
+- AI sommelier recommendations
+- Smart ordering (bundles, substitutions, deals)
+- Real-time tracking
+- In-app chat (extend to restaurant for SB 676)
+- Payment options: Stripe (cards/Cash App), Coinbase Commerce (crypto)
+- User features: Accounts, history, favorites, ratings/reviews (with restaurant responses)
+- Transparent pricing/receipts (SB 676)
+
+### Driver App Features
+- Order management
+- Age verification at delivery
+- Navigation & tracking
+- Communication
+- Earnings & payments (instant cashout via Stripe Connect)
+- Driver features: Profile, history, metrics (supportive display)
+- Insurance upload/verification; digital contractor agreement signing
+
+### Backend API & Admin
+- API endpoints for auth, orders, payments, recommendations, etc.
+- Real-time sockets
+- Admin dashboard for management, reports, tax, driver policy, compliance
+- Database schema as defined
+
+## Phase 2: Blockchain Integration (Beyond MVP)
+- Wallet Connection: Use WalletConnect to connect user wallets (e.g., Coinbase Wallet) for crypto interactions
+- Escrow Payments: On order placement, deposit payment into MarketplaceEscrow (call deposit function with orderId, seller (restaurant), amount, timeout, isNFT=false for fiat/crypto orders); release on delivery confirmation; dispute/refund if issues
+- NFT Rewards: On milestones (e.g., 10 deliveries for driver, 10 orders for customer), call mintAndTransfer on MarketplaceNFT (via escrow if needed) to mint achievement NFTs with custom URI (e.g., IPFS-hosted metadata); track royalties
+- Marketplace Tab: In-app view for trading NFTs (list/buy via escrow); display user-owned NFTs in profiles
+- Crypto Enhancements: Support gasless USDC transfers on Base; lock prices for volatility
+- Integration Logic: Backend proxies contract calls (sign transactions via admin wallet or user-signed); events listened via websockets (e.g., Deposited, Released) for updates
+
+## Key Integration Requirements (Add to Phase 1)
+- Blockchain: ethers.js, WalletConnect; Base RPC; USDC contract (0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913 on Base)
+- E-Signature: DocuSign API or pdf-lib for agreements
+- Other: As in Phase 1
+
+## Security & Compliance
+- As in Phase 1, plus: Secure wallet interactions (no private keys on server); audit contract calls; comply with marketplace provider rules (collect tax on fees)
+
+## Testing Requirements
+- As in Phase 1, plus: Blockchain tests (mock contracts for minting/escrow); end-to-end with wallet simulation
+
+## Deployment
+- Replit setup: Environment variables (add BASE_RPC_URL, WALLET_CONNECT_PROJECT_ID, NFT_CONTRACT_ADDRESS=0x21Fb1fFaefA40c042276BB4Bcf8B826A647aE91E, ESCROW_CONTRACT_ADDRESS=0x7e1868430e86304Aac93a8964c4a1D5C12A76ED5)
+- package.json: Add "ethers": "^6.0.0", "walletconnect": "^2.0.0"
+
+---
+
+Generate full code for Phases 1 & 2, including setup instructions for Replit (environment variables, package installations via package.json). Ensure all features are implemented with basic security best practices. Provide sample data and test scripts for an end-to-end alcohol order flow, including age verification, AI recommendations, crypto payment via escrow, tracking, delivery completion (release escrow), tax calculation/logging, simulated monthly remittance, driver activity drop triggering wellness check, digital agreement signing, insurance verification/expiry hold, and NFT minting on milestone.

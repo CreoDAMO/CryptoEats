@@ -9,6 +9,10 @@ import { seedDatabase } from "./seed";
 import {
   registerSchema, loginSchema, createOrderSchema, rateOrderSchema,
 } from "../shared/schema";
+import {
+  getUSDCBalance, getBaseBalance, prepareEscrowDeposit, verifyTransaction,
+  prepareNFTMint, BASE_CHAIN_ID, MARKETPLACE_NFT_ADDRESS,
+} from "./blockchain";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
 
@@ -616,6 +620,296 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(message);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
+    }
+  });
+
+  // =================== BLOCKCHAIN: WALLETS ===================
+  app.post("/api/wallet/connect", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { walletAddress, walletType, chainId } = req.body;
+      if (!walletAddress) return res.status(400).json({ message: "walletAddress is required" });
+      const existing = await storage.getWalletByAddress(walletAddress);
+      if (existing) {
+        return res.json(existing);
+      }
+      const wallet = await storage.createWallet({
+        userId: req.user!.id,
+        walletAddress,
+        walletType: walletType || "coinbase",
+        chainId: chainId || 8453,
+      });
+      res.status(201).json(wallet);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to connect wallet" });
+    }
+  });
+
+  app.get("/api/wallet/balance/:address", async (req: Request, res: Response) => {
+    try {
+      const address = getParam(req.params.address);
+      const [usdc, eth] = await Promise.all([
+        getUSDCBalance(address),
+        getBaseBalance(address),
+      ]);
+      res.json({ usdc, eth, chainId: BASE_CHAIN_ID });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message || "Failed to get balance" });
+    }
+  });
+
+  app.get("/api/wallet/me", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const wallets = await storage.getWalletsByUserId(req.user!.id);
+      res.json(wallets);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== BLOCKCHAIN: ESCROW ===================
+  app.post("/api/escrow/prepare", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId, sellerAddress, amount, timeout } = req.body;
+      if (!orderId || !sellerAddress || !amount) {
+        return res.status(400).json({ message: "orderId, sellerAddress, and amount are required" });
+      }
+      const txData = prepareEscrowDeposit(orderId, sellerAddress, amount.toString(), timeout || 86400);
+      res.json(txData);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to prepare escrow" });
+    }
+  });
+
+  app.post("/api/escrow/confirm", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId, txHash, depositorAddress, sellerAddress, amount } = req.body;
+      if (!orderId || !txHash || !depositorAddress || !sellerAddress || !amount) {
+        return res.status(400).json({ message: "orderId, txHash, depositorAddress, sellerAddress, and amount are required" });
+      }
+      const verification = await verifyTransaction(txHash);
+      const escrow = await storage.createEscrowTransaction({
+        orderId,
+        depositorAddress,
+        sellerAddress,
+        amount: amount.toString(),
+        txHash,
+        status: verification.success ? "deposited" : "deposited",
+        chainId: BASE_CHAIN_ID,
+      });
+      res.status(201).json(escrow);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to confirm escrow" });
+    }
+  });
+
+  app.post("/api/escrow/release", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { orderId } = req.body;
+      if (!orderId) return res.status(400).json({ message: "orderId is required" });
+      const escrow = await storage.getEscrowByOrderId(orderId);
+      if (!escrow) return res.status(404).json({ message: "Escrow not found for this order" });
+      const updated = await storage.updateEscrowStatus(escrow.id, "released", { releasedAt: new Date() });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to release escrow" });
+    }
+  });
+
+  app.get("/api/escrow/order/:orderId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const escrow = await storage.getEscrowByOrderId(getParam(req.params.orderId));
+      res.json(escrow || null);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/escrow/history", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const transactions = await storage.getEscrowTransactions(req.user!.id);
+      res.json(transactions);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== BLOCKCHAIN: NFT REWARDS ===================
+  app.get("/api/nft/my", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const nfts = await storage.getNftsByUserId(req.user!.id);
+      res.json(nfts);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/nft/milestones", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const customerMilestones = [
+        { count: 10, name: "Foodie Explorer", type: "customer" },
+        { count: 25, name: "Crypto Connoisseur", type: "customer" },
+        { count: 50, name: "Diamond Diner", type: "customer" },
+        { count: 100, name: "CryptoEats Legend", type: "customer" },
+      ];
+      const driverMilestones = [
+        { count: 10, name: "Rising Star", type: "driver" },
+        { count: 50, name: "Road Warrior", type: "driver" },
+        { count: 100, name: "Delivery Hero", type: "driver" },
+        { count: 500, name: "Legendary Driver", type: "driver" },
+      ];
+
+      let orderCount = 0;
+      let deliveryCount = 0;
+
+      const customer = await storage.getCustomerByUserId(req.user!.id);
+      if (customer) {
+        const customerOrders = await storage.getOrdersByCustomerId(customer.id);
+        orderCount = customerOrders.filter(o => o.status === "delivered").length;
+      }
+
+      const driver = await storage.getDriverByUserId(req.user!.id);
+      if (driver) {
+        deliveryCount = driver.totalDeliveries || 0;
+      }
+
+      const existingNfts = await storage.getNftsByUserId(req.user!.id);
+      const earnedNames = existingNfts.map(n => n.name);
+
+      const allMilestones = [...customerMilestones, ...driverMilestones].map(m => ({
+        ...m,
+        earned: earnedNames.includes(m.name),
+        progress: m.type === "customer"
+          ? Math.min(orderCount / m.count, 1)
+          : Math.min(deliveryCount / m.count, 1),
+      }));
+
+      res.json({
+        milestones: allMilestones,
+        progress: { orders: orderCount, deliveries: deliveryCount },
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/nft/mint", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { nftRewardId } = req.body;
+      if (!nftRewardId) return res.status(400).json({ message: "nftRewardId is required" });
+      const nft = await storage.getNftsByUserId(req.user!.id);
+      const reward = nft.find(n => n.id === nftRewardId);
+      if (!reward) return res.status(404).json({ message: "NFT reward not found" });
+
+      const userWallets = await storage.getWalletsByUserId(req.user!.id);
+      if (userWallets.length === 0) return res.status(400).json({ message: "No wallet connected" });
+
+      const walletAddress = userWallets[0].walletAddress;
+      const metadataUri = reward.metadataUri || `ipfs://cryptoeats/${reward.milestoneType}/${reward.name}`;
+      const txData = prepareNFTMint(walletAddress, metadataUri);
+      res.json(txData);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to prepare mint" });
+    }
+  });
+
+  app.post("/api/nft/confirm-mint", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { nftRewardId, txHash, tokenId } = req.body;
+      if (!nftRewardId || !txHash) return res.status(400).json({ message: "nftRewardId and txHash are required" });
+
+      const verification = await verifyTransaction(txHash);
+      const updated = await storage.updateNftStatus(nftRewardId, "minted", {
+        txHash,
+        tokenId: tokenId || null,
+        contractAddress: MARKETPLACE_NFT_ADDRESS,
+        mintedAt: new Date(),
+        chainId: BASE_CHAIN_ID,
+      });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to confirm mint" });
+    }
+  });
+
+  // =================== BLOCKCHAIN: MARKETPLACE ===================
+  app.get("/api/marketplace/listings", async (_req: Request, res: Response) => {
+    try {
+      const listings = await storage.getActiveNftListings();
+      const listingsWithNfts = await Promise.all(
+        listings.map(async (listing) => {
+          const nfts = await storage.getNftsByUserId(listing.sellerUserId);
+          const nft = nfts.find(n => n.id === listing.nftId);
+          return { ...listing, nft: nft || null };
+        })
+      );
+      res.json(listingsWithNfts);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/marketplace/list", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { nftId, price, currency } = req.body;
+      if (!nftId || !price) return res.status(400).json({ message: "nftId and price are required" });
+
+      const userNfts = await storage.getNftsByUserId(req.user!.id);
+      const nft = userNfts.find(n => n.id === nftId);
+      if (!nft) return res.status(404).json({ message: "NFT not found or not owned by you" });
+      if (nft.status !== "minted") return res.status(400).json({ message: "NFT must be minted before listing" });
+
+      const listing = await storage.createNftListing({
+        nftId,
+        sellerUserId: req.user!.id,
+        price: price.toString(),
+        currency: currency || "USDC",
+        status: "active",
+      });
+
+      await storage.updateNftStatus(nftId, "listed", { listedPrice: price.toString() });
+      res.status(201).json(listing);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to create listing" });
+    }
+  });
+
+  app.post("/api/marketplace/buy", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { listingId, txHash } = req.body;
+      if (!listingId || !txHash) return res.status(400).json({ message: "listingId and txHash are required" });
+
+      const listing = await storage.getNftListingById(listingId);
+      if (!listing) return res.status(404).json({ message: "Listing not found" });
+      if (listing.status !== "active") return res.status(400).json({ message: "Listing is not active" });
+
+      const verification = await verifyTransaction(txHash);
+
+      const updated = await storage.updateNftListing(listingId, {
+        buyerUserId: req.user!.id,
+        status: "sold",
+        txHash,
+        soldAt: new Date(),
+      });
+
+      await storage.updateNftStatus(listing.nftId, "sold");
+      res.json(updated);
+    } catch (err: any) {
+      res.status(400).json({ message: err.message || "Failed to buy NFT" });
+    }
+  });
+
+  app.delete("/api/marketplace/listing/:id", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const listingId = getParam(req.params.id);
+      const listing = await storage.getNftListingById(listingId);
+      if (!listing) return res.status(404).json({ message: "Listing not found" });
+      if (listing.sellerUserId !== req.user!.id) return res.status(403).json({ message: "Not authorized to cancel this listing" });
+
+      await storage.updateNftListing(listingId, { status: "cancelled" });
+      await storage.updateNftStatus(listing.nftId, "minted", { listedPrice: null });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
     }
   });
 

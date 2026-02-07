@@ -334,6 +334,72 @@ export const digitalAgreements = pgTable("digital_agreements", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// =================== BLOCKCHAIN: WALLETS ===================
+export const escrowStatusEnum = pgEnum("escrow_status", ["deposited", "released", "disputed", "refunded", "expired"]);
+export const nftStatusEnum = pgEnum("nft_status", ["pending", "minted", "transferred", "listed", "sold"]);
+
+export const wallets = pgTable("wallets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  walletAddress: text("wallet_address").notNull(),
+  walletType: text("wallet_type").default("coinbase"),
+  chainId: integer("chain_id").default(8453),
+  isDefault: boolean("is_default").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// =================== BLOCKCHAIN: ESCROW TRANSACTIONS ===================
+export const escrowTransactions = pgTable("escrow_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  orderId: varchar("order_id").notNull().references(() => orders.id),
+  depositorAddress: text("depositor_address").notNull(),
+  sellerAddress: text("seller_address").notNull(),
+  amount: decimal("amount", { precision: 18, scale: 8 }).notNull(),
+  tokenAddress: text("token_address"),
+  txHash: text("tx_hash"),
+  escrowId: text("escrow_id"),
+  status: escrowStatusEnum("status").default("deposited"),
+  depositedAt: timestamp("deposited_at").defaultNow().notNull(),
+  releasedAt: timestamp("released_at"),
+  disputedAt: timestamp("disputed_at"),
+  refundedAt: timestamp("refunded_at"),
+  chainId: integer("chain_id").default(8453),
+});
+
+// =================== BLOCKCHAIN: NFT REWARDS ===================
+export const nftRewards = pgTable("nft_rewards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  tokenId: text("token_id"),
+  contractAddress: text("contract_address"),
+  name: text("name").notNull(),
+  description: text("description"),
+  imageUrl: text("image_url"),
+  metadataUri: text("metadata_uri"),
+  milestoneType: text("milestone_type").notNull(),
+  milestoneValue: integer("milestone_value"),
+  txHash: text("tx_hash"),
+  status: nftStatusEnum("status").default("pending"),
+  mintedAt: timestamp("minted_at"),
+  listedPrice: decimal("listed_price", { precision: 18, scale: 8 }),
+  chainId: integer("chain_id").default(8453),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// =================== BLOCKCHAIN: NFT MARKETPLACE LISTINGS ===================
+export const nftListings = pgTable("nft_listings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  nftId: varchar("nft_id").notNull().references(() => nftRewards.id),
+  sellerUserId: varchar("seller_user_id").notNull().references(() => users.id),
+  buyerUserId: varchar("buyer_user_id").references(() => users.id),
+  price: decimal("price", { precision: 18, scale: 8 }).notNull(),
+  currency: text("currency").default("USDC"),
+  status: text("listing_status").default("active"),
+  txHash: text("tx_hash"),
+  listedAt: timestamp("listed_at").defaultNow().notNull(),
+  soldAt: timestamp("sold_at"),
+});
+
 // =================== ZOD SCHEMAS ===================
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -392,3 +458,7 @@ export type TaxTransaction = typeof taxTransactions.$inferSelect;
 export type DriverStatus = typeof driverStatusTable.$inferSelect;
 export type DriverSupportLogEntry = typeof driverSupportLog.$inferSelect;
 export type ComplianceLog = typeof complianceLogs.$inferSelect;
+export type Wallet = typeof wallets.$inferSelect;
+export type EscrowTransaction = typeof escrowTransactions.$inferSelect;
+export type NftReward = typeof nftRewards.$inferSelect;
+export type NftListing = typeof nftListings.$inferSelect;

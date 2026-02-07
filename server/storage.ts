@@ -5,9 +5,11 @@ import {
   idVerifications, taxJurisdictions, taxTransactions, taxRemittances,
   driverStatusTable, driverSupportLog, driverEarnings, complianceLogs,
   deliveryWindows, referrals, digitalAgreements, bundles,
+  wallets, escrowTransactions, nftRewards, nftListings,
   type User, type Customer, type Driver, type Restaurant, type MenuItem,
   type Order, type Review, type TaxJurisdiction, type TaxTransaction,
   type DriverStatus, type DriverSupportLogEntry, type ComplianceLog,
+  type Wallet, type EscrowTransaction, type NftReward, type NftListing,
 } from "../shared/schema";
 
 export const storage = {
@@ -356,5 +358,144 @@ export const storage = {
 
   async getAllDriverStatuses(): Promise<DriverStatus[]> {
     return db.select().from(driverStatusTable).orderBy(desc(driverStatusTable.createdAt));
+  },
+
+  async createWallet(data: { userId: string; walletAddress: string; walletType?: string; chainId?: number }): Promise<Wallet> {
+    const [wallet] = await db.insert(wallets).values({
+      userId: data.userId,
+      walletAddress: data.walletAddress,
+      walletType: data.walletType || "coinbase",
+      chainId: data.chainId || 8453,
+    }).returning();
+    return wallet;
+  },
+
+  async getWalletsByUserId(userId: string): Promise<Wallet[]> {
+    return db.select().from(wallets).where(eq(wallets.userId, userId));
+  },
+
+  async getWalletByAddress(address: string): Promise<Wallet | undefined> {
+    const [wallet] = await db.select().from(wallets).where(eq(wallets.walletAddress, address)).limit(1);
+    return wallet;
+  },
+
+  async createEscrowTransaction(data: any): Promise<EscrowTransaction> {
+    const [tx] = await db.insert(escrowTransactions).values(data).returning();
+    return tx;
+  },
+
+  async getEscrowByOrderId(orderId: string): Promise<EscrowTransaction | undefined> {
+    const [escrow] = await db.select().from(escrowTransactions).where(eq(escrowTransactions.orderId, orderId)).limit(1);
+    return escrow;
+  },
+
+  async updateEscrowStatus(id: string, status: string, extra?: Record<string, any>): Promise<EscrowTransaction | undefined> {
+    const updateData: any = { status };
+    if (extra) Object.assign(updateData, extra);
+    const [escrow] = await db.update(escrowTransactions).set(updateData).where(eq(escrowTransactions.id, id)).returning();
+    return escrow;
+  },
+
+  async getEscrowTransactions(userId: string): Promise<EscrowTransaction[]> {
+    const userWallets = await storage.getWalletsByUserId(userId);
+    if (userWallets.length === 0) return [];
+    const addresses = userWallets.map(w => w.walletAddress);
+    const results: EscrowTransaction[] = [];
+    for (const addr of addresses) {
+      const depositorTxs = await db.select().from(escrowTransactions).where(eq(escrowTransactions.depositorAddress, addr));
+      const sellerTxs = await db.select().from(escrowTransactions).where(eq(escrowTransactions.sellerAddress, addr));
+      results.push(...depositorTxs, ...sellerTxs);
+    }
+    const unique = Array.from(new Map(results.map(r => [r.id, r])).values());
+    return unique.sort((a, b) => new Date(b.depositedAt).getTime() - new Date(a.depositedAt).getTime());
+  },
+
+  async createNftReward(data: any): Promise<NftReward> {
+    const [nft] = await db.insert(nftRewards).values(data).returning();
+    return nft;
+  },
+
+  async getNftsByUserId(userId: string): Promise<NftReward[]> {
+    return db.select().from(nftRewards).where(eq(nftRewards.userId, userId)).orderBy(desc(nftRewards.createdAt));
+  },
+
+  async updateNftStatus(id: string, status: string, extra?: Record<string, any>): Promise<NftReward | undefined> {
+    const updateData: any = { status };
+    if (extra) Object.assign(updateData, extra);
+    const [nft] = await db.update(nftRewards).set(updateData).where(eq(nftRewards.id, id)).returning();
+    return nft;
+  },
+
+  async createNftListing(data: any): Promise<NftListing> {
+    const [listing] = await db.insert(nftListings).values(data).returning();
+    return listing;
+  },
+
+  async getActiveNftListings(): Promise<NftListing[]> {
+    return db.select().from(nftListings).where(eq(nftListings.status, "active")).orderBy(desc(nftListings.listedAt));
+  },
+
+  async getNftListingById(id: string): Promise<NftListing | undefined> {
+    const [listing] = await db.select().from(nftListings).where(eq(nftListings.id, id)).limit(1);
+    return listing;
+  },
+
+  async updateNftListing(id: string, data: any): Promise<NftListing | undefined> {
+    const [listing] = await db.update(nftListings).set(data).where(eq(nftListings.id, id)).returning();
+    return listing;
+  },
+
+  async checkAndMintMilestoneNFT(userId: string, type: "customer" | "driver"): Promise<NftReward | null> {
+    const customerMilestones = [
+      { count: 10, name: "Foodie Explorer", description: "Completed 10 orders on CryptoEats" },
+      { count: 25, name: "Crypto Connoisseur", description: "Completed 25 orders on CryptoEats" },
+      { count: 50, name: "Diamond Diner", description: "Completed 50 orders on CryptoEats" },
+      { count: 100, name: "CryptoEats Legend", description: "Completed 100 orders on CryptoEats" },
+    ];
+
+    const driverMilestones = [
+      { count: 10, name: "Rising Star", description: "Completed 10 deliveries on CryptoEats" },
+      { count: 50, name: "Road Warrior", description: "Completed 50 deliveries on CryptoEats" },
+      { count: 100, name: "Delivery Hero", description: "Completed 100 deliveries on CryptoEats" },
+      { count: 500, name: "Legendary Driver", description: "Completed 500 deliveries on CryptoEats" },
+    ];
+
+    try {
+      let currentCount = 0;
+      const milestones = type === "customer" ? customerMilestones : driverMilestones;
+
+      if (type === "customer") {
+        const customer = await storage.getCustomerByUserId(userId);
+        if (!customer) return null;
+        const customerOrders = await storage.getOrdersByCustomerId(customer.id);
+        currentCount = customerOrders.filter(o => o.status === "delivered").length;
+      } else {
+        const driver = await storage.getDriverByUserId(userId);
+        if (!driver) return null;
+        currentCount = driver.totalDeliveries || 0;
+      }
+
+      const existingNfts = await storage.getNftsByUserId(userId);
+      const existingMilestoneNames = existingNfts.map(n => n.name);
+
+      for (const milestone of milestones) {
+        if (currentCount >= milestone.count && !existingMilestoneNames.includes(milestone.name)) {
+          const nft = await storage.createNftReward({
+            userId,
+            name: milestone.name,
+            description: milestone.description,
+            milestoneType: type,
+            milestoneValue: milestone.count,
+            status: "pending",
+          });
+          return nft;
+        }
+      }
+
+      return null;
+    } catch (error: any) {
+      console.error("Error checking milestone NFT:", error.message);
+      return null;
+    }
   },
 };
