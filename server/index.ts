@@ -230,6 +230,11 @@ function setupErrorHandler(app: express.Application) {
   setupBodyParsing(app);
   setupRequestLogging(app);
 
+  app.get('/admin', (req, res) => {
+    const adminPath = path.resolve(process.cwd(), 'server', 'templates', 'admin-dashboard.html');
+    res.sendFile(adminPath);
+  });
+
   configureExpoAndLanding(app);
 
   const server = await registerRoutes(app);
