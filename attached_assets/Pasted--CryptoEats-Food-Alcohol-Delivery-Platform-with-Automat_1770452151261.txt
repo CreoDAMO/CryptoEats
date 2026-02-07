@@ -1,0 +1,58 @@
+# CryptoEats - Food & Alcohol Delivery Platform with Automated Tax Engine, Human-First Driver Policy, Legal Compliance, Blockchain Integration (Phases 1-3), and Open API Platform (Phase 4)
+
+Build a complete, full-featured three-part food and alcohol delivery system consisting of a Customer App, Driver App, and Backend API. Implement Phases 1 (core delivery), 2 (smart contracts for NFT and escrow), 3 (Coinbase Onramp for fiat-to-crypto), and now Phase 4 (open platform strategy as "The Delivery Layer") to create infrastructure-level product. Make the platform bidirectional: Provide a comprehensive REST API, webhooks, SDKs, embeddable widgets, and white-label options for others to integrate into CryptoEats (e.g., any business/developer can use the driver network, payments, NFTs, escrow, tax automation). Additionally, allow inbound integrations from other APIs (e.g., enable third-party services like external POS systems, inventory APIs, or competitor delivery networks to plug into CryptoEats for aggregated orders, unified tracking, or shared rewards). Include all previous features, with bidirectional API support for ecosystems like Shopify, Toast POS, or even competitors (e.g., DoorDash API aggregation).
+
+For Phase 4: Build a developer portal (simulated in code as an admin sub-section), REST API endpoints for all core functions, webhooks for events, SDKs (Node.js/Python/PHP examples in docs), embeddable widgets (JS script for websites), white-label rebranding (configurable themes/domains), and bidirectional hooks (e.g., inbound webhooks for receiving orders from external systems, API aggregation for routing to third-party drivers if needed). Ensure security with tiered API keys, rate limiting, and SLAs.
+
+## Core Architecture
+
+**Tech Stack:**
+- Backend: Node.js with Express (add Swagger for API docs)
+- Database: PostgreSQL with Prisma ORM
+- Real-time: Socket.io for live tracking and chat
+- Customer App: React Native with Expo
+- Driver App: React Native with Expo
+- Authentication: JWT tokens (extend for API keys)
+- File Storage: AWS S3 or Firebase
+- Additional: Redis, BullMQ, ethers.js, WalletConnect, Expo Notifications, Swagger-jsdoc for API docs
+- Tax: TaxJar API, Florida DOR integration
+- Legal: DocuSign/pdf-lib for agreements
+- Blockchain: Base RPC, USDC, NFT/Escrow contracts
+- Onramp: Coinbase Onramp SDK
+- Phase 4: Add Express rate-limit for APIs, webhook-signature verification (e.g., stripe-like), SDK generation tools (optional), inbound webhook endpoints
+
+## Phases 1-3: As Defined
+- Phase 1: Core delivery, payments, AI, tax, policy, compliance
+- Phase 2: WalletConnect, escrow deposits/releases, NFT minting/trading
+- Phase 3: Embedded wallets, Onramp UI (FundModal), gasless Paymaster, push notifications
+
+## Phase 4: Open Platform (Bidirectional API Hub)
+- Developer Portal: Simulated route (/developers) with docs, API playground (Swagger UI), SDK downloads, sandbox keys
+- REST API: Full CRUD for orders, users, payments, NFTs, etc.; bidirectional (e.g., POST /integrations/orders/inbound for receiving external orders)
+- Webhooks: Outbound for events (order.created, delivery.completed); inbound for third-party updates (e.g., inventory.sync from POS)
+- SDKs: Generate client libs (e.g., Node.js: npm @cryptoeats/sdk with methods like client.orders.create())
+- Widgets: JS script for embeddable delivery UI (e.g., <div class="cryptoeats-delivery"> loads iframe/widget)
+- White-Label: Configurable themes, custom domains (e.g., via middleware); bidirectional (allow white-label partners to push their APIs into core)
+- Bidirectional Integrations: Pre-built for Shopify/WooCommerce/Toast (outbound); inbound endpoints for aggregating from DoorDash/UberEats APIs; shared NFT ecosystem across integrations
+- Rate Limiting/Tiers: Free (limited), Starter ($99/mo), Pro ($499/mo), Enterprise (custom); enforce via middleware
+- Security: Public/secret keys, webhook signing, OAuth for inbound
+
+## Key Integration Requirements
+- API Docs: Swagger at /api-docs
+- SDK: Abstract API calls (e.g., client.nft.mint({wallet, type}))
+- Bidirectional: Inbound webhooks (e.g., /webhooks/external/order); aggregate external APIs (use tools like Axios for pulling from third-party)
+- Other: As in Phases 1-3
+
+## Security & Compliance
+- As previous, plus: API key rotation, audit logs for integrations, bidirectional compliance (e.g., validate inbound data for tax/SB 676)
+
+## Testing Requirements
+- As previous, plus: API tests (Postman-like scripts), webhook simulations, bidirectional flows (e.g., mock external POS push)
+
+## Deployment
+- Replit: Add env vars (add API_PLAYGROUND_ENABLED=true, WEBHOOK_SECRET=your_secret)
+- package.json: Add "swagger-jsdoc": "^6.0.0", "express-rate-limit": "^7.0.0", "swagger-ui-express": "^5.0.0"
+
+---
+
+Generate full code for Phases 1-4, including setup instructions for Replit (environment variables, package installations via package.json). Ensure all features are implemented with basic security best practices. Provide sample data and test scripts for an end-to-end alcohol order flow, including onramp crypto purchase, age verification, AI recommendations, escrow crypto payment, tracking, delivery completion (escrow release), tax calculation/logging, simulated monthly remittance, driver activity drop triggering wellness check, digital agreement signing, insurance verification/expiry hold, NFT minting on milestone, and bidirectional API integration (e.g., simulate inbound order from external POS and outbound webhook).

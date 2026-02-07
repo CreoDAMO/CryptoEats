@@ -428,6 +428,132 @@ export const pushTokens = pgTable("push_tokens", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// =================== PHASE 4: API KEYS ===================
+export const apiKeyTierEnum = pgEnum("api_key_tier", ["free", "starter", "pro", "enterprise"]);
+
+export const apiKeys = pgTable("api_keys", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  name: text("name").notNull(),
+  publicKey: text("public_key").notNull().unique(),
+  secretKeyHash: text("secret_key_hash").notNull(),
+  tier: apiKeyTierEnum("tier").notNull().default("free"),
+  isActive: boolean("is_active").default(true),
+  isSandbox: boolean("is_sandbox").default(true),
+  rateLimit: integer("rate_limit").default(100),
+  dailyRequests: integer("daily_requests").default(0),
+  lastResetAt: timestamp("last_reset_at").defaultNow(),
+  permissions: json("permissions").$type<string[]>().default(["read"]),
+  allowedOrigins: json("allowed_origins").$type<string[]>().default([]),
+  metadata: json("metadata").$type<Record<string, unknown>>(),
+  expiresAt: timestamp("expires_at"),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// =================== PHASE 4: WEBHOOKS ===================
+export const webhookEventEnum = pgEnum("webhook_event", [
+  "order.created", "order.confirmed", "order.preparing", "order.picked_up",
+  "order.delivered", "order.cancelled", "delivery.started", "delivery.completed",
+  "payment.completed", "payment.failed", "nft.minted", "nft.transferred",
+  "escrow.deposited", "escrow.released", "driver.assigned", "inventory.sync",
+]);
+
+export const webhooks = pgTable("webhooks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id").notNull().references(() => apiKeys.id),
+  url: text("url").notNull(),
+  events: json("events").$type<string[]>().notNull(),
+  secret: text("secret").notNull(),
+  isActive: boolean("is_active").default(true),
+  failureCount: integer("failure_count").default(0),
+  lastDeliveredAt: timestamp("last_delivered_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const webhookDeliveries = pgTable("webhook_deliveries", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  webhookId: varchar("webhook_id").notNull().references(() => webhooks.id),
+  event: text("event").notNull(),
+  payload: json("payload").$type<Record<string, unknown>>().notNull(),
+  responseStatus: integer("response_status"),
+  responseBody: text("response_body"),
+  attempts: integer("attempts").default(1),
+  success: boolean("success").default(false),
+  deliveredAt: timestamp("delivered_at").defaultNow().notNull(),
+});
+
+// =================== PHASE 4: INTEGRATION PARTNERS ===================
+export const integrationPartners = pgTable("integration_partners", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id").notNull().references(() => apiKeys.id),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  platform: text("platform"),
+  config: json("config").$type<Record<string, unknown>>(),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// =================== PHASE 4: WHITE-LABEL CONFIGS ===================
+export const whiteLabelConfigs = pgTable("white_label_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id").notNull().references(() => apiKeys.id),
+  brandName: text("brand_name").notNull(),
+  primaryColor: text("primary_color").default("#FF6B00"),
+  secondaryColor: text("secondary_color").default("#1A1A2E"),
+  accentColor: text("accent_color").default("#00D4AA"),
+  logoUrl: text("logo_url"),
+  faviconUrl: text("favicon_url"),
+  customDomain: text("custom_domain"),
+  customCss: text("custom_css"),
+  footerText: text("footer_text"),
+  supportEmail: text("support_email"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// =================== PHASE 4: API AUDIT LOGS ===================
+export const apiAuditLogs = pgTable("api_audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id").references(() => apiKeys.id),
+  method: text("method").notNull(),
+  path: text("path").notNull(),
+  statusCode: integer("status_code"),
+  requestBody: json("request_body").$type<Record<string, unknown>>(),
+  responseTime: integer("response_time"),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// =================== PHASE 4: INBOUND INTEGRATIONS ===================
+export const inboundOrders = pgTable("inbound_orders", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKeyId: varchar("api_key_id").notNull().references(() => apiKeys.id),
+  externalOrderId: text("external_order_id").notNull(),
+  source: text("source").notNull(),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone"),
+  customerEmail: text("customer_email"),
+  deliveryAddress: text("delivery_address").notNull(),
+  items: json("items").$type<{ name: string; price: number; quantity: number; isAlcohol?: boolean }[]>().notNull(),
+  subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
+  deliveryFee: decimal("delivery_fee", { precision: 10, scale: 2 }).default("0"),
+  tip: decimal("tip", { precision: 10, scale: 2 }).default("0"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  specialInstructions: text("special_instructions"),
+  status: text("status").default("received"),
+  internalOrderId: varchar("internal_order_id"),
+  metadata: json("metadata").$type<Record<string, unknown>>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // =================== ZOD SCHEMAS ===================
 export const insertUserSchema = createInsertSchema(users).pick({
   email: true,
@@ -492,3 +618,10 @@ export type NftReward = typeof nftRewards.$inferSelect;
 export type NftListing = typeof nftListings.$inferSelect;
 export type OnrampTransaction = typeof onrampTransactions.$inferSelect;
 export type PushToken = typeof pushTokens.$inferSelect;
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type Webhook = typeof webhooks.$inferSelect;
+export type WebhookDelivery = typeof webhookDeliveries.$inferSelect;
+export type IntegrationPartner = typeof integrationPartners.$inferSelect;
+export type WhiteLabelConfig = typeof whiteLabelConfigs.$inferSelect;
+export type ApiAuditLog = typeof apiAuditLogs.$inferSelect;
+export type InboundOrder = typeof inboundOrders.$inferSelect;
