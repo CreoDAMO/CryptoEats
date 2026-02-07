@@ -11,7 +11,10 @@ import {
 } from "../shared/schema";
 import {
   getUSDCBalance, getBaseBalance, prepareEscrowDeposit, verifyTransaction,
-  prepareNFTMint, BASE_CHAIN_ID, MARKETPLACE_NFT_ADDRESS,
+  prepareNFTMint, BASE_CHAIN_ID, MARKETPLACE_NFT_ADDRESS, MARKETPLACE_ESCROW_ADDRESS,
+  validateChainId, isContractAllowlisted, getContractInfo, getAllowlistedContracts,
+  isGasSponsored, estimateGas, getPaymasterStatus, classifyPaymasterError,
+  prepareEscrowRelease, type PaymasterError,
 } from "./blockchain";
 
 const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
@@ -683,9 +686,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "orderId, sellerAddress, and amount are required" });
       }
       const txData = prepareEscrowDeposit(orderId, sellerAddress, amount.toString(), timeout || 86400);
-      res.json(txData);
+      res.json({
+        ...txData,
+        message: txData.gasSponsored
+          ? "Gas fees are sponsored by Base Paymaster. No ETH needed."
+          : "This transaction requires ETH for gas fees.",
+      });
     } catch (err: any) {
-      res.status(400).json({ message: err.message || "Failed to prepare escrow" });
+      const classified = err.paymasterError || classifyPaymasterError(err);
+      res.status(400).json({
+        message: classified.userMessage,
+        code: classified.code,
+        retryable: classified.retryable,
+        suggestion: classified.suggestion,
+      });
     }
   });
 
@@ -1074,16 +1088,87 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // =================== GASLESS TRANSACTION INFO ===================
   app.get("/api/gasless/info", async (_req: Request, res: Response) => {
+    const status = getPaymasterStatus();
     res.json({
       supported: true,
-      network: "base",
-      chainId: 8453,
-      sponsoredTokens: ["USDC"],
-      paymasterAddress: "0x2FAEB0760D4230Ef2aC21496Bb4F0b47D634FD4c",
+      ...status,
       description: "Gas fees are sponsored for USDC transfers on Base network. No ETH needed for transactions.",
       maxSponsoredAmount: "10000",
       currency: "USDC",
     });
+  });
+
+  // =================== CHAIN VALIDATION ===================
+  app.post("/api/chain/validate", async (req: Request, res: Response) => {
+    const { chainId } = req.body;
+    if (!chainId) return res.status(400).json({ message: "chainId is required" });
+    const result = validateChainId(Number(chainId));
+    res.json(result);
+  });
+
+  // =================== CONTRACT ALLOWLIST ===================
+  app.get("/api/contracts/allowlist", async (_req: Request, res: Response) => {
+    res.json({
+      contracts: getAllowlistedContracts(),
+      chainId: BASE_CHAIN_ID,
+    });
+  });
+
+  app.get("/api/contracts/check/:address", async (req: Request, res: Response) => {
+    const address = getParam(req.params.address);
+    const info = getContractInfo(address);
+    res.json({
+      address,
+      allowlisted: !!info,
+      info: info || null,
+      gasSponsored: isGasSponsored(address),
+    });
+  });
+
+  // =================== GAS ESTIMATION ===================
+  app.post("/api/gas/estimate", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { from, to, data, value } = req.body;
+      if (!from || !to || !data) return res.status(400).json({ message: "from, to, and data are required" });
+      const result = await estimateGas(from, to, data, value);
+      res.json(result);
+    } catch (error: any) {
+      const classified = classifyPaymasterError(error);
+      res.status(500).json({
+        error: classified.userMessage,
+        code: classified.code,
+        retryable: classified.retryable,
+        suggestion: classified.suggestion,
+      });
+    }
+  });
+
+  // =================== PAYMASTER STATUS ===================
+  app.get("/api/paymaster/status", async (_req: Request, res: Response) => {
+    res.json(getPaymasterStatus());
+  });
+
+  // =================== ESCROW RELEASE (with Paymaster error handling) ===================
+  app.post("/api/escrow/release", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { escrowId } = req.body;
+      if (!escrowId) return res.status(400).json({ message: "escrowId is required" });
+      const txData = prepareEscrowRelease(escrowId);
+      res.json({
+        ...txData,
+        message: txData.gasSponsored
+          ? "Transaction gas will be sponsored by Base Paymaster. No ETH needed."
+          : "This transaction requires ETH for gas fees.",
+      });
+    } catch (error: any) {
+      const classified = error.paymasterError || classifyPaymasterError(error);
+      res.status(classified.code === 402 ? 402 : 500).json({
+        error: classified.userMessage,
+        code: classified.code,
+        retryable: classified.retryable,
+        suggestion: classified.suggestion,
+      });
+    }
   });
 
   // =================== HTTP & SOCKET.IO ===================

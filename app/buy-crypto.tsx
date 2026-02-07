@@ -126,7 +126,15 @@ export default function BuyCryptoScreen() {
       setQuote(data);
       setStep('review');
     } catch (err: any) {
-      Alert.alert('Quote Error', err.message || 'Failed to get quote.');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const msg = err.message || '';
+      if (msg.includes('rate limit') || msg.includes('too many')) {
+        Alert.alert('Please Wait', 'Too many quote requests. Try again in a moment.');
+      } else if (msg.includes('network') || msg.includes('chain')) {
+        Alert.alert('Network Issue', 'Could not reach Base network. Check your connection and try again.');
+      } else {
+        Alert.alert('Quote Error', msg || 'Failed to get quote. Please try again.');
+      }
     }
     setLoadingQuote(false);
   };
@@ -159,7 +167,17 @@ export default function BuyCryptoScreen() {
         loadHistory();
       }, 2500);
     } catch (err: any) {
-      Alert.alert('Purchase Failed', err.message || 'Could not complete purchase.');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const msg = err.message || '';
+      if (msg.includes('payment') || msg.includes('402')) {
+        Alert.alert('Payment Issue', 'Your payment method could not be processed. Please check your details and try again.');
+      } else if (msg.includes('policy') || msg.includes('rejected')) {
+        Alert.alert('Transaction Blocked', 'This transaction was blocked by our security policy. Please contact support if this persists.');
+      } else if (msg.includes('gas') || msg.includes('estimate')) {
+        Alert.alert('Transaction Error', 'Could not process this gasless transaction. The Paymaster service may be temporarily unavailable.');
+      } else {
+        Alert.alert('Purchase Failed', msg || 'Could not complete purchase. Please try again.');
+      }
       setPurchasing(false);
     }
   };

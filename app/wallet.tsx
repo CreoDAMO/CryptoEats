@@ -87,7 +87,17 @@ export default function WalletScreen() {
       loadBalance(wallet.walletAddress);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err: any) {
-      Alert.alert('Connection Failed', err.message || 'Could not connect wallet.');
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      const msg = err.message || '';
+      if (msg.includes('chain') || msg.includes('network')) {
+        Alert.alert('Wrong Network', 'Please connect a wallet on Base network (Chain ID 8453). Other networks are not supported.');
+      } else if (msg.includes('policy') || msg.includes('rejected')) {
+        Alert.alert('Connection Rejected', 'This wallet address was rejected. Please verify the address and try again.');
+      } else if (msg.includes('rate limit') || msg.includes('too many')) {
+        Alert.alert('Too Many Attempts', 'Please wait a moment before trying again.');
+      } else {
+        Alert.alert('Connection Failed', msg || 'Could not connect wallet. Check your address and try again.');
+      }
     }
     setConnecting(false);
   };
