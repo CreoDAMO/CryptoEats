@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable, Platform, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, View, Text, ScrollView, Pressable, Platform, ActivityIndicator, Alert, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import Colors from '@/constants/colors';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
 import { fetch } from 'expo/fetch';
@@ -24,6 +25,9 @@ interface NftListing {
     milestoneValue: number;
     status: string;
     tokenId: string | null;
+    imageUrl?: string | null;
+    aiGenerated?: boolean;
+    nftCategory?: string;
   };
 }
 
@@ -36,6 +40,20 @@ const NFT_COLORS: Record<string, string> = {
   'Road Warrior': '#00D4AA',
   'Delivery Hero': '#7B61FF',
   'Legendary Driver': '#FFD700',
+};
+
+const CATEGORY_COLORS: Record<string, string> = {
+  'merchant_dish': '#FF6B35',
+  'driver_avatar': '#00D4AA',
+  'customer_loyalty': '#7B61FF',
+  'marketplace_art': '#00BFFF',
+};
+
+const CATEGORY_LABELS: Record<string, string> = {
+  'merchant_dish': 'Dish',
+  'driver_avatar': 'Avatar',
+  'customer_loyalty': 'Loyalty',
+  'marketplace_art': 'Art',
 };
 
 const NFT_ICONS: Record<string, string> = {
@@ -80,26 +98,6 @@ const SAMPLE_LISTINGS: NftListing[] = [
     listedAt: new Date(Date.now() - 3600000 * 24).toISOString(),
     nft: { id: 'nft-3', name: 'Road Warrior', description: 'Completed 50 deliveries', milestoneType: 'driver', milestoneValue: 50, status: 'minted', tokenId: '7' },
   },
-  {
-    id: 'listing-4',
-    nftId: 'nft-4',
-    sellerUserId: 'user-4',
-    price: '500.00',
-    currency: 'USDC',
-    listing_status: 'active',
-    listedAt: new Date(Date.now() - 3600000 * 48).toISOString(),
-    nft: { id: 'nft-4', name: 'Diamond Diner', description: 'Completed 50 orders', milestoneType: 'customer', milestoneValue: 50, status: 'minted', tokenId: '3' },
-  },
-  {
-    id: 'listing-5',
-    nftId: 'nft-5',
-    sellerUserId: 'user-5',
-    price: '45.00',
-    currency: 'USDC',
-    listing_status: 'active',
-    listedAt: new Date(Date.now() - 3600000 * 1).toISOString(),
-    nft: { id: 'nft-5', name: 'Rising Star', description: 'Completed 10 deliveries', milestoneType: 'driver', milestoneValue: 10, status: 'minted', tokenId: '91' },
-  },
 ];
 
 export default function MarketplaceScreen() {
@@ -110,7 +108,7 @@ export default function MarketplaceScreen() {
 
   const [listings, setListings] = useState<NftListing[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'customer' | 'driver'>('all');
+  const [filter, setFilter] = useState<'all' | 'customer' | 'driver' | 'ai'>('all');
 
   const loadListings = useCallback(async () => {
     setLoading(true);
@@ -139,11 +137,21 @@ export default function MarketplaceScreen() {
 
   const filteredListings = listings.filter(l => {
     if (filter === 'all') return true;
+    if (filter === 'ai') return l.nft?.aiGenerated;
     return l.nft?.milestoneType === filter;
   });
 
-  const getColor = (name: string) => NFT_COLORS[name] || c.accent;
+  const getColor = (listing: NftListing) => {
+    const nft = listing.nft;
+    if (nft?.nftCategory && CATEGORY_COLORS[nft.nftCategory]) return CATEGORY_COLORS[nft.nftCategory];
+    return NFT_COLORS[nft?.name || ''] || c.accent;
+  };
   const getIcon = (name: string) => NFT_ICONS[name] || 'diamond-outline';
+
+  const getFullImageUrl = (url: string) => {
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return `${getApiUrl()}${url}`;
+  };
 
   const handleBuy = (listing: NftListing) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -178,9 +186,14 @@ export default function MarketplaceScreen() {
           <Feather name="arrow-left" size={22} color={c.text} />
         </Pressable>
         <Text style={[styles.headerTitle, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>NFT Marketplace</Text>
-        <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/nft-collection'); }}>
-          <Ionicons name="diamond-outline" size={22} color={c.accent} />
-        </Pressable>
+        <View style={styles.headerRight}>
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/generate-nft'); }}>
+            <MaterialCommunityIcons name="creation" size={22} color="#7B61FF" />
+          </Pressable>
+          <Pressable onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/nft-collection'); }}>
+            <Ionicons name="diamond-outline" size={22} color={c.accent} />
+          </Pressable>
+        </View>
       </View>
 
       <View style={[styles.statsBar, { backgroundColor: c.surface }]}>
@@ -203,14 +216,15 @@ export default function MarketplaceScreen() {
       </View>
 
       <View style={styles.filterRow}>
-        {(['all', 'customer', 'driver'] as const).map(f => (
+        {(['all', 'ai', 'customer', 'driver'] as const).map(f => (
           <Pressable
             key={f}
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setFilter(f); }}
-            style={[styles.filterChip, { backgroundColor: filter === f ? c.accent : c.surface }]}
+            style={[styles.filterChip, { backgroundColor: filter === f ? (f === 'ai' ? '#7B61FF' : c.accent) : c.surface }]}
           >
-            <Text style={[styles.filterText, { color: filter === f ? '#000' : c.textSecondary, fontFamily: filter === f ? 'DMSans_700Bold' : 'DMSans_500Medium' }]}>
-              {f === 'all' ? 'All' : f === 'customer' ? 'Customer' : 'Driver'}
+            {f === 'ai' && <MaterialCommunityIcons name="creation" size={14} color={filter === f ? '#FFF' : '#7B61FF'} />}
+            <Text style={[styles.filterText, { color: filter === f ? (f === 'ai' ? '#FFF' : '#000') : c.textSecondary, fontFamily: filter === f ? 'DMSans_700Bold' : 'DMSans_500Medium' }]}>
+              {f === 'all' ? 'All' : f === 'ai' ? 'AI Art' : f === 'customer' ? 'Customer' : 'Driver'}
             </Text>
           </Pressable>
         ))}
@@ -222,55 +236,77 @@ export default function MarketplaceScreen() {
             <ActivityIndicator size="large" color={c.accent} />
           </View>
         ) : filteredListings.length > 0 ? (
-          filteredListings.map(listing => {
+          filteredListings.map((listing, idx) => {
             const name = listing.nft?.name || 'Unknown NFT';
-            const color = getColor(name);
+            const color = getColor(listing);
             const icon = getIcon(name);
+            const hasAiImage = listing.nft?.imageUrl && listing.nft?.aiGenerated;
+            const catLabel = listing.nft?.nftCategory ? CATEGORY_LABELS[listing.nft.nftCategory] : null;
             return (
-              <View key={listing.id} style={[styles.listingCard, { backgroundColor: c.surface }]}>
-                <View style={styles.listingTop}>
-                  <View style={[styles.listingImage, { backgroundColor: color + '22' }]}>
-                    <Ionicons name={icon as any} size={36} color={color} />
-                  </View>
-                  <View style={styles.listingInfo}>
-                    <Text style={[styles.listingName, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>{name}</Text>
-                    <Text style={[styles.listingDesc, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
-                      {listing.nft?.description}
-                    </Text>
-                    <View style={styles.listingMeta}>
-                      {listing.nft?.tokenId && (
-                        <View style={[styles.tokenBadge, { backgroundColor: c.surfaceElevated }]}>
-                          <Text style={[styles.tokenBadgeText, { color: c.textTertiary, fontFamily: 'DMSans_500Medium' }]}>
-                            #{listing.nft.tokenId}
-                          </Text>
+              <Animated.View key={listing.id} entering={FadeInDown.delay(idx * 60).duration(400)}>
+                <View style={[styles.listingCard, { backgroundColor: c.surface }]}>
+                  <View style={styles.listingTop}>
+                    {hasAiImage && listing.nft?.imageUrl ? (
+                      <View style={styles.listingImageContainer}>
+                        <Image
+                          source={{ uri: getFullImageUrl(listing.nft.imageUrl) }}
+                          style={styles.listingImageFull}
+                          resizeMode="cover"
+                        />
+                        <View style={[styles.aiOverlay, { backgroundColor: '#7B61FF' }]}>
+                          <MaterialCommunityIcons name="creation" size={10} color="#FFF" />
                         </View>
-                      )}
-                      <Text style={[styles.listingTime, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>
-                        {timeAgo(listing.listedAt)}
+                      </View>
+                    ) : (
+                      <View style={[styles.listingImage, { backgroundColor: color + '22' }]}>
+                        <Ionicons name={icon as any} size={36} color={color} />
+                      </View>
+                    )}
+                    <View style={styles.listingInfo}>
+                      <Text style={[styles.listingName, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>{name}</Text>
+                      <Text style={[styles.listingDesc, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
+                        {listing.nft?.description}
                       </Text>
+                      <View style={styles.listingMeta}>
+                        {catLabel && (
+                          <View style={[styles.catBadge, { backgroundColor: color + '18' }]}>
+                            <Text style={[styles.catBadgeText, { color, fontFamily: 'DMSans_600SemiBold' }]}>{catLabel}</Text>
+                          </View>
+                        )}
+                        {listing.nft?.tokenId && (
+                          <View style={[styles.tokenBadge, { backgroundColor: c.surfaceElevated }]}>
+                            <Text style={[styles.tokenBadgeText, { color: c.textTertiary, fontFamily: 'DMSans_500Medium' }]}>
+                              #{listing.nft.tokenId}
+                            </Text>
+                          </View>
+                        )}
+                        <Text style={[styles.listingTime, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>
+                          {timeAgo(listing.listedAt)}
+                        </Text>
+                      </View>
                     </View>
                   </View>
-                </View>
-                <View style={[styles.listingBottom, { borderTopColor: c.border }]}>
-                  <View>
-                    <Text style={[styles.priceLabel, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Price</Text>
-                    <View style={styles.priceRow}>
-                      <Text style={[styles.priceValue, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>
-                        {listing.price}
-                      </Text>
-                      <Text style={[styles.priceCurrency, { color: c.accent, fontFamily: 'DMSans_600SemiBold' }]}>
-                        {listing.currency}
-                      </Text>
+                  <View style={[styles.listingBottom, { borderTopColor: c.border }]}>
+                    <View>
+                      <Text style={[styles.priceLabel, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Price</Text>
+                      <View style={styles.priceRow}>
+                        <Text style={[styles.priceValue, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>
+                          {listing.price}
+                        </Text>
+                        <Text style={[styles.priceCurrency, { color: c.accent, fontFamily: 'DMSans_600SemiBold' }]}>
+                          {listing.currency}
+                        </Text>
+                      </View>
                     </View>
+                    <Pressable
+                      onPress={() => handleBuy(listing)}
+                      style={({ pressed }) => [styles.buyBtn, { backgroundColor: c.accent, opacity: pressed ? 0.85 : 1 }]}
+                    >
+                      <Text style={[styles.buyBtnText, { fontFamily: 'DMSans_700Bold' }]}>Buy</Text>
+                    </Pressable>
                   </View>
-                  <Pressable
-                    onPress={() => handleBuy(listing)}
-                    style={({ pressed }) => [styles.buyBtn, { backgroundColor: c.accent, opacity: pressed ? 0.85 : 1 }]}
-                  >
-                    <Text style={[styles.buyBtnText, { fontFamily: 'DMSans_700Bold' }]}>Buy</Text>
-                  </Pressable>
                 </View>
-              </View>
+              </Animated.View>
             );
           })
         ) : (
@@ -284,11 +320,11 @@ export default function MarketplaceScreen() {
         )}
 
         <View style={[styles.infoCard, { backgroundColor: c.surface }]}>
-          <Feather name="info" size={16} color={c.accent} />
+          <MaterialCommunityIcons name="creation" size={16} color="#7B61FF" />
           <View style={styles.infoContent}>
-            <Text style={[styles.infoTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>How it works</Text>
+            <Text style={[styles.infoTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>AI-Powered NFTs</Text>
             <Text style={[styles.infoText, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
-              Achievement NFTs are earned by completing milestones. Owners can list them for sale, and buyers purchase through secure escrow on Base chain using USDC.
+              Create unique AI-generated NFTs for signature dishes, driver avatars, and loyalty rewards. All minted on Base chain with USDC trading.
             </Text>
           </View>
         </View>
@@ -307,6 +343,7 @@ const styles = StyleSheet.create({
     paddingBottom: 12,
   },
   headerTitle: { fontSize: 18 },
+  headerRight: { flexDirection: 'row', gap: 16, alignItems: 'center' },
   statsBar: {
     flexDirection: 'row',
     marginHorizontal: 20,
@@ -325,7 +362,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterChip: {
-    paddingHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 20,
   },
@@ -340,6 +380,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 16,
     gap: 14,
+  },
+  listingImageContainer: {
+    width: 72,
+    height: 72,
+    borderRadius: 14,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  listingImageFull: {
+    width: 72,
+    height: 72,
+  },
+  aiOverlay: {
+    position: 'absolute',
+    bottom: 3,
+    right: 3,
+    paddingHorizontal: 4,
+    paddingVertical: 2,
+    borderRadius: 5,
   },
   listingImage: {
     width: 72,
@@ -357,6 +416,12 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 4,
   },
+  catBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 5,
+  },
+  catBadgeText: { fontSize: 10 },
   tokenBadge: {
     paddingHorizontal: 8,
     paddingVertical: 2,

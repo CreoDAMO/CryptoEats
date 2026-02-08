@@ -204,6 +204,19 @@ export default function ProfileScreen() {
             <Feather name="chevron-right" size={18} color={c.textTertiary} />
           </Pressable>
           <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/generate-nft' as any); }}
+            style={[styles.web3Row, { borderBottomColor: c.border }]}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: '#7B61FF22' }]}>
+              <MaterialCommunityIcons name="creation" size={18} color="#7B61FF" />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>AI NFT Studio</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Create unique AI-generated NFT artwork</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/buy-crypto'); }}
             style={[styles.web3Row, { borderBottomColor: c.border }]}
           >
