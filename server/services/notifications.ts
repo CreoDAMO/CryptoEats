@@ -1,4 +1,5 @@
-import Expo, { ExpoPushMessage, ExpoPushTicket } from "expo-server-sdk";
+import { Expo } from "expo-server-sdk";
+import type { ExpoPushMessage, ExpoPushTicket } from "expo-server-sdk";
 
 const expo = new Expo();
 
