@@ -24,6 +24,10 @@ import {
   getPaymentStatus, isStripeConfigured, constructWebhookEvent,
 } from "./services/payments";
 import {
+  paymentRouter, getPaymentRouter,
+  type PaymentProviderKey, type PaymentOrder,
+} from "./services/payment-router";
+import {
   sendEmail, sendSMS, sendPushNotification,
   isSendGridConfigured, isTwilioConfigured,
   buildOrderConfirmationEmail, buildOrderStatusEmail, buildOrderStatusSMS,
@@ -1092,7 +1096,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/services/status", (_req: Request, res: Response) => {
     try {
       res.json({
-        payments: { stripe: isStripeConfigured(), crypto: true, escrow: true },
+        payments: {
+          stripe: isStripeConfigured(),
+          crypto: true,
+          escrow: true,
+          multiProvider: true,
+          providers: getPaymentRouter().getProviderStatus(),
+        },
         notifications: { email: isSendGridConfigured(), sms: isTwilioConfigured(), push: true },
         tracking: { gps: true, googleMaps: !!process.env.GOOGLE_MAPS_API_KEY, activeDrivers: getActiveDriverCount() },
         verification: { persona: isPersonaConfigured(), checkr: isCheckrConfigured() },
@@ -1746,20 +1756,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // =================== STRIPE PAYMENTS ===================
+  // =================== MULTI-PROVIDER PAYMENT SYSTEM ===================
   app.get("/api/payments/status", (_req: Request, res: Response) => {
+    const router = getPaymentRouter();
     res.json({
       stripe: isStripeConfigured(),
       sendgrid: isSendGridConfigured(),
       twilio: isTwilioConfigured(),
+      providers: router.getProviderStatus(),
+      routing: router.getRoutingConfig(),
+    });
+  });
+
+  app.get("/api/payments/providers", (_req: Request, res: Response) => {
+    const router = getPaymentRouter();
+    res.json({
+      providers: router.getProviderStatus(),
+      routing: router.getRoutingConfig(),
+      stats: router.getRoutingStats(),
+    });
+  });
+
+  app.get("/api/payments/fee-comparison", (req: Request, res: Response) => {
+    const amount = parseFloat(req.query.amount as string) || 30;
+    const type = (req.query.type as string) || "online";
+    const router = getPaymentRouter();
+    res.json({
+      amount,
+      type,
+      providers: router.getFeeComparison(amount, type),
     });
   });
 
   app.post("/api/payments/create-intent", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const { amount, orderId, metadata } = req.body;
+      const { amount, orderId, metadata, provider, type, isInternational } = req.body;
       if (!amount || !orderId) return res.status(400).json({ message: "amount and orderId are required" });
-      const result = await createPaymentIntent(amount, orderId, req.user!.email, metadata);
+
+      const router = getPaymentRouter();
+      const order: PaymentOrder = {
+        id: orderId,
+        amount,
+        currency: "usd",
+        isInternational: isInternational || false,
+        type: type || "online",
+        customerEmail: req.user!.email,
+        metadata,
+      };
+
+      if (provider && ["stripe", "adyen", "godaddy", "square", "coinbase"].includes(provider)) {
+        order.type = provider === "coinbase" ? "crypto" : order.type;
+      }
+
+      const result = await router.createPayment(order);
       res.json(result);
     } catch (err: any) {
       reportError(err, { route: "payments/create-intent", userId: req.user?.id });
@@ -1769,9 +1818,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/payments/capture", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const { intentId } = req.body;
+      const { intentId, provider } = req.body;
       if (!intentId) return res.status(400).json({ message: "intentId is required" });
-      const result = await capturePayment(intentId);
+      const providerKey: PaymentProviderKey = provider || "stripe";
+      const router = getPaymentRouter();
+      const result = await router.capturePayment(intentId, providerKey);
       res.json(result);
     } catch (err: any) {
       reportError(err, { route: "payments/capture" });
@@ -1781,9 +1832,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/payments/cancel", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const { intentId, reason } = req.body;
+      const { intentId, provider } = req.body;
       if (!intentId) return res.status(400).json({ message: "intentId is required" });
-      const result = await cancelPayment(intentId, reason);
+      const providerKey: PaymentProviderKey = provider || "stripe";
+      const router = getPaymentRouter();
+      const result = await router.cancelPayment(intentId, providerKey);
       res.json(result);
     } catch (err: any) {
       reportError(err, { route: "payments/cancel" });
@@ -1793,9 +1846,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/payments/refund", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const { intentId, amount } = req.body;
+      const { intentId, amount, provider, reason } = req.body;
       if (!intentId) return res.status(400).json({ message: "intentId is required" });
-      const result = await createRefund(intentId, amount);
+      const providerKey: PaymentProviderKey = provider || "stripe";
+      const router = getPaymentRouter();
+      const result = await router.refundPayment(intentId, amount, providerKey, reason);
       res.json(result);
     } catch (err: any) {
       reportError(err, { route: "payments/refund" });
@@ -1806,7 +1861,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/payments/:intentId", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
       const intentId = getParam(req.params.intentId);
-      const result = await getPaymentStatus(intentId);
+      const provider: PaymentProviderKey = (req.query.provider as PaymentProviderKey) || "stripe";
+      const router = getPaymentRouter();
+      const result = await router.getStatus(intentId, provider);
       res.json(result);
     } catch (err: any) {
       res.status(400).json({ message: err.message });
@@ -1819,9 +1876,75 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!sig || !req.rawBody) return res.status(400).json({ message: "Missing signature" });
       const event = await constructWebhookEvent(req.rawBody as Buffer, sig);
       console.log(`[Stripe Webhook] ${event.type}:`, (event.data.object as any).id);
+
+      if (event.type.startsWith("charge.dispute")) {
+        const router = getPaymentRouter();
+        const disputeResult = await router.handleDispute(event, "stripe");
+        console.log(`[PaymentRouter] Dispute handled:`, disputeResult);
+      }
+
       res.json({ received: true });
     } catch (err: any) {
       reportError(err, { route: "payments/webhook" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/webhook/adyen", async (req: Request, res: Response) => {
+    try {
+      const router = getPaymentRouter();
+      const result = await router.handleDispute(req.body, "adyen");
+      console.log(`[Adyen Webhook]`, result);
+      res.json({ received: true, ...result });
+    } catch (err: any) {
+      reportError(err, { route: "payments/webhook/adyen" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/webhook/square", async (req: Request, res: Response) => {
+    try {
+      const router = getPaymentRouter();
+      const result = await router.handleDispute(req.body, "square");
+      console.log(`[Square Webhook]`, result);
+      res.json({ received: true, ...result });
+    } catch (err: any) {
+      reportError(err, { route: "payments/webhook/square" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/webhook/godaddy", async (req: Request, res: Response) => {
+    try {
+      const router = getPaymentRouter();
+      const result = await router.handleDispute(req.body, "godaddy");
+      console.log(`[GoDaddy Webhook]`, result);
+      res.json({ received: true, ...result });
+    } catch (err: any) {
+      reportError(err, { route: "payments/webhook/godaddy" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/payments/webhook/coinbase", async (req: Request, res: Response) => {
+    try {
+      const router = getPaymentRouter();
+      const result = await router.handleDispute(req.body, "coinbase");
+      console.log(`[Coinbase Webhook]`, result);
+      res.json({ received: true, ...result });
+    } catch (err: any) {
+      reportError(err, { route: "payments/webhook/coinbase" });
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.put("/api/payments/routing-config", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      if (req.user!.role !== "admin") return res.status(403).json({ message: "Admin access required" });
+      const router = getPaymentRouter();
+      router.updateRoutingConfig(req.body);
+      res.json({ message: "Routing config updated", config: router.getRoutingConfig() });
+    } catch (err: any) {
       res.status(400).json({ message: err.message });
     }
   });

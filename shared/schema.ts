@@ -185,6 +185,7 @@ export const orders = pgTable("orders", {
   paymentMethod: text("payment_method").notNull(),
   paymentStatus: paymentStatusEnum("payment_status").default("pending"),
   paymentIntentId: text("payment_intent_id"),
+  paymentProvider: text("payment_provider").default("stripe"),
   deliveryAddress: text("delivery_address").notNull(),
   specialInstructions: text("special_instructions"),
   requiresAgeVerification: boolean("requires_age_verification").default(false),
