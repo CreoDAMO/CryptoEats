@@ -229,6 +229,57 @@ The only hard requirements are the database and Coinbase keys. Everything else d
 
 ---
 
+## Competitive Landscape Analysis (February 2026)
+
+No existing platform combines all of CryptoEats' layers in a production-grade way. The following analysis maps every relevant competitor across nine capability dimensions — marketplace operations, logistics, crypto payments, on-chain escrow, NFT rewards, gasless UX, fiat on/off ramps, open API/white-label, and production scale.
+
+### The Capability Stack
+
+1. **Marketplace** — Customers, merchants, and drivers matched on one platform
+2. **Logistics** — Dispatch, real-time tracking, GPS, compliance enforcement
+3. **Crypto Payments** — Native acceptance of crypto/stablecoins (not gift cards or third-party wrappers)
+4. **Escrow / On-Chain Logic** — Programmatic settlement and disputes on blockchain
+5. **Rewards / NFT** — Tokenized incentives with user ownership via NFTs
+6. **Gasless UX** — Users never pay gas fees; sponsored by the platform
+7. **On/Off Ramp** — Built-in fiat-to-crypto and crypto-to-fiat conversion
+8. **API / White-Label** — Open integrations, embeddable widgets, partner branding
+9. **Production Scale** — Live users, orders, geographic reach
+
+### Comparative Coverage
+
+| Platform | Marketplace | Logistics | Crypto Pay | Escrow | NFT Rewards | Gasless | On/Off Ramp | API / White-Label | Scale |
+|----------|:-----------:|:---------:|:----------:|:------:|:-----------:|:-------:|:-----------:|:-----------------:|:-----:|
+| **Uber Eats / DoorDash** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Limited | High |
+| **Instacart** | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | Limited | High |
+| **Coinbase Commerce** | ❌ | ❌ | ✅ | Partial | ❌ | Partial | ✅ | ✅ | High (payments infra only) |
+| **BitPay / Gateways** | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | Partial | ✅ | Medium |
+| **DevourGO** | ✅ | Partial | ✅ (DPAY/Solana) | Partial | ✅ (gamified) | Partial (Solana fees) | ❌ | ❌ | Medium (niche, ~100K+ downloads) |
+| **Eva (Blockchain Coop)** | ✅ | ✅ (P2P) | Partial | ✅ (decentralized) | ❌ | ❌ | ❌ | ❌ | Low (Montreal, ~10-50K users) |
+| **Slake** | ✅ | Partial | ✅ (ETH/$SLAKE) | ❌ | Partial | ❌ | ❌ | ❌ | Low (U.S. 2023, add-on crypto) |
+| **Bistroo (P2P)** | ✅ | Partial | ✅ (BIST token) | Partial | Partial | ❌ | ❌ | Limited | Low-Medium (Europe) |
+| **Multiminds** | ✅ | Partial (DoorDash) | ✅ (Web3 wallets) | ❌ | ❌ | ❌ | ❌ | Partial | Low (~2025, not full ecosystem) |
+| **CryptoEats** | ✅ | ✅ | ✅ (USDC/Base) | ✅ (full lifecycle) | ✅ (AI-generated, 5 categories) | ✅ (Paymaster) | ✅ (Coinbase Onramp + Offramp) | ✅ (versioned API, webhooks, widgets, white-label) | Pilot (Miami-seeded, production-ready) |
+
+### Key Findings
+
+**No exact match exists.** Every competitor covers some layers but leaves critical gaps:
+
+- **Uber Eats / DoorDash** — Massive scale, zero crypto integration. Accept crypto indirectly through BitPay gift cards — that's not native, that's a workaround.
+- **DevourGO** — Closest on Web3 rewards and NFT gamification (Solana-based), but lacks on-chain escrow, gasless UX, fiat on/off ramps, and open developer API.
+- **Eva** — Genuine blockchain decentralization for matching, but cooperative model limits scale. No rewards, no ramps, no developer platform.
+- **Slake / Bistroo / Multiminds** — Accept crypto as an optional payment method. None treat it as the foundation. No escrow, no gasless, no AI-generated NFTs.
+- **Coinbase Commerce** — Excellent payment infrastructure, but it's a payment rail — not a marketplace, not logistics, not a delivery platform.
+
+**CryptoEats is the only platform that fills every column.** The combination of USDC escrow with full lifecycle management, gasless transactions via Base Paymaster, integrated Coinbase Onramp and Offramp, AI-generated NFT rewards across five categories, and a versioned open API with white-label support does not exist anywhere else in the market as of February 2026.
+
+### Market Position
+
+The crypto food delivery market is growing but fragmented. The global food delivery market exceeds $90B, and blockchain experiments are increasing — but most incumbents treat crypto as a checkout add-on (gift cards, third-party gateways). CryptoEats inverts this by making crypto the settlement layer and fiat the optional bridge.
+
+**Defensible positioning:** The depth of integration — not just "accepts crypto" but on-chain escrow, gasless UX, AI NFTs, and closed-loop fiat ramps — creates a moat that cannot be replicated by adding a BitPay button to an existing app. It requires architectural commitment from day one, which is exactly what CryptoEats was built on.
+
+---
+
 ## By the Numbers
 
 | Metric | Value |
