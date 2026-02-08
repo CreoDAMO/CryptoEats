@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Share } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons, Feather } from '@expo/vector-icons';
+import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
@@ -205,7 +205,7 @@ export default function ProfileScreen() {
           </Pressable>
           <Pressable
             onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/buy-crypto'); }}
-            style={styles.web3Row}
+            style={[styles.web3Row, { borderBottomColor: c.border }]}
           >
             <View style={[styles.web3Icon, { backgroundColor: '#0052FF22' }]}>
               <Ionicons name="add-circle-outline" size={18} color="#0052FF" />
@@ -213,6 +213,19 @@ export default function ProfileScreen() {
             <View style={styles.web3Info}>
               <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Buy Crypto</Text>
               <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Coinbase Onramp - cards, Apple Pay</Text>
+            </View>
+            <Feather name="chevron-right" size={18} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push('/cash-out'); }}
+            style={styles.web3Row}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: '#FF6B3522' }]}>
+              <MaterialCommunityIcons name="bank-transfer-out" size={18} color="#FF6B35" />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Cash Out</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Coinbase Offramp - crypto to bank</Text>
             </View>
             <Feather name="chevron-right" size={18} color={c.textTertiary} />
           </Pressable>

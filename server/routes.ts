@@ -1733,7 +1733,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/offramp/status/:id", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
-      const tx = await storage.getOfframpTransactionById(req.params.id);
+      const tx = await storage.getOfframpTransactionById(req.params.id as string);
       if (!tx) return res.status(404).json({ message: "Transaction not found" });
       if (tx.userId !== req.user!.id) return res.status(403).json({ message: "Unauthorized" });
       res.json(tx);

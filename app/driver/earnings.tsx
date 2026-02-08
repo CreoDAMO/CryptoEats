@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, ScrollView, Pressable, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 
@@ -43,6 +44,7 @@ export default function EarningsScreen() {
 
   const handleCashout = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
+    router.push('/cash-out');
   };
 
   return (
