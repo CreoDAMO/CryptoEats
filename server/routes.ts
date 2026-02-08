@@ -1599,6 +1599,149 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // =================== COINBASE OFFRAMP (Cash Out) ===================
+  app.get("/api/offramp/sell-options", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      res.json({
+        cashoutMethods: [
+          { id: "BANK_ACCOUNT", name: "Bank Account (ACH)", estimatedDays: "1-3 business days", minAmount: 5, maxAmount: 25000 },
+          { id: "INSTANT_BANK", name: "Instant Bank Transfer", estimatedDays: "Minutes", minAmount: 10, maxAmount: 5000, fee: "1.5%" },
+        ],
+        sellCurrencies: [
+          { code: "USDC", name: "USD Coin", network: "base", decimals: 6, minAmount: 1, contractAddress: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" },
+          { code: "ETH", name: "Ethereum", network: "base", decimals: 18, minAmount: 0.001 },
+        ],
+        supportedFiat: ["USD"],
+        limits: { daily: 25000, weekly: 100000, monthly: 250000 },
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/offramp/sell-quote", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { sellCurrency, sellAmount, cashoutMethod } = req.body;
+      if (!sellCurrency || !sellAmount) {
+        return res.status(400).json({ message: "sellCurrency and sellAmount are required" });
+      }
+      const cryptoAmount = parseFloat(sellAmount);
+      let rate = 1.0;
+      let fee = 0;
+      if (sellCurrency === "USDC") {
+        rate = 1.0;
+        fee = cashoutMethod === "INSTANT_BANK" ? Math.max(0.50, cryptoAmount * 0.015) : Math.max(0.25, cryptoAmount * 0.005);
+      } else if (sellCurrency === "ETH") {
+        rate = 2600;
+        fee = Math.max(0.99, cryptoAmount * rate * 0.02);
+      }
+      const grossFiat = cryptoAmount * rate;
+      const netFiat = grossFiat - fee;
+      const estimatedDays = cashoutMethod === "INSTANT_BANK" ? "Minutes" : "1-3 business days";
+      res.json({
+        sellCurrency,
+        sellAmount: cryptoAmount.toFixed(8),
+        fiatCurrency: "USD",
+        grossAmount: grossFiat.toFixed(2),
+        fee: fee.toFixed(2),
+        netAmount: netFiat.toFixed(2),
+        exchangeRate: rate.toFixed(8),
+        cashoutMethod: cashoutMethod || "BANK_ACCOUNT",
+        estimatedArrival: estimatedDays,
+        quoteId: `quote_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+        expiresAt: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/offramp/initiate", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { cryptoAmount, cryptoCurrency, cashoutMethod, walletAddress, quoteId, fee, exchangeRate, estimatedArrival } = req.body;
+      if (!cryptoAmount || !walletAddress) {
+        return res.status(400).json({ message: "cryptoAmount and walletAddress are required" });
+      }
+      const amt = parseFloat(cryptoAmount);
+      const rate = parseFloat(exchangeRate || "1");
+      const feeAmt = parseFloat(fee || "0");
+      const fiatAmount = (amt * rate - feeAmt).toFixed(2);
+
+      const tx = await storage.createOfframpTransaction({
+        userId: req.user!.id,
+        walletAddress,
+        cryptoCurrency: cryptoCurrency || "USDC",
+        cryptoAmount: cryptoAmount.toString(),
+        fiatAmount,
+        fiatCurrency: "USD",
+        cashoutMethod: cashoutMethod || "BANK_ACCOUNT",
+        network: "base",
+        quoteId: quoteId || null,
+        fee: feeAmt.toFixed(2),
+        exchangeRate: rate.toFixed(8),
+        estimatedArrival: estimatedArrival || "1-3 business days",
+        status: "pending",
+      });
+
+      const offrampUrl = `https://pay.coinbase.com/v3/sell/input?addresses={"${walletAddress}":["base"]}&defaultAsset=USDC&defaultNetwork=base&defaultCryptoAmount=${cryptoAmount}&partnerUserRef=${req.user!.id}&redirectUrl=https://cryptoeats.net/cashout/success`;
+      res.status(201).json({ transaction: tx, offrampUrl });
+    } catch (err: any) {
+      res.status(400).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/offramp/webhook", async (req: Request, res: Response) => {
+    try {
+      const { transactionId, status, fiatAmount } = req.body;
+      if (!transactionId) return res.status(400).json({ message: "transactionId is required" });
+      const tx = await storage.getOfframpTransactionById(transactionId);
+      if (!tx) return res.status(404).json({ message: "Transaction not found" });
+      const updateData: any = { status };
+      if (fiatAmount) updateData.fiatAmount = fiatAmount.toString();
+      if (status === "completed") updateData.completedAt = new Date();
+      await storage.updateOfframpTransaction(transactionId, updateData);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.post("/api/offramp/simulate-complete", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { transactionId, fiatAmount } = req.body;
+      if (!transactionId) return res.status(400).json({ message: "transactionId is required" });
+      const updated = await storage.updateOfframpTransaction(transactionId, {
+        status: "completed",
+        fiatAmount: fiatAmount?.toString() || "0",
+        completedAt: new Date(),
+        coinbaseTransactionId: `cb_sell_${Date.now()}`,
+      });
+      res.json(updated);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/offramp/history", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const txs = await storage.getOfframpTransactionsByUser(req.user!.id);
+      res.json(txs);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/offramp/status/:id", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const tx = await storage.getOfframpTransactionById(req.params.id);
+      if (!tx) return res.status(404).json({ message: "Transaction not found" });
+      if (tx.userId !== req.user!.id) return res.status(403).json({ message: "Unauthorized" });
+      res.json(tx);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   // =================== PUSH NOTIFICATIONS ===================
   app.post("/api/push/register", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {

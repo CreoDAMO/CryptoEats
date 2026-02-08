@@ -6,13 +6,13 @@ import {
   driverStatusTable, driverSupportLog, driverEarnings, complianceLogs,
   deliveryWindows, referrals, digitalAgreements, bundles,
   wallets, escrowTransactions, nftRewards, nftListings,
-  onrampTransactions, pushTokens, onboardingApplications,
+  onrampTransactions, offrampTransactions, pushTokens, onboardingApplications,
   legalAgreements, licenseVerifications,
   type User, type Customer, type Driver, type Restaurant, type MenuItem,
   type Order, type Review, type TaxJurisdiction, type TaxTransaction,
   type DriverStatus, type DriverSupportLogEntry, type ComplianceLog,
   type Wallet, type EscrowTransaction, type NftReward, type NftListing,
-  type OnrampTransaction, type PushToken, type OnboardingApplication,
+  type OnrampTransaction, type OfframpTransaction, type PushToken, type OnboardingApplication,
   type LegalAgreement, type LicenseVerification,
 } from "../shared/schema";
 
@@ -530,6 +530,26 @@ export const storage = {
 
   async getOnrampTransactionById(id: string): Promise<OnrampTransaction | undefined> {
     const [tx] = await db.select().from(onrampTransactions).where(eq(onrampTransactions.id, id)).limit(1);
+    return tx;
+  },
+
+  // =================== OFFRAMP TRANSACTIONS ===================
+  async createOfframpTransaction(data: any): Promise<OfframpTransaction> {
+    const [tx] = await db.insert(offrampTransactions).values(data).returning();
+    return tx;
+  },
+
+  async getOfframpTransactionsByUser(userId: string): Promise<OfframpTransaction[]> {
+    return db.select().from(offrampTransactions).where(eq(offrampTransactions.userId, userId)).orderBy(desc(offrampTransactions.createdAt));
+  },
+
+  async updateOfframpTransaction(id: string, data: any): Promise<OfframpTransaction | undefined> {
+    const [tx] = await db.update(offrampTransactions).set(data).where(eq(offrampTransactions.id, id)).returning();
+    return tx;
+  },
+
+  async getOfframpTransactionById(id: string): Promise<OfframpTransaction | undefined> {
+    const [tx] = await db.select().from(offrampTransactions).where(eq(offrampTransactions.id, id)).limit(1);
     return tx;
   },
 

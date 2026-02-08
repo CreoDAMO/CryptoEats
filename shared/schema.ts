@@ -19,6 +19,7 @@ export const complianceTypeEnum = pgEnum("compliance_type", ["license", "tax_fil
 export const chatTypeEnum = pgEnum("chat_type", ["text", "image", "system"]);
 export const verificationMethodEnum = pgEnum("verification_method", ["checkout", "delivery"]);
 export const onrampStatusEnum = pgEnum("onramp_status", ["pending", "processing", "completed", "failed"]);
+export const offrampStatusEnum = pgEnum("offramp_status", ["pending", "quote_ready", "processing", "completed", "failed"]);
 export const onboardingStatusEnum = pgEnum("onboarding_status", ["not_started", "in_progress", "pending_review", "approved", "rejected"]);
 
 // =================== USERS ===================
@@ -446,6 +447,27 @@ export const onrampTransactions = pgTable("onramp_transactions", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+// =================== COINBASE OFFRAMP ===================
+export const offrampTransactions = pgTable("offramp_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  walletAddress: text("wallet_address").notNull(),
+  cryptoCurrency: text("crypto_currency").default("USDC"),
+  cryptoAmount: decimal("crypto_amount", { precision: 18, scale: 8 }).notNull(),
+  fiatCurrency: text("fiat_currency").default("USD"),
+  fiatAmount: decimal("fiat_amount", { precision: 18, scale: 2 }),
+  network: text("network").default("base"),
+  cashoutMethod: text("cashout_method").default("BANK_ACCOUNT"),
+  coinbaseTransactionId: text("coinbase_transaction_id"),
+  quoteId: text("quote_id"),
+  fee: decimal("fee", { precision: 18, scale: 2 }),
+  exchangeRate: decimal("exchange_rate", { precision: 18, scale: 8 }),
+  status: offrampStatusEnum("status").default("pending"),
+  estimatedArrival: text("estimated_arrival"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 export const pushTokens = pgTable("push_tokens", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -749,6 +771,7 @@ export type EscrowTransaction = typeof escrowTransactions.$inferSelect;
 export type NftReward = typeof nftRewards.$inferSelect;
 export type NftListing = typeof nftListings.$inferSelect;
 export type OnrampTransaction = typeof onrampTransactions.$inferSelect;
+export type OfframpTransaction = typeof offrampTransactions.$inferSelect;
 export type PushToken = typeof pushTokens.$inferSelect;
 export type ApiKey = typeof apiKeys.$inferSelect;
 export type Webhook = typeof webhooks.$inferSelect;
