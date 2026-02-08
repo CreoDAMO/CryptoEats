@@ -23,6 +23,7 @@ import {
   createPaymentIntent, capturePayment, cancelPayment, createRefund,
   getPaymentStatus, isStripeConfigured, constructWebhookEvent,
 } from "./services/payments";
+import { generateNftArt, getStylePresets, type NftArtCategory } from "./services/nft-ai";
 import {
   paymentRouter, getPaymentRouter,
   type PaymentProviderKey, type PaymentOrder,
@@ -1387,6 +1388,179 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(updated);
     } catch (err: any) {
       res.status(400).json({ message: err.message || "Failed to confirm mint" });
+    }
+  });
+
+  // =================== AI NFT GENERATION ===================
+  app.get("/api/nft/styles", async (_req: Request, res: Response) => {
+    res.json(getStylePresets());
+  });
+
+  app.post("/api/nft/generate-art", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { category, name, description, dishName, cuisine, restaurantName, milestoneType, milestoneValue, driverName, style } = req.body;
+      if (!category || !name) return res.status(400).json({ message: "category and name are required" });
+
+      const validCategories: NftArtCategory[] = ["merchant_dish", "driver_avatar", "customer_loyalty", "marketplace_art"];
+      if (!validCategories.includes(category)) return res.status(400).json({ message: "Invalid category" });
+
+      const result = await generateNftArt({
+        category, name, description, dishName, cuisine, restaurantName,
+        milestoneType, milestoneValue, driverName, style,
+      });
+
+      const nft = await storage.createNftReward({
+        userId: req.user!.id,
+        name,
+        description: description || `AI-generated ${category.replace("_", " ")} NFT`,
+        imageUrl: result.imageUrl,
+        milestoneType: category,
+        milestoneValue: 0,
+        status: "pending",
+        nftCategory: category,
+        aiGenerated: true,
+        aiPrompt: result.prompt,
+        restaurantId: restaurantName || null,
+        dishName: dishName || null,
+      });
+
+      res.status(201).json({ nft, imageUrl: result.imageUrl });
+    } catch (err: any) {
+      console.error("[NFT AI] Generation error:", err);
+      res.status(500).json({ message: err.message || "Failed to generate NFT art" });
+    }
+  });
+
+  app.post("/api/nft/merchant-dish", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { dishName, cuisine, restaurantName, style } = req.body;
+      if (!dishName) return res.status(400).json({ message: "dishName is required" });
+
+      const result = await generateNftArt({
+        category: "merchant_dish",
+        name: dishName,
+        dishName,
+        cuisine,
+        restaurantName,
+        style,
+      });
+
+      const nft = await storage.createNftReward({
+        userId: req.user!.id,
+        name: `${dishName} Signature NFT`,
+        description: `Signature dish NFT${restaurantName ? ` from ${restaurantName}` : ""}`,
+        imageUrl: result.imageUrl,
+        milestoneType: "merchant_dish",
+        milestoneValue: 0,
+        status: "pending",
+        nftCategory: "merchant_dish",
+        aiGenerated: true,
+        aiPrompt: result.prompt,
+        restaurantId: restaurantName || null,
+        dishName,
+      });
+
+      res.status(201).json({ nft, imageUrl: result.imageUrl });
+    } catch (err: any) {
+      console.error("[NFT AI] Merchant dish error:", err);
+      res.status(500).json({ message: err.message || "Failed to generate dish NFT" });
+    }
+  });
+
+  app.post("/api/nft/driver-avatar", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { driverName, style } = req.body;
+
+      const result = await generateNftArt({
+        category: "driver_avatar",
+        name: driverName || "Delivery Driver",
+        driverName,
+        style,
+      });
+
+      const nft = await storage.createNftReward({
+        userId: req.user!.id,
+        name: `${driverName || "Driver"} Avatar NFT`,
+        description: "AI-generated unique driver avatar NFT",
+        imageUrl: result.imageUrl,
+        milestoneType: "driver_avatar",
+        milestoneValue: 0,
+        status: "pending",
+        nftCategory: "driver_avatar",
+        aiGenerated: true,
+        aiPrompt: result.prompt,
+      });
+
+      res.status(201).json({ nft, imageUrl: result.imageUrl });
+    } catch (err: any) {
+      console.error("[NFT AI] Driver avatar error:", err);
+      res.status(500).json({ message: err.message || "Failed to generate driver avatar NFT" });
+    }
+  });
+
+  app.post("/api/nft/customer-loyalty", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { name, description, milestoneType, milestoneValue, style } = req.body;
+      if (!name) return res.status(400).json({ message: "name is required" });
+
+      const result = await generateNftArt({
+        category: "customer_loyalty",
+        name,
+        description,
+        milestoneType: milestoneType || "customer",
+        milestoneValue: milestoneValue || 0,
+        style,
+      });
+
+      const nft = await storage.createNftReward({
+        userId: req.user!.id,
+        name,
+        description: description || `Loyalty reward: ${name}`,
+        imageUrl: result.imageUrl,
+        milestoneType: milestoneType || "customer",
+        milestoneValue: milestoneValue || 0,
+        status: "pending",
+        nftCategory: "customer_loyalty",
+        aiGenerated: true,
+        aiPrompt: result.prompt,
+      });
+
+      res.status(201).json({ nft, imageUrl: result.imageUrl });
+    } catch (err: any) {
+      console.error("[NFT AI] Customer loyalty error:", err);
+      res.status(500).json({ message: err.message || "Failed to generate loyalty NFT" });
+    }
+  });
+
+  app.post("/api/nft/regenerate-art", authMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const { nftId, style } = req.body;
+      if (!nftId) return res.status(400).json({ message: "nftId is required" });
+
+      const userNfts = await storage.getNftsByUserId(req.user!.id);
+      const nft = userNfts.find(n => n.id === nftId);
+      if (!nft) return res.status(404).json({ message: "NFT not found" });
+      if (nft.status === "minted" || nft.status === "listed") {
+        return res.status(400).json({ message: "Cannot regenerate art for minted/listed NFTs" });
+      }
+
+      const category = (nft as any).nftCategory || nft.milestoneType || "marketplace_art";
+      const result = await generateNftArt({
+        category,
+        name: nft.name,
+        description: nft.description || undefined,
+        dishName: (nft as any).dishName || undefined,
+        style,
+      });
+
+      await storage.updateNftStatus(nftId, nft.status || "pending", {
+        imageUrl: result.imageUrl,
+      });
+
+      res.json({ imageUrl: result.imageUrl, prompt: result.prompt });
+    } catch (err: any) {
+      console.error("[NFT AI] Regenerate error:", err);
+      res.status(500).json({ message: err.message || "Failed to regenerate NFT art" });
     }
   });
 

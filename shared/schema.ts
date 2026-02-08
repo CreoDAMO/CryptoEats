@@ -397,6 +397,8 @@ export const escrowTransactions = pgTable("escrow_transactions", {
 });
 
 // =================== BLOCKCHAIN: NFT REWARDS ===================
+export const nftCategoryEnum = pgEnum("nft_category", ["milestone", "merchant_dish", "driver_avatar", "customer_loyalty", "marketplace_art"]);
+
 export const nftRewards = pgTable("nft_rewards", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id),
@@ -413,6 +415,11 @@ export const nftRewards = pgTable("nft_rewards", {
   mintedAt: timestamp("minted_at"),
   listedPrice: decimal("listed_price", { precision: 18, scale: 8 }),
   chainId: integer("chain_id").default(8453),
+  nftCategory: nftCategoryEnum("nft_category").default("milestone"),
+  aiGenerated: boolean("ai_generated").default(false),
+  aiPrompt: text("ai_prompt"),
+  restaurantId: varchar("restaurant_id"),
+  dishName: text("dish_name"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -783,3 +790,5 @@ export type InboundOrder = typeof inboundOrders.$inferSelect;
 export type OnboardingApplication = typeof onboardingApplications.$inferSelect;
 export type LegalAgreement = typeof legalAgreements.$inferSelect;
 export type LicenseVerification = typeof licenseVerifications.$inferSelect;
+
+export * from "./models/chat";
