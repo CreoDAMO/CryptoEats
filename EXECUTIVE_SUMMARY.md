@@ -29,7 +29,7 @@ The platform ships as four tightly integrated products:
 | Database | PostgreSQL via Drizzle ORM — 36 tables, full relational schema |
 | Real-Time | Socket.IO for order tracking, GPS location updates, driver-customer chat, and push notifications |
 | Auth | JWT with bcrypt password hashing, rate-limited login |
-| Payments | Stripe (PaymentIntents with authorize + capture on delivery, refunds, webhooks) + Base chain crypto |
+| Payments | Multi-provider routing: Stripe, Adyen, GoDaddy, Square, Coinbase Commerce. Smart routing (crypto/international/in-person/POS). Fallback chain. Base chain crypto escrow. |
 | Blockchain | Base chain (Coinbase L2) — escrow payments, NFT rewards, gasless transactions, USDC support |
 | Notifications | SendGrid email, Twilio SMS, Expo Push Notifications |
 | Security | Helmet headers, XSS/SQL injection sanitization, adaptive rate limiting |
@@ -196,7 +196,7 @@ CryptoEats is a fully functional MVP with the complete user experience mapped ou
 
 | Area | Status | Implementation |
 |------|--------|---------------|
-| **Payment Processing** | Implemented | Stripe PaymentIntents (authorize + capture), refunds, webhooks. Frontend checkout integrated. |
+| **Payment Processing** | Implemented | Multi-provider PaymentRouter: Stripe, Adyen, GoDaddy, Square, Coinbase Commerce. Smart routing (crypto→Coinbase, international→Adyen, in-person→GoDaddy, POS→Square, default→Stripe). Fallback chain ensures availability. Provider-specific webhook/dispute handling. Fee comparison API. Admin routing configuration. |
 | **Email & SMS** | Implemented | SendGrid email with HTML templates, Twilio SMS. Auto-sent on order status changes. |
 | **Image Storage** | Implemented | Multipart upload service with category validation, size limits, local storage with serve endpoints. |
 | **Push Notifications** | Implemented | Expo Push Notifications with device token management. Auto-dispatched on order events. |

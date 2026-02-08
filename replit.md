@@ -33,6 +33,7 @@ Preferred communication style: Simple, everyday language.
 ### Production Services (`server/services/`)
 
 - **Payments** (`payments.ts`): Stripe PaymentIntents with authorize-on-order, capture-on-delivery flow. Refunds and webhook handling.
+- **Payment Router** (`payment-router.ts`): Multi-provider payment routing with Stripe, Adyen, GoDaddy, Square, and Coinbase Commerce. Smart routing logic (crypto→Coinbase, international→Adyen, in-person→GoDaddy, POS→Square, default→Stripe). Automatic fallback chain when providers are unconfigured. Fee comparison API, provider status monitoring, admin routing config, and provider-specific webhook/dispute handling.
 - **Notifications** (`notifications.ts`): SendGrid email (HTML templates), Twilio SMS, Expo Push Notifications. Auto-dispatched on order status changes.
 - **Uploads** (`uploads.ts`): Multipart file upload with category validation, size limits, MIME enforcement, local storage.
 - **Tracking** (`tracking.ts`): Socket.IO GPS tracking with ETA calculation (Haversine), driver location broadcasting, location history.
