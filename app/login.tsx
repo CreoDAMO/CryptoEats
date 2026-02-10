@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Platform,
   KeyboardAvoidingView,
+  Image,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -19,8 +20,6 @@ import Colors from '@/constants/colors';
 import { useAuth } from '@/lib/auth-context';
 
 type AuthMode = 'signin' | 'signup';
-
-const CRYPTOEATS_LOGO = '🍕';
 
 export default function LoginScreen() {
   const c = Colors.dark;
@@ -125,7 +124,11 @@ export default function LoginScreen() {
         <View style={[styles.content, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 20 }]}>
           {/* Header */}
           <View style={styles.header}>
-            <Text style={styles.logo}>{CRYPTOEATS_LOGO}</Text>
+            <Image
+              source={require('@/assets/images/icon.png')}
+              style={styles.logoImage}
+              resizeMode="contain"
+            />
             <Text style={[styles.brandName, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>
               CryptoEats
             </Text>
@@ -438,8 +441,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
-  logo: {
-    fontSize: 56,
+  logoImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 24,
     marginBottom: 12,
   },
   brandName: {
