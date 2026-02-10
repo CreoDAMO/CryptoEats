@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>CryptoEats Merchant Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -32,7 +35,7 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 240px 1fr;
+      grid-template-columns: 250px 1fr;
       min-height: 100vh;
     }
 
@@ -44,12 +47,14 @@
       top: 0;
       height: 100vh;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
     }
 
     .sidebar-brand {
-      padding: 0 24px 24px;
+      padding: 0 24px 20px;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 16px;
+      margin-bottom: 8px;
     }
 
     .sidebar-brand h1 {
@@ -65,11 +70,41 @@
       margin-top: 4px;
     }
 
-    .sidebar-brand .restaurant-name {
-      font-size: 13px;
+    .restaurant-selector {
+      padding: 12px 24px 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .restaurant-selector label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .restaurant-selector select {
+      width: 100%;
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg);
       color: var(--text);
-      margin-top: 8px;
-      font-weight: 500;
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238888A0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    .restaurant-selector select:focus {
+      outline: none;
+      border-color: var(--accent);
     }
 
     .nav-item {
@@ -86,41 +121,37 @@
       background: none;
       width: 100%;
       text-align: left;
+      font-family: inherit;
     }
 
     .nav-item:hover { background: var(--surface-hover); color: var(--text); }
     .nav-item.active { color: var(--accent); background: var(--accent-dim); border-right: 2px solid var(--accent); }
 
-    .nav-icon {
-      width: 20px;
-      height: 20px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 16px;
+    .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
     }
 
     .main-content {
       padding: 32px;
       overflow-y: auto;
+      max-height: 100vh;
     }
 
     .page-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
-    .page-header h2 {
-      font-size: 24px;
-      font-weight: 700;
-    }
-
-    .page-header .refresh-info {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
+    .page-header h2 { font-size: 24px; font-weight: 700; }
+    .page-header .refresh-info { font-size: 12px; color: var(--text-secondary); }
 
     .tab-content { display: none; }
     .tab-content.active { display: block; }
@@ -129,26 +160,18 @@
       background: linear-gradient(135deg, rgba(0,212,170,0.15) 0%, rgba(0,212,170,0.05) 100%);
       border: 1px solid rgba(0,212,170,0.2);
       border-radius: 16px;
-      padding: 28px 32px;
-      margin-bottom: 28px;
+      padding: 24px 28px;
+      margin-bottom: 24px;
     }
 
-    .welcome-banner h2 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-
-    .welcome-banner p {
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
+    .welcome-banner h2 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+    .welcome-banner p { color: var(--text-secondary); font-size: 14px; }
 
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 16px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
     }
 
     .stat-card {
@@ -156,28 +179,16 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px;
+      transition: border-color 0.2s;
     }
 
-    .stat-card .label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-weight: 500;
-      margin-bottom: 8px;
-    }
-
-    .stat-card .value {
-      font-size: 28px;
-      font-weight: 700;
-    }
-
-    .stat-card .sub {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
+    .stat-card:hover { border-color: rgba(0,212,170,0.3); }
+    .stat-card .label { font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 8px; }
+    .stat-card .value { font-size: 28px; font-weight: 700; }
+    .stat-card .sub { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
     .stat-card .value.accent { color: var(--accent); }
     .stat-card .value.warning { color: var(--warning); }
+    .stat-card .value.info { color: var(--info); }
 
     .card {
       background: var(--surface);
@@ -196,10 +207,7 @@
       justify-content: space-between;
     }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
+    table { width: 100%; border-collapse: collapse; }
 
     th {
       text-align: left;
@@ -228,146 +236,47 @@
       border-radius: 20px;
       font-size: 12px;
       font-weight: 600;
+      text-transform: capitalize;
     }
 
     .badge-success { background: rgba(0,212,170,0.15); color: var(--success); }
     .badge-warning { background: rgba(255,184,77,0.15); color: var(--warning); }
     .badge-danger { background: rgba(255,77,106,0.15); color: var(--danger); }
     .badge-info { background: rgba(77,157,255,0.15); color: var(--info); }
+    .badge-accent { background: rgba(0,212,170,0.15); color: var(--accent); }
     .badge-neutral { background: rgba(136,136,160,0.15); color: var(--text-secondary); }
-    .badge-preparing { background: rgba(168,85,247,0.15); color: #A855F7; }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      transition: all 0.2s;
-    }
-
-    .btn-primary { background: var(--accent); color: #0A0A0F; border-color: var(--accent); }
-    .btn-primary:hover { opacity: 0.85; }
-    .btn-secondary { background: var(--surface-hover); color: var(--text); }
-    .btn-secondary:hover { background: var(--border); }
-    .btn-danger { background: rgba(255,77,106,0.15); color: var(--danger); border-color: rgba(255,77,106,0.3); }
-    .btn-danger:hover { background: rgba(255,77,106,0.25); }
-    .btn-warning { background: rgba(255,184,77,0.15); color: var(--warning); border-color: rgba(255,184,77,0.3); }
-    .btn-warning:hover { background: rgba(255,184,77,0.25); }
-    .btn-info { background: rgba(77,157,255,0.15); color: var(--info); border-color: rgba(77,157,255,0.3); }
-    .btn-info:hover { background: rgba(77,157,255,0.25); }
-    .btn-sm { padding: 5px 10px; font-size: 12px; }
-
-    .quick-actions {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-    }
 
     .filter-bar {
       display: flex;
       gap: 8px;
       margin-bottom: 16px;
       flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 500;
-      font-family: inherit;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-secondary);
-      transition: all 0.2s;
-    }
-
-    .filter-btn.active, .filter-btn:hover {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .order-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 12px;
-      transition: all 0.2s;
-    }
-
-    .order-card:hover { border-color: rgba(0,212,170,0.3); }
-
-    .order-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 12px;
-    }
-
-    .order-card-header .order-id {
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--accent);
-    }
-
-    .order-card-header .order-time {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .order-items-list {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-      line-height: 1.6;
-    }
-
-    .order-card-footer {
-      display: flex;
-      justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
     }
 
-    .order-total {
-      font-size: 16px;
-      font-weight: 700;
-    }
-
-    .order-actions {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    .order-details {
-      display: none;
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    .order-details.show { display: block; }
-
-    .detail-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 0;
+    .filter-bar label {
       font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-right: 4px;
     }
 
-    .detail-row .dl { color: var(--text-secondary); }
+    .filter-select {
+      padding: 6px 28px 6px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%238888A0' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+    }
+
+    .filter-select:focus { outline: none; border-color: var(--accent); }
 
     .menu-grid {
       display: grid;
@@ -380,36 +289,27 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 20px;
-      position: relative;
+      transition: border-color 0.2s;
     }
 
+    .menu-item-card:hover { border-color: rgba(0,212,170,0.3); }
     .menu-item-card.unavailable { opacity: 0.5; }
+    .menu-item-name { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
 
-    .menu-item-name {
-      font-size: 16px;
-      font-weight: 600;
-      margin-bottom: 4px;
-    }
-
-    .menu-item-category {
-      font-size: 12px;
+    .menu-item-desc {
+      font-size: 13px;
       color: var(--text-secondary);
-      margin-bottom: 8px;
+      margin-bottom: 10px;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
-    .menu-item-price {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 12px;
-    }
+    .menu-item-price { font-size: 18px; font-weight: 700; color: var(--accent); margin-bottom: 12px; }
 
-    .menu-item-tags {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
+    .menu-item-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 
     .menu-tag {
       font-size: 11px;
@@ -419,53 +319,31 @@
       color: var(--text-secondary);
     }
 
-    .menu-tag.alcohol {
-      background: rgba(255,77,106,0.15);
-      color: var(--danger);
-    }
+    .menu-tag.alcohol { background: rgba(255,77,106,0.15); color: var(--danger); }
+    .menu-tag.category { background: rgba(77,157,255,0.15); color: var(--info); }
 
-    .menu-item-actions {
+    .menu-item-footer {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
-    .toggle-switch {
-      position: relative;
-      width: 44px;
-      height: 24px;
-      cursor: pointer;
+    .availability-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 500;
     }
 
-    .toggle-switch input { opacity: 0; width: 0; height: 0; }
-
-    .toggle-slider {
-      position: absolute;
-      inset: 0;
-      background: var(--border);
-      border-radius: 24px;
-      transition: 0.3s;
-    }
-
-    .toggle-slider::before {
-      content: '';
-      position: absolute;
-      width: 18px;
-      height: 18px;
-      left: 3px;
-      bottom: 3px;
-      background: var(--text);
+    .availability-dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
-      transition: 0.3s;
     }
 
-    .toggle-switch input:checked + .toggle-slider {
-      background: var(--accent);
-    }
-
-    .toggle-switch input:checked + .toggle-slider::before {
-      transform: translateX(20px);
-    }
+    .availability-dot.available { background: var(--success); }
+    .availability-dot.unavailable { background: var(--danger); }
 
     .review-card {
       background: var(--surface);
@@ -473,7 +351,10 @@
       border-radius: 12px;
       padding: 20px;
       margin-bottom: 12px;
+      transition: border-color 0.2s;
     }
+
+    .review-card:hover { border-color: rgba(0,212,170,0.3); }
 
     .review-header {
       display: flex;
@@ -482,36 +363,15 @@
       margin-bottom: 10px;
     }
 
-    .review-stars {
-      color: var(--warning);
-      font-size: 16px;
-      letter-spacing: 2px;
-    }
-
-    .review-date {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .review-customer {
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .review-comment {
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
+    .review-stars { color: var(--warning); font-size: 16px; letter-spacing: 2px; }
+    .review-date { font-size: 12px; color: var(--text-secondary); }
+    .review-comment { font-size: 14px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
 
     .review-response {
       background: var(--accent-dim);
       border-left: 3px solid var(--accent);
       padding: 12px 16px;
       border-radius: 0 8px 8px 0;
-      margin-bottom: 12px;
     }
 
     .review-response .resp-label {
@@ -523,23 +383,24 @@
       margin-bottom: 4px;
     }
 
-    .review-response .resp-text {
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.5;
+    .review-response .resp-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+    .avg-rating-display {
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
 
-    .review-actions {
-      display: flex;
-      gap: 8px;
+    .avg-rating-big {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--warning);
     }
 
-    .rating-breakdown {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-bottom: 20px;
-    }
+    .avg-rating-info .stars { color: var(--warning); font-size: 18px; letter-spacing: 2px; margin-bottom: 4px; }
+    .avg-rating-info .total-reviews { font-size: 13px; color: var(--text-secondary); }
+
+    .rating-breakdown { display: flex; flex-direction: column; gap: 8px; }
 
     .rating-row {
       display: flex;
@@ -548,11 +409,7 @@
       font-size: 13px;
     }
 
-    .rating-row .star-label {
-      width: 40px;
-      color: var(--text-secondary);
-      flex-shrink: 0;
-    }
+    .rating-row .star-label { width: 40px; color: var(--text-secondary); flex-shrink: 0; }
 
     .rating-bar-bg {
       flex: 1;
@@ -569,21 +426,15 @@
       transition: width 0.5s ease;
     }
 
-    .rating-row .count {
-      width: 30px;
-      text-align: right;
-      color: var(--text-secondary);
-    }
+    .rating-row .count { width: 30px; text-align: right; color: var(--text-secondary); }
 
-    .chart-container {
-      padding: 20px 0;
-    }
+    .chart-container { padding: 20px 0; }
 
     .bar-chart {
       display: flex;
       align-items: flex-end;
-      gap: 12px;
-      height: 200px;
+      gap: 8px;
+      height: 220px;
       padding: 0 10px;
     }
 
@@ -592,198 +443,33 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       height: 100%;
       justify-content: flex-end;
     }
 
     .bar {
       width: 100%;
-      max-width: 60px;
+      max-width: 50px;
       background: linear-gradient(to top, var(--accent), rgba(0,212,170,0.6));
-      border-radius: 6px 6px 0 0;
+      border-radius: 4px 4px 0 0;
       transition: height 0.5s ease;
       min-height: 4px;
+      position: relative;
     }
 
-    .bar-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
+    .bar:hover { opacity: 0.85; }
+    .bar-label { font-size: 11px; color: var(--text-secondary); }
+    .bar-value { font-size: 11px; font-weight: 600; color: var(--text); }
 
-    .bar-value {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .form-group {
-      margin-bottom: 16px;
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 10px 14px;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-family: inherit;
-      font-size: 14px;
-      transition: border-color 0.2s;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-
-    .form-group textarea {
-      min-height: 80px;
-      resize: vertical;
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 16px;
-    }
-
-    .checkbox-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 14px;
-    }
-
-    .checkbox-group input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-    }
-
-    .tags-select {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .tag-option {
-      padding: 4px 12px;
-      border-radius: 16px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text-secondary);
-      transition: all 0.2s;
-    }
-
-    .tag-option.selected {
-      background: var(--accent-dim);
-      color: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .settings-section {
-      margin-bottom: 32px;
-    }
-
-    .settings-section h3 {
-      font-size: 18px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .hours-grid {
-      display: grid;
-      gap: 8px;
-    }
-
-    .hours-row {
-      display: grid;
-      grid-template-columns: 100px 1fr 1fr auto;
-      gap: 12px;
-      align-items: center;
-      font-size: 14px;
-    }
-
-    .hours-row .day-label {
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
-    .hours-row input[type="time"] {
-      padding: 6px 10px;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-family: inherit;
-    }
-
-    .agreement-box {
-      background: var(--accent-dim);
-      border: 1px solid rgba(0,212,170,0.3);
-      border-radius: 12px;
-      padding: 20px;
-    }
-
-    .agreement-box h4 {
-      color: var(--accent);
-      margin-bottom: 8px;
-    }
-
-    .agreement-box p {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 12px;
-    }
-
-    .upload-placeholder {
-      width: 120px;
-      height: 120px;
-      border: 2px dashed var(--border);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 8px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      font-size: 12px;
-      transition: border-color 0.2s;
-    }
-
-    .upload-placeholder:hover { border-color: var(--accent); color: var(--accent); }
-
-    .popular-items-list {
-      list-style: none;
-    }
+    .popular-items-list { list-style: none; }
 
     .popular-item {
       display: flex;
-      justify-content: space-between;
       align-items: center;
       padding: 12px 0;
       border-bottom: 1px solid var(--border);
+      gap: 12px;
     }
 
     .popular-item:last-child { border-bottom: none; }
@@ -799,81 +485,133 @@
       justify-content: center;
       font-weight: 700;
       font-size: 13px;
-      margin-right: 12px;
       flex-shrink: 0;
     }
 
-    .popular-item .item-info {
-      flex: 1;
-    }
+    .popular-item .item-info { flex: 1; }
+    .popular-item .item-name { font-weight: 600; font-size: 14px; }
+    .popular-item .item-orders { font-size: 12px; color: var(--text-secondary); }
+    .popular-item .item-revenue { font-size: 13px; font-weight: 600; color: var(--accent); }
 
-    .popular-item .item-name {
-      font-weight: 600;
-      font-size: 14px;
-    }
-
-    .popular-item .item-orders {
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .peak-hours {
+    .pie-chart-container {
       display: flex;
-      gap: 8px;
+      align-items: center;
+      gap: 32px;
       flex-wrap: wrap;
     }
 
-    .peak-hour {
-      padding: 8px 14px;
-      border-radius: 8px;
-      background: var(--surface-hover);
-      font-size: 13px;
-      font-weight: 500;
+    .pie-chart {
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      flex-shrink: 0;
     }
 
-    .peak-hour.hot {
-      background: rgba(255,77,106,0.15);
-      color: var(--danger);
-    }
+    .pie-legend { display: flex; flex-direction: column; gap: 8px; }
 
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 500;
+    .pie-legend-item {
+      display: flex;
       align-items: center;
-      justify-content: center;
+      gap: 8px;
+      font-size: 13px;
     }
 
-    .modal-overlay.show { display: flex; }
+    .pie-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
 
-    .modal {
+    .pie-legend-item .legend-count {
+      color: var(--text-secondary);
+      font-size: 12px;
+      margin-left: auto;
+      padding-left: 16px;
+    }
+
+    .settings-section { margin-bottom: 28px; }
+
+    .settings-section h3 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-row .info-label { color: var(--text-secondary); font-weight: 500; }
+    .info-row .info-value { font-weight: 500; text-align: right; }
+
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface-hover) 25%, var(--border) 50%, var(--surface-hover) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-card {
+      height: 100px;
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 28px;
-      max-width: 560px;
-      width: 90%;
-      max-height: 85vh;
-      overflow-y: auto;
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
     }
 
-    .modal h3 {
-      margin-bottom: 16px;
-      font-size: 18px;
+    .skeleton-card::after {
+      content: '';
+      position: absolute;
+      inset: 20px;
+      background: linear-gradient(90deg, var(--surface-hover) 25%, var(--border) 50%, var(--surface-hover) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 6px;
     }
 
-    .modal-close {
-      float: right;
-      background: none;
-      border: none;
-      color: var(--text-secondary);
-      font-size: 20px;
-      cursor: pointer;
+    .skeleton-row {
+      height: 16px;
+      margin-bottom: 12px;
     }
 
-    .modal-close:hover { color: var(--text); }
+    .skeleton-text { height: 14px; width: 60%; }
+    .skeleton-text-sm { height: 12px; width: 40%; }
+
+    .live-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      margin-right: 6px;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
 
     .toast {
       position: fixed;
@@ -895,1022 +633,816 @@
     .toast.error { background: var(--danger); color: #fff; }
     .toast.info { background: var(--info); color: #fff; }
 
-    .live-dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--success);
-      margin-right: 6px;
-      animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.4; }
-    }
-
-    .category-header {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 24px 0 12px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-      color: var(--accent);
-    }
-
-    .category-header:first-child { margin-top: 0; }
-
-    .avg-rating-display {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .avg-rating-big {
-      font-size: 48px;
-      font-weight: 700;
-      color: var(--warning);
-    }
-
-    .avg-rating-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .avg-rating-info .stars {
-      color: var(--warning);
-      font-size: 20px;
-      letter-spacing: 2px;
-    }
-
-    .avg-rating-info .total-reviews {
-      font-size: 13px;
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
       color: var(--text-secondary);
     }
 
-    @media (max-width: 768px) {
+    .empty-state .empty-icon { font-size: 48px; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    .loading-overlay {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 80px 24px;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 900px) {
       .layout { grid-template-columns: 1fr; }
       .sidebar {
         position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: auto;
+        left: -260px;
         z-index: 100;
-        display: flex;
-        overflow-x: auto;
-        padding: 0;
-        border-right: none;
-        border-top: 1px solid var(--border);
+        width: 250px;
+        transition: left 0.3s;
       }
-      .sidebar-brand { display: none; }
-      .nav-item {
-        flex-direction: column;
-        padding: 10px 14px;
-        font-size: 11px;
-        gap: 4px;
-        white-space: nowrap;
+      .sidebar.open { left: 0; }
+      .main-content { padding: 20px; }
+      .mobile-toggle {
+        display: flex !important;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 101;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 8px 12px;
+        color: var(--text);
+        cursor: pointer;
+        font-size: 18px;
       }
-      .nav-item.active { border-right: none; border-top: 2px solid var(--accent); }
-      .main-content { padding: 16px; padding-bottom: 80px; }
-      .stats-grid { grid-template-columns: repeat(2, 1fr); }
-      .form-row { grid-template-columns: 1fr; }
-      .hours-row { grid-template-columns: 80px 1fr 1fr auto; gap: 8px; font-size: 12px; }
+      .stats-grid { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+      .info-grid { grid-template-columns: 1fr; }
       .menu-grid { grid-template-columns: 1fr; }
-      .order-card-header { flex-direction: column; gap: 4px; }
-      .bar-chart { gap: 6px; }
+      .analytics-split { grid-template-columns: 1fr !important; }
     }
+
+    .mobile-toggle { display: none; }
+    .mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 99;
+    }
+
+    .mobile-overlay.show { display: block; }
   </style>
 </head>
 <body>
+
+  <button class="mobile-toggle" onclick="toggleSidebar()">&#9776;</button>
+  <div class="mobile-overlay" id="mobile-overlay" onclick="toggleSidebar()"></div>
+
   <div class="layout">
-    <nav class="sidebar">
+    <aside class="sidebar" id="sidebar">
       <div class="sidebar-brand">
-        <h1>CryptoEats</h1>
+        <h1>&#9830; CryptoEats</h1>
         <span>Merchant Dashboard</span>
-        <div class="restaurant-name">La Carreta Cuban Cuisine</div>
       </div>
-      <button class="nav-item active" onclick="switchTab('overview')">
-        <span class="nav-icon">&#9632;</span> Overview
-      </button>
-      <button class="nav-item" onclick="switchTab('orders')">
-        <span class="nav-icon">&#9776;</span> Orders
-      </button>
-      <button class="nav-item" onclick="switchTab('menu')">
-        <span class="nav-icon">&#9733;</span> Menu
-      </button>
-      <button class="nav-item" onclick="switchTab('reviews')">
-        <span class="nav-icon">&#9829;</span> Reviews
-      </button>
-      <button class="nav-item" onclick="switchTab('analytics')">
-        <span class="nav-icon">&#9650;</span> Analytics
-      </button>
-      <button class="nav-item" onclick="switchTab('settings')">
-        <span class="nav-icon">&#9881;</span> Settings
-      </button>
-    </nav>
+
+      <div class="restaurant-selector">
+        <label>Restaurant</label>
+        <select id="restaurant-select" onchange="onRestaurantChange()">
+          <option value="">Loading restaurants...</option>
+        </select>
+      </div>
+
+      <nav>
+        <button class="nav-item active" onclick="switchTab('overview')">
+          <span class="nav-icon">&#9632;</span> Overview
+        </button>
+        <button class="nav-item" onclick="switchTab('orders')">
+          <span class="nav-icon">&#9776;</span> Orders
+        </button>
+        <button class="nav-item" onclick="switchTab('menu')">
+          <span class="nav-icon">&#9733;</span> Menu
+        </button>
+        <button class="nav-item" onclick="switchTab('reviews')">
+          <span class="nav-icon">&#9829;</span> Reviews
+        </button>
+        <button class="nav-item" onclick="switchTab('analytics')">
+          <span class="nav-icon">&#9650;</span> Analytics
+        </button>
+        <button class="nav-item" onclick="switchTab('settings')">
+          <span class="nav-icon">&#9881;</span> Settings
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <span id="last-refresh">Loading...</span>
+      </div>
+    </aside>
 
     <main class="main-content">
+      <div id="loading-state" class="loading-overlay">
+        <div class="spinner"></div>
+        <div style="color:var(--text-secondary);font-size:14px;">Loading dashboard...</div>
+      </div>
 
-      <!-- OVERVIEW TAB -->
-      <div id="tab-overview" class="tab-content active">
-        <div class="welcome-banner">
-          <h2>Welcome back, La Carreta Cuban Cuisine</h2>
-          <p>Here's your restaurant performance overview for today.</p>
+      <div id="no-restaurant" style="display:none;">
+        <div class="empty-state">
+          <div class="empty-icon">&#127860;</div>
+          <h3>Select a Restaurant</h3>
+          <p>Choose a restaurant from the dropdown in the sidebar to view its dashboard.</p>
         </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="label">Orders Today</div>
-            <div class="value" id="overview-orders-today">12</div>
-            <div class="sub">+3 from yesterday</div>
+      </div>
+
+      <div id="dashboard-content" style="display:none;">
+
+        <!-- OVERVIEW -->
+        <div id="tab-overview" class="tab-content active">
+          <div class="welcome-banner">
+            <h2 id="welcome-title">Welcome back</h2>
+            <p>Here's your restaurant performance overview.</p>
           </div>
-          <div class="stat-card">
-            <div class="label">Revenue Today</div>
-            <div class="value accent" id="overview-revenue-today">$487.50</div>
-            <div class="sub">+12% from yesterday</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Average Rating</div>
-            <div class="value" style="color: var(--warning);">4.6</div>
-            <div class="sub">Based on 8 reviews</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Pending Orders</div>
-            <div class="value warning" id="overview-pending">3</div>
-            <div class="sub">Requires attention</div>
+          <div class="stats-grid" id="overview-stats"></div>
+          <div class="card">
+            <div class="card-title">Recent Orders (Last 10)</div>
+            <div style="overflow-x:auto;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Items</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Address</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-orders-tbody"></tbody>
+              </table>
+            </div>
           </div>
         </div>
-        <div class="quick-actions">
-          <button class="btn btn-primary" onclick="switchTab('menu')">Update Menu</button>
-          <button class="btn btn-secondary" onclick="switchTab('reviews')">View Reviews</button>
-          <button class="btn btn-secondary" onclick="switchTab('orders')">Manage Orders</button>
-        </div>
-        <div class="card">
-          <div class="card-title">Recent Orders</div>
+
+        <!-- ORDERS -->
+        <div id="tab-orders" class="tab-content">
+          <div class="page-header">
+            <h2><span class="live-dot"></span>Orders</h2>
+            <span class="refresh-info" id="orders-refresh-info">Auto-refresh: 30s</span>
+          </div>
+          <div class="filter-bar">
+            <label>Status:</label>
+            <select class="filter-select" id="order-status-filter" onchange="renderOrders()">
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="preparing">Preparing</option>
+              <option value="picked_up">Picked Up</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
           <div style="overflow-x:auto;">
             <table>
               <thead>
                 <tr>
                   <th>Order ID</th>
+                  <th>Status</th>
                   <th>Items</th>
                   <th>Total</th>
-                  <th>Status</th>
-                  <th>Time</th>
+                  <th>Delivery Address</th>
+                  <th>Date</th>
                 </tr>
               </thead>
-              <tbody id="recent-orders-tbody"></tbody>
+              <tbody id="orders-tbody"></tbody>
             </table>
           </div>
+          <div id="orders-empty" style="display:none;">
+            <div class="empty-state">
+              <div class="empty-icon">&#128230;</div>
+              <h3>No orders found</h3>
+              <p>No orders match the current filter.</p>
+            </div>
+          </div>
         </div>
-      </div>
 
-      <!-- ORDERS TAB -->
-      <div id="tab-orders" class="tab-content">
-        <div class="page-header">
-          <h2><span class="live-dot"></span>Live Orders</h2>
-          <span class="refresh-info">Auto-refresh: 15s</span>
+        <!-- MENU -->
+        <div id="tab-menu" class="tab-content">
+          <div class="page-header">
+            <h2>Menu Items</h2>
+            <span class="refresh-info" id="menu-count"></span>
+          </div>
+          <div class="menu-grid" id="menu-grid"></div>
+          <div id="menu-empty" style="display:none;">
+            <div class="empty-state">
+              <div class="empty-icon">&#127869;</div>
+              <h3>No menu items</h3>
+              <p>This restaurant doesn't have any menu items yet.</p>
+            </div>
+          </div>
         </div>
-        <div class="filter-bar" id="order-filters">
-          <button class="filter-btn active" onclick="filterOrders('all')">All</button>
-          <button class="filter-btn" onclick="filterOrders('pending')">Pending</button>
-          <button class="filter-btn" onclick="filterOrders('confirmed')">Confirmed</button>
-          <button class="filter-btn" onclick="filterOrders('preparing')">Preparing</button>
-          <button class="filter-btn" onclick="filterOrders('picked_up')">Picked Up</button>
-          <button class="filter-btn" onclick="filterOrders('delivered')">Delivered</button>
-        </div>
-        <div id="orders-feed"></div>
-      </div>
 
-      <!-- MENU TAB -->
-      <div id="tab-menu" class="tab-content">
-        <div class="page-header">
-          <h2>Menu Management</h2>
-          <button class="btn btn-primary" onclick="openAddItemModal()">+ Add Item</button>
+        <!-- REVIEWS -->
+        <div id="tab-reviews" class="tab-content">
+          <div class="page-header">
+            <h2>Reviews &amp; Ratings</h2>
+          </div>
+          <div class="card" id="reviews-summary"></div>
+          <div id="reviews-list"></div>
+          <div id="reviews-empty" style="display:none;">
+            <div class="empty-state">
+              <div class="empty-icon">&#11088;</div>
+              <h3>No reviews yet</h3>
+              <p>Customer reviews will appear here.</p>
+            </div>
+          </div>
         </div>
-        <div id="menu-content"></div>
-      </div>
 
-      <!-- REVIEWS TAB -->
-      <div id="tab-reviews" class="tab-content">
-        <div class="page-header">
-          <h2>Reviews &amp; Ratings</h2>
-        </div>
-        <div class="card">
-          <div style="display:flex;gap:40px;flex-wrap:wrap;">
-            <div>
-              <div class="avg-rating-display">
-                <div class="avg-rating-big" id="avg-rating-value">4.6</div>
-                <div class="avg-rating-info">
-                  <div class="stars" id="avg-rating-stars"></div>
-                  <div class="total-reviews">8 reviews</div>
+        <!-- ANALYTICS -->
+        <div id="tab-analytics" class="tab-content">
+          <div class="page-header">
+            <h2>Analytics</h2>
+          </div>
+          <div class="card">
+            <div class="card-title">Daily Revenue (Last 14 Days)</div>
+            <div class="chart-container">
+              <div class="bar-chart" id="revenue-chart"></div>
+            </div>
+          </div>
+          <div class="analytics-split" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div class="card">
+              <div class="card-title">Popular Items (Top 10)</div>
+              <ul class="popular-items-list" id="popular-items"></ul>
+              <div id="popular-empty" style="display:none;">
+                <div class="empty-state" style="padding:24px;">
+                  <p>No order data available.</p>
                 </div>
               </div>
             </div>
-            <div style="flex:1;min-width:250px;">
-              <div class="rating-breakdown" id="rating-breakdown"></div>
+            <div class="card">
+              <div class="card-title">Orders by Status</div>
+              <div class="pie-chart-container" id="status-pie"></div>
             </div>
           </div>
         </div>
-        <div id="reviews-list"></div>
+
+        <!-- SETTINGS -->
+        <div id="tab-settings" class="tab-content">
+          <div class="page-header">
+            <h2>Restaurant Settings</h2>
+          </div>
+
+          <div class="settings-section">
+            <h3>Restaurant Information</h3>
+            <div class="card">
+              <div id="settings-info"></div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Delivery Configuration</h3>
+            <div class="card">
+              <div id="settings-delivery"></div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Compliance &amp; Licensing</h3>
+            <div class="card">
+              <div id="settings-compliance"></div>
+            </div>
+          </div>
+        </div>
+
       </div>
-
-      <!-- ANALYTICS TAB -->
-      <div id="tab-analytics" class="tab-content">
-        <div class="page-header">
-          <h2>Analytics</h2>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="label">Average Order Value</div>
-            <div class="value accent">$38.92</div>
-            <div class="sub">Last 7 days</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Total Revenue (7 days)</div>
-            <div class="value accent">$2,847.30</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Customer Satisfaction</div>
-            <div class="value" style="color: var(--warning);">92%</div>
-            <div class="sub">Based on ratings</div>
-          </div>
-          <div class="stat-card">
-            <div class="label">Total Orders (7 days)</div>
-            <div class="value">73</div>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">Revenue - Last 7 Days</div>
-          <div class="chart-container">
-            <div class="bar-chart" id="revenue-chart"></div>
-          </div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
-          <div class="card">
-            <div class="card-title">Popular Items (Top 5)</div>
-            <ul class="popular-items-list" id="popular-items"></ul>
-          </div>
-          <div class="card">
-            <div class="card-title">Peak Hours</div>
-            <div class="peak-hours" id="peak-hours"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- SETTINGS TAB -->
-      <div id="tab-settings" class="tab-content">
-        <div class="page-header">
-          <h2>Settings</h2>
-        </div>
-
-        <div class="settings-section">
-          <h3>Restaurant Profile</h3>
-          <div class="card">
-            <div style="display:flex;gap:24px;flex-wrap:wrap;">
-              <div class="upload-placeholder" onclick="showToast('Image upload coming soon','info')">
-                <span style="font-size:24px;">&#128247;</span>
-                <span>Upload Logo</span>
-              </div>
-              <div style="flex:1;min-width:300px;">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Restaurant Name</label>
-                    <input type="text" id="setting-name" value="La Carreta Cuban Cuisine">
-                  </div>
-                  <div class="form-group">
-                    <label>Cuisine Type</label>
-                    <input type="text" id="setting-cuisine" value="Cuban">
-                  </div>
-                </div>
-                <div class="form-group">
-                  <label>Address</label>
-                  <input type="text" id="setting-address" value="1234 Calle Ocho, Miami, FL 33135">
-                </div>
-                <div class="form-row">
-                  <div class="form-group">
-                    <label>Phone</label>
-                    <input type="text" id="setting-phone" value="(305) 555-0142">
-                  </div>
-                  <div class="form-group">
-                    <label>Email</label>
-                    <input type="text" id="setting-email" value="info@lacarretacuban.com">
-                  </div>
-                </div>
-                <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>Operating Hours</h3>
-          <div class="card">
-            <div class="hours-grid" id="hours-grid"></div>
-            <div style="margin-top:16px;">
-              <button class="btn btn-primary" onclick="saveHours()">Save Hours</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>Delivery Settings</h3>
-          <div class="card">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Delivery Fee ($)</label>
-                <input type="number" id="setting-delivery-fee" value="2.99" step="0.01">
-              </div>
-              <div class="form-group">
-                <label>Minimum Order ($)</label>
-                <input type="number" id="setting-min-order" value="15.00" step="0.01">
-              </div>
-            </div>
-            <button class="btn btn-primary" onclick="saveDeliverySettings()">Save Delivery Settings</button>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>Alcohol License</h3>
-          <div class="card">
-            <div class="detail-row">
-              <span class="dl">License Status</span>
-              <span class="badge badge-success">Active</span>
-            </div>
-            <div class="detail-row">
-              <span class="dl">License Number</span>
-              <span>FL-ALC-2024-08821</span>
-            </div>
-            <div class="detail-row">
-              <span class="dl">Expiry Date</span>
-              <span>December 31, 2026</span>
-            </div>
-            <div class="detail-row">
-              <span class="dl">Age Verification Required</span>
-              <span class="badge badge-info">Yes - All Alcohol Orders</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="settings-section">
-          <h3>SB 676 Digital Platform Agreement</h3>
-          <div class="agreement-box">
-            <h4>Agreement Status: Signed</h4>
-            <p>Your restaurant has signed the SB 676 Digital Platform Agreement with CryptoEats. This agreement ensures compliance with Florida's Senate Bill 676 regarding third-party delivery platforms, including transparency in fee structures, payment terms, and customer data handling.</p>
-            <div class="detail-row">
-              <span class="dl">Signed Date</span>
-              <span>January 15, 2026</span>
-            </div>
-            <div class="detail-row">
-              <span class="dl">Agreement Version</span>
-              <span>v2.1</span>
-            </div>
-            <div class="detail-row">
-              <span class="dl">Next Review Date</span>
-              <span>January 15, 2027</span>
-            </div>
-            <button class="btn btn-secondary" style="margin-top:12px;" onclick="showToast('Agreement document downloaded','success')">Download Agreement PDF</button>
-          </div>
-        </div>
-      </div>
-
     </main>
-  </div>
-
-  <!-- ADD/EDIT MENU ITEM MODAL -->
-  <div class="modal-overlay" id="modal-menu-item">
-    <div class="modal">
-      <button class="modal-close" onclick="closeModal('modal-menu-item')">&times;</button>
-      <h3 id="menu-modal-title">Add Menu Item</h3>
-      <input type="hidden" id="edit-item-id">
-      <div class="form-group">
-        <label>Item Name</label>
-        <input type="text" id="item-name" placeholder="e.g. Ropa Vieja">
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="item-description" placeholder="Describe the dish..."></textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label>Price ($)</label>
-          <input type="number" id="item-price" step="0.01" placeholder="0.00">
-        </div>
-        <div class="form-group">
-          <label>Category</label>
-          <select id="item-category">
-            <option value="Appetizers">Appetizers</option>
-            <option value="Main Courses">Main Courses</option>
-            <option value="Sandwiches">Sandwiches</option>
-            <option value="Sides">Sides</option>
-            <option value="Desserts">Desserts</option>
-            <option value="Beverages">Beverages</option>
-            <option value="Alcohol">Alcohol</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <div class="checkbox-group">
-          <input type="checkbox" id="item-alcohol">
-          <label for="item-alcohol" style="margin-bottom:0;">Contains Alcohol</label>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Dietary Tags</label>
-        <div class="tags-select" id="dietary-tags">
-          <span class="tag-option" onclick="toggleTag(this)">Gluten-Free</span>
-          <span class="tag-option" onclick="toggleTag(this)">Vegetarian</span>
-          <span class="tag-option" onclick="toggleTag(this)">Vegan</span>
-          <span class="tag-option" onclick="toggleTag(this)">Dairy-Free</span>
-          <span class="tag-option" onclick="toggleTag(this)">Nut-Free</span>
-          <span class="tag-option" onclick="toggleTag(this)">Spicy</span>
-        </div>
-      </div>
-      <div class="form-group">
-        <label>Pairing Suggestions</label>
-        <input type="text" id="item-pairing" placeholder="e.g. Pairs well with Mojito or Hatuey beer">
-      </div>
-      <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:20px;">
-        <button class="btn btn-secondary" onclick="closeModal('modal-menu-item')">Cancel</button>
-        <button class="btn btn-primary" onclick="saveMenuItem()">Save Item</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- REVIEW RESPONSE MODAL -->
-  <div class="modal-overlay" id="modal-review-response">
-    <div class="modal">
-      <button class="modal-close" onclick="closeModal('modal-review-response')">&times;</button>
-      <h3>Respond to Review</h3>
-      <p style="color:var(--text-secondary);font-size:13px;margin-bottom:16px;">Your response will be publicly visible. Responding to reviews helps build customer trust (SB 676 compliant).</p>
-      <input type="hidden" id="response-review-id">
-      <div class="form-group">
-        <label>Your Response</label>
-        <textarea id="review-response-text" placeholder="Thank you for your feedback..."></textarea>
-      </div>
-      <div style="display:flex;gap:12px;justify-content:flex-end;">
-        <button class="btn btn-secondary" onclick="closeModal('modal-review-response')">Cancel</button>
-        <button class="btn btn-primary" onclick="submitReviewResponse()">Submit Response</button>
-      </div>
-    </div>
   </div>
 
   <div class="toast" id="toast"></div>
 
   <script>
-    const RESTAURANT = {
-      id: 'rest_001',
-      name: 'La Carreta Cuban Cuisine',
-      cuisineType: 'Cuban',
-      address: '1234 Calle Ocho, Miami, FL 33135',
-      phone: '(305) 555-0142',
-      rating: 4.6,
-      deliveryFee: '2.99',
-      minimumOrder: '15.00',
-    };
+    let restaurantsData = [];
+    let merchantData = null;
+    let selectedRestaurantId = null;
+    let refreshInterval = null;
 
-    const MENU_ITEMS = [
-      { id: 'm1', name: 'Empanadas de Carne', description: 'Crispy beef empanadas with chimichurri', category: 'Appetizers', price: 8.99, isAlcohol: false, available: true, dietaryTags: [], pairing: 'Pairs with Mojito' },
-      { id: 'm2', name: 'Tostones con Mojo', description: 'Fried green plantains with garlic mojo sauce', category: 'Appetizers', price: 6.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free', 'Vegan'], pairing: '' },
-      { id: 'm3', name: 'Croquetas de Jamon', description: 'Ham croquettes, crispy outside, creamy inside', category: 'Appetizers', price: 7.49, isAlcohol: false, available: true, dietaryTags: [], pairing: '' },
-      { id: 'm4', name: 'Ropa Vieja', description: 'Shredded beef in tomato-based creole sauce with peppers and onions', category: 'Main Courses', price: 18.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free'], pairing: 'Pairs with Tempranillo or Hatuey beer' },
-      { id: 'm5', name: 'Lechon Asado', description: 'Slow-roasted marinated pork with mojo criollo', category: 'Main Courses', price: 21.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free'], pairing: 'Pairs with Cristal beer' },
-      { id: 'm6', name: 'Pollo a la Plancha', description: 'Grilled chicken breast marinated in citrus and garlic', category: 'Main Courses', price: 16.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free'], pairing: '' },
-      { id: 'm7', name: 'Vaca Frita', description: 'Crispy shredded beef with grilled onions', category: 'Main Courses', price: 19.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free'], pairing: '' },
-      { id: 'm8', name: 'Cuban Sandwich', description: 'Ham, roasted pork, Swiss cheese, pickles, mustard on pressed Cuban bread', category: 'Sandwiches', price: 13.99, isAlcohol: false, available: true, dietaryTags: [], pairing: '' },
-      { id: 'm9', name: 'Medianoche', description: 'Sweet bread Cuban sandwich with ham, pork, cheese', category: 'Sandwiches', price: 14.49, isAlcohol: false, available: false, dietaryTags: [], pairing: '' },
-      { id: 'm10', name: 'Arroz Congri', description: 'Black beans and rice cooked together', category: 'Sides', price: 4.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free', 'Vegan'], pairing: '' },
-      { id: 'm11', name: 'Maduros', description: 'Sweet fried plantains', category: 'Sides', price: 4.49, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free', 'Vegan'], pairing: '' },
-      { id: 'm12', name: 'Yuca con Mojo', description: 'Boiled cassava with garlic lime sauce', category: 'Sides', price: 5.49, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free', 'Vegan'], pairing: '' },
-      { id: 'm13', name: 'Tres Leches Cake', description: 'Classic three milk sponge cake', category: 'Desserts', price: 8.99, isAlcohol: false, available: true, dietaryTags: ['Vegetarian'], pairing: '' },
-      { id: 'm14', name: 'Flan de Caramelo', description: 'Traditional Cuban caramel custard', category: 'Desserts', price: 7.99, isAlcohol: false, available: true, dietaryTags: ['Gluten-Free', 'Vegetarian'], pairing: '' },
-      { id: 'm15', name: 'Cafe Cubano', description: 'Strong espresso with demerara sugar', category: 'Beverages', price: 3.49, isAlcohol: false, available: true, dietaryTags: ['Vegan'], pairing: '' },
-      { id: 'm16', name: 'Batido de Mamey', description: 'Mamey sapote milkshake', category: 'Beverages', price: 5.99, isAlcohol: false, available: true, dietaryTags: ['Vegetarian'], pairing: '' },
-      { id: 'm17', name: 'Mojito Clasico', description: 'White rum, fresh mint, lime, sugar, soda water', category: 'Alcohol', price: 12.99, isAlcohol: true, available: true, dietaryTags: ['Gluten-Free'], pairing: 'Pairs with Empanadas or Tostones' },
-      { id: 'm18', name: 'Hatuey Beer', description: 'Classic Cuban-style lager', category: 'Alcohol', price: 6.99, isAlcohol: true, available: true, dietaryTags: [], pairing: 'Pairs with Cuban Sandwich' },
-      { id: 'm19', name: 'Cuba Libre', description: 'Rum, cola, and fresh lime', category: 'Alcohol', price: 10.99, isAlcohol: true, available: true, dietaryTags: ['Gluten-Free'], pairing: '' },
-    ];
-
-    const ORDERS = [
-      { id: 'ord_a1b2c3', items: ['Ropa Vieja', 'Arroz Congri', 'Cafe Cubano'], total: 27.47, status: 'pending', time: '2 min ago', customer: 'Maria', address: '456 Palm Ave, Miami, FL', instructions: 'Extra mojo on the side', payment: 'crypto_usdc', ageVerified: false },
-      { id: 'ord_d4e5f6', items: ['Lechon Asado', 'Maduros', 'Mojito Clasico'], total: 39.47, status: 'pending', time: '5 min ago', customer: 'Carlos', address: '789 Biscayne Blvd, Miami, FL', instructions: '', payment: 'credit_card', ageVerified: true },
-      { id: 'ord_g7h8i9', items: ['Cuban Sandwich', 'Tostones con Mojo'], total: 20.98, status: 'pending', time: '8 min ago', customer: 'Jessica', address: '321 Ocean Dr, Miami Beach, FL', instructions: 'No pickles on sandwich', payment: 'apple_pay', ageVerified: false },
-      { id: 'ord_j1k2l3', items: ['Empanadas de Carne x2', 'Hatuey Beer x2'], total: 31.96, status: 'confirmed', time: '12 min ago', customer: 'David', address: '555 Coral Way, Miami, FL', instructions: 'Ring doorbell', payment: 'crypto_eth', ageVerified: true },
-      { id: 'ord_m4n5o6', items: ['Vaca Frita', 'Arroz Congri', 'Flan de Caramelo'], total: 33.97, status: 'confirmed', time: '15 min ago', customer: 'Ana', address: '678 Flagler St, Miami, FL', instructions: '', payment: 'credit_card', ageVerified: false },
-      { id: 'ord_p7q8r9', items: ['Pollo a la Plancha', 'Yuca con Mojo', 'Batido de Mamey'], total: 28.47, status: 'preparing', time: '20 min ago', customer: 'Roberto', address: '901 SW 8th St, Miami, FL', instructions: 'Extra lime on the side', payment: 'debit_card', ageVerified: false },
-      { id: 'ord_s1t2u3', items: ['Medianoche', 'Croquetas de Jamon', 'Cuba Libre'], total: 32.97, status: 'preparing', time: '25 min ago', customer: 'Sofia', address: '234 NW 36th St, Miami, FL', instructions: '', payment: 'crypto_btc', ageVerified: true },
-      { id: 'ord_v4w5x6', items: ['Ropa Vieja', 'Maduros', 'Tres Leches Cake'], total: 33.47, status: 'preparing', time: '30 min ago', customer: 'Miguel', address: '567 Bird Rd, Miami, FL', instructions: 'Leave at door', payment: 'credit_card', ageVerified: false },
-      { id: 'ord_y7z8a9', items: ['Lechon Asado', 'Arroz Congri'], total: 26.98, status: 'picked_up', time: '38 min ago', customer: 'Elena', address: '890 Brickell Ave, Miami, FL', instructions: '', payment: 'apple_pay', ageVerified: false },
-      { id: 'ord_b1c2d3', items: ['Cuban Sandwich', 'Cafe Cubano'], total: 17.48, status: 'picked_up', time: '42 min ago', customer: 'Jorge', address: '123 Calle Ocho, Miami, FL', instructions: '', payment: 'crypto_usdc', ageVerified: false },
-      { id: 'ord_e4f5g6', items: ['Empanadas de Carne', 'Mojito Clasico'], total: 21.98, status: 'delivered', time: '1 hr ago', customer: 'Isabella', address: '456 Collins Ave, Miami Beach, FL', instructions: '', payment: 'credit_card', ageVerified: true },
-      { id: 'ord_h7i8j9', items: ['Vaca Frita', 'Tostones con Mojo', 'Hatuey Beer'], total: 33.97, status: 'delivered', time: '1.5 hrs ago', customer: 'Luis', address: '789 Lincoln Rd, Miami Beach, FL', instructions: 'Call when arriving', payment: 'debit_card', ageVerified: true },
-      { id: 'ord_k1l2m3', items: ['Pollo a la Plancha', 'Flan de Caramelo'], total: 24.98, status: 'delivered', time: '2 hrs ago', customer: 'Carmen', address: '321 Miracle Mile, Coral Gables, FL', instructions: '', payment: 'apple_pay', ageVerified: false },
-      { id: 'ord_n4o5p6', items: ['Tres Leches Cake x2', 'Batido de Mamey x2'], total: 29.96, status: 'delivered', time: '3 hrs ago', customer: 'Pedro', address: '654 Sunset Dr, South Miami, FL', instructions: 'Birthday order - extra care please', payment: 'crypto_eth', ageVerified: false },
-      { id: 'ord_q7r8s9', items: ['Ropa Vieja', 'Cuban Sandwich', 'Arroz Congri', 'Cafe Cubano'], total: 41.46, status: 'delivered', time: '4 hrs ago', customer: 'Lucia', address: '987 Ponce de Leon, Coral Gables, FL', instructions: '', payment: 'credit_card', ageVerified: false },
-    ];
-
-    const REVIEWS = [
-      { id: 'r1', customer: 'Maria G.', rating: 5, comment: 'Best Ropa Vieja I\'ve had outside of Cuba! The meat was perfectly shredded and the sauce had amazing depth of flavor.', date: 'Feb 5, 2026', response: 'Thank you so much, Maria! We\'re glad our Ropa Vieja brought back great memories. We look forward to serving you again!' },
-      { id: 'r2', customer: 'Carlos M.', rating: 5, comment: 'The Lechon Asado was incredible. Perfectly roasted with crispy skin. Delivery was fast too!', date: 'Feb 4, 2026', response: null },
-      { id: 'r3', customer: 'Jessica T.', rating: 4, comment: 'Cuban sandwich was great, very authentic. Only wish the bread was a bit more pressed/crispy. Will order again!', date: 'Feb 3, 2026', response: 'Hi Jessica! Thank you for the feedback. We\'ll work on getting that bread extra crispy for you next time!' },
-      { id: 'r4', customer: 'David R.', rating: 4, comment: 'Good empanadas and nice selection of Cuban beers. Fair prices for the quality.', date: 'Feb 2, 2026', response: null },
-      { id: 'r5', customer: 'Ana L.', rating: 5, comment: 'Everything was perfect! Vaca Frita was crispy and flavorful, and the Flan was divine. My new go-to Cuban restaurant!', date: 'Feb 1, 2026', response: 'Ana, your kind words mean the world to us! We put love into every dish. See you again soon!' },
-      { id: 'r6', customer: 'Roberto S.', rating: 4, comment: 'Really good food. The Pollo a la Plancha was juicy and well-seasoned. Yuca con Mojo was a perfect side.', date: 'Jan 30, 2026', response: null },
-      { id: 'r7', customer: 'Sofia P.', rating: 5, comment: 'Ordered the Medianoche and it was exactly like what I had in Havana. The Cuba Libre was a nice touch too. Excellent!', date: 'Jan 28, 2026', response: null },
-      { id: 'r8', customer: 'Miguel H.', rating: 3, comment: 'Food was decent but arrived a bit cold. The Tres Leches cake was good though. Might try pickup next time.', date: 'Jan 25, 2026', response: null },
-    ];
-
-    const REVENUE_DATA = [
-      { day: 'Mon', amount: 389.50 },
-      { day: 'Tue', amount: 425.20 },
-      { day: 'Wed', amount: 312.80 },
-      { day: 'Thu', amount: 478.90 },
-      { day: 'Fri', amount: 521.40 },
-      { day: 'Sat', amount: 432.00 },
-      { day: 'Sun', amount: 287.50 },
-    ];
-
-    const POPULAR_ITEMS_DATA = [
-      { name: 'Ropa Vieja', orders: 28 },
-      { name: 'Cuban Sandwich', orders: 24 },
-      { name: 'Lechon Asado', orders: 21 },
-      { name: 'Empanadas de Carne', orders: 19 },
-      { name: 'Mojito Clasico', orders: 16 },
-    ];
-
-    const PEAK_HOURS_DATA = [
-      { time: '11:30 AM - 1:00 PM', hot: true },
-      { time: '5:30 PM - 7:00 PM', hot: true },
-      { time: '7:00 PM - 8:30 PM', hot: true },
-      { time: '12:00 PM - 1:30 PM', hot: false },
-      { time: '8:30 PM - 9:30 PM', hot: false },
-    ];
-
-    const OPERATING_HOURS = [
-      { day: 'Monday', open: '11:00', close: '22:00', closed: false },
-      { day: 'Tuesday', open: '11:00', close: '22:00', closed: false },
-      { day: 'Wednesday', open: '11:00', close: '22:00', closed: false },
-      { day: 'Thursday', open: '11:00', close: '22:00', closed: false },
-      { day: 'Friday', open: '11:00', close: '23:00', closed: false },
-      { day: 'Saturday', open: '10:00', close: '23:00', closed: false },
-      { day: 'Sunday', open: '10:00', close: '21:00', closed: false },
-    ];
-
-    let currentFilter = 'all';
-
-    function switchTab(tab) {
-      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      document.getElementById('tab-' + tab).classList.add('active');
-      document.querySelectorAll('.nav-item').forEach(n => {
-        if (n.textContent.trim().toLowerCase().includes(tab === 'menu' ? 'menu' : tab === 'reviews' ? 'reviews' : tab === 'analytics' ? 'analytics' : tab === 'settings' ? 'settings' : tab)) {
-          n.classList.add('active');
-        }
-      });
-      const navMap = { overview: 0, orders: 1, menu: 2, reviews: 3, analytics: 4, settings: 5 };
-      const navItems = document.querySelectorAll('.nav-item');
-      if (navMap[tab] !== undefined && navItems[navMap[tab]]) {
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        navItems[navMap[tab]].classList.add('active');
-      }
+    function formatCurrency(val) {
+      const num = parseFloat(val) || 0;
+      return '$' + num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     }
 
-    function getStatusBadge(status) {
+    function formatDate(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+
+    function formatDateShort(dateStr) {
+      if (!dateStr) return '—';
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
+    function truncateId(id) {
+      if (!id) return '—';
+      return id.length > 12 ? id.substring(0, 12) + '…' : id;
+    }
+
+    function getStars(rating) {
+      const r = Math.round(rating);
+      return '★'.repeat(r) + '☆'.repeat(5 - r);
+    }
+
+    function getStatusBadgeClass(status) {
       const map = {
-        pending: '<span class="badge badge-warning">Pending</span>',
-        confirmed: '<span class="badge badge-info">Confirmed</span>',
-        preparing: '<span class="badge badge-preparing">Preparing</span>',
-        picked_up: '<span class="badge badge-success">Picked Up</span>',
-        delivered: '<span class="badge badge-success">Delivered</span>',
-        cancelled: '<span class="badge badge-danger">Cancelled</span>',
+        pending: 'badge-warning',
+        confirmed: 'badge-info',
+        preparing: 'badge-info',
+        picked_up: 'badge-accent',
+        delivered: 'badge-success',
+        cancelled: 'badge-danger',
       };
-      return map[status] || '<span class="badge badge-neutral">' + status + '</span>';
+      return map[status] || 'badge-neutral';
     }
 
-    function getPaymentLabel(method) {
-      const map = {
-        crypto_usdc: 'USDC',
-        crypto_eth: 'ETH',
-        crypto_btc: 'BTC',
-        credit_card: 'Credit Card',
-        debit_card: 'Debit Card',
-        apple_pay: 'Apple Pay',
-      };
-      return map[method] || method;
+    function formatStatus(status) {
+      return (status || '').replace(/_/g, ' ');
     }
 
-    function renderRecentOrders() {
-      const tbody = document.getElementById('recent-orders-tbody');
-      const recent = ORDERS.slice(0, 10);
-      tbody.innerHTML = recent.map(o => `
-        <tr>
-          <td style="color:var(--accent);font-weight:500;">${o.id.substring(0, 12)}...</td>
-          <td>${o.items.join(', ')}</td>
-          <td style="font-weight:600;">$${o.total.toFixed(2)}</td>
-          <td>${getStatusBadge(o.status)}</td>
-          <td style="color:var(--text-secondary);font-size:13px;">${o.time}</td>
-        </tr>
-      `).join('');
-    }
-
-    function renderOrdersFeed() {
-      const feed = document.getElementById('orders-feed');
-      const filtered = currentFilter === 'all' ? ORDERS : ORDERS.filter(o => o.status === currentFilter);
-
-      if (filtered.length === 0) {
-        feed.innerHTML = '<div class="card" style="text-align:center;padding:40px;color:var(--text-secondary);">No orders matching this filter.</div>';
-        return;
-      }
-
-      feed.innerHTML = filtered.map(o => {
-        let actions = '';
-        if (o.status === 'pending') {
-          actions = `<button class="btn btn-primary btn-sm" onclick="updateOrderStatus('${o.id}','confirmed')">Accept</button>`;
-        } else if (o.status === 'confirmed') {
-          actions = `<button class="btn btn-warning btn-sm" onclick="updateOrderStatus('${o.id}','preparing')">Start Preparing</button>`;
-        } else if (o.status === 'preparing') {
-          actions = `<button class="btn btn-info btn-sm" onclick="updateOrderStatus('${o.id}','picked_up')">Ready for Pickup</button>`;
-        }
-
-        return `
-          <div class="order-card">
-            <div class="order-card-header">
-              <div>
-                <span class="order-id">${o.id.substring(0, 12)}...</span>
-                ${getStatusBadge(o.status)}
-              </div>
-              <span class="order-time">${o.time}</span>
-            </div>
-            <div class="order-items-list">${o.items.join(' &bull; ')}</div>
-            <div class="order-card-footer">
-              <span class="order-total">$${o.total.toFixed(2)}</span>
-              <div class="order-actions">
-                ${actions}
-                <button class="btn btn-secondary btn-sm" onclick="toggleOrderDetails('${o.id}')">Details</button>
-              </div>
-            </div>
-            <div class="order-details" id="details-${o.id}">
-              <div class="detail-row"><span class="dl">Customer</span><span>${o.customer}</span></div>
-              <div class="detail-row"><span class="dl">Delivery Address</span><span>${o.address}</span></div>
-              <div class="detail-row"><span class="dl">Special Instructions</span><span>${o.instructions || 'None'}</span></div>
-              <div class="detail-row"><span class="dl">Payment Method</span><span>${getPaymentLabel(o.payment)}</span></div>
-              <div class="detail-row"><span class="dl">Age Verification</span><span>${o.ageVerified ? '<span class="badge badge-success">Verified</span>' : '<span class="badge badge-neutral">Not Required</span>'}</span></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function filterOrders(filter) {
-      currentFilter = filter;
-      document.querySelectorAll('#order-filters .filter-btn').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-      renderOrdersFeed();
-    }
-
-    function toggleOrderDetails(orderId) {
-      const el = document.getElementById('details-' + orderId);
-      el.classList.toggle('show');
-    }
-
-    function updateOrderStatus(orderId, newStatus) {
-      const order = ORDERS.find(o => o.id === orderId);
-      if (order) {
-        order.status = newStatus;
-        renderOrdersFeed();
-        renderRecentOrders();
-        updateOverviewCounts();
-        const labels = { confirmed: 'Order accepted', preparing: 'Marked as preparing', picked_up: 'Ready for pickup' };
-        showToast(labels[newStatus] || 'Order updated', 'success');
-      }
-    }
-
-    function updateOverviewCounts() {
-      const pending = ORDERS.filter(o => o.status === 'pending').length;
-      document.getElementById('overview-pending').textContent = pending;
-    }
-
-    function renderMenuContent() {
-      const container = document.getElementById('menu-content');
-      const categories = {};
-      MENU_ITEMS.forEach(item => {
-        if (!categories[item.category]) categories[item.category] = [];
-        categories[item.category].push(item);
-      });
-
-      let html = '';
-      for (const [cat, items] of Object.entries(categories)) {
-        html += `<div class="category-header">${cat}</div>`;
-        html += '<div class="menu-grid">';
-        items.forEach(item => {
-          html += `
-            <div class="menu-item-card ${item.available ? '' : 'unavailable'}">
-              <div class="menu-item-name">${item.name}</div>
-              <div class="menu-item-category">${item.category}</div>
-              <div style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;">${item.description}</div>
-              <div class="menu-item-price">$${item.price.toFixed(2)}</div>
-              <div class="menu-item-tags">
-                ${item.isAlcohol ? '<span class="menu-tag alcohol">Alcohol</span>' : ''}
-                ${item.dietaryTags.map(t => `<span class="menu-tag">${t}</span>`).join('')}
-              </div>
-              ${item.pairing ? `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px;font-style:italic;">${item.pairing}</div>` : ''}
-              <div class="menu-item-actions">
-                <label class="toggle-switch">
-                  <input type="checkbox" ${item.available ? 'checked' : ''} onchange="toggleAvailability('${item.id}')">
-                  <span class="toggle-slider"></span>
-                </label>
-                <button class="btn btn-secondary btn-sm" onclick="editMenuItem('${item.id}')">Edit</button>
-              </div>
-            </div>
-          `;
-        });
-        html += '</div>';
-      }
-      container.innerHTML = html;
-    }
-
-    function toggleAvailability(itemId) {
-      const item = MENU_ITEMS.find(i => i.id === itemId);
-      if (item) {
-        item.available = !item.available;
-        renderMenuContent();
-        showToast(`${item.name} ${item.available ? 'enabled' : 'disabled'}`, 'success');
-      }
-    }
-
-    function openAddItemModal() {
-      document.getElementById('menu-modal-title').textContent = 'Add Menu Item';
-      document.getElementById('edit-item-id').value = '';
-      document.getElementById('item-name').value = '';
-      document.getElementById('item-description').value = '';
-      document.getElementById('item-price').value = '';
-      document.getElementById('item-category').value = 'Appetizers';
-      document.getElementById('item-alcohol').checked = false;
-      document.getElementById('item-pairing').value = '';
-      document.querySelectorAll('#dietary-tags .tag-option').forEach(t => t.classList.remove('selected'));
-      openModal('modal-menu-item');
-    }
-
-    function editMenuItem(itemId) {
-      const item = MENU_ITEMS.find(i => i.id === itemId);
-      if (!item) return;
-      document.getElementById('menu-modal-title').textContent = 'Edit Menu Item';
-      document.getElementById('edit-item-id').value = item.id;
-      document.getElementById('item-name').value = item.name;
-      document.getElementById('item-description').value = item.description;
-      document.getElementById('item-price').value = item.price;
-      document.getElementById('item-category').value = item.category;
-      document.getElementById('item-alcohol').checked = item.isAlcohol;
-      document.getElementById('item-pairing').value = item.pairing || '';
-      document.querySelectorAll('#dietary-tags .tag-option').forEach(t => {
-        t.classList.toggle('selected', item.dietaryTags.includes(t.textContent));
-      });
-      openModal('modal-menu-item');
-    }
-
-    function saveMenuItem() {
-      const id = document.getElementById('edit-item-id').value;
-      const name = document.getElementById('item-name').value.trim();
-      const description = document.getElementById('item-description').value.trim();
-      const price = parseFloat(document.getElementById('item-price').value);
-      const category = document.getElementById('item-category').value;
-      const isAlcohol = document.getElementById('item-alcohol').checked;
-      const pairing = document.getElementById('item-pairing').value.trim();
-      const tags = [];
-      document.querySelectorAll('#dietary-tags .tag-option.selected').forEach(t => tags.push(t.textContent));
-
-      if (!name || isNaN(price)) {
-        showToast('Please fill in name and price', 'error');
-        return;
-      }
-
-      if (id) {
-        const item = MENU_ITEMS.find(i => i.id === id);
-        if (item) {
-          Object.assign(item, { name, description, price, category, isAlcohol, pairing, dietaryTags: tags });
-        }
-        showToast('Menu item updated', 'success');
-      } else {
-        const newId = 'm' + (MENU_ITEMS.length + 1) + '_' + Date.now();
-        MENU_ITEMS.push({ id: newId, name, description, price, category, isAlcohol, available: true, dietaryTags: tags, pairing });
-        showToast('Menu item added', 'success');
-      }
-
-      closeModal('modal-menu-item');
-      renderMenuContent();
-    }
-
-    function toggleTag(el) {
-      el.classList.toggle('selected');
-    }
-
-    function renderReviews() {
-      const list = document.getElementById('reviews-list');
-      const breakdown = document.getElementById('rating-breakdown');
-      const avgStars = document.getElementById('avg-rating-stars');
-
-      const avg = REVIEWS.reduce((s, r) => s + r.rating, 0) / REVIEWS.length;
-      document.getElementById('avg-rating-value').textContent = avg.toFixed(1);
-
-      const fullStars = Math.floor(avg);
-      const halfStar = avg - fullStars >= 0.5;
-      let starsHtml = '';
-      for (let i = 0; i < 5; i++) {
-        starsHtml += i < fullStars ? '&#9733;' : (i === fullStars && halfStar ? '&#9733;' : '&#9734;');
-      }
-      avgStars.innerHTML = starsHtml;
-
-      const dist = [0, 0, 0, 0, 0];
-      REVIEWS.forEach(r => dist[r.rating - 1]++);
-      breakdown.innerHTML = [5, 4, 3, 2, 1].map(star => {
-        const count = dist[star - 1];
-        const pct = REVIEWS.length > 0 ? (count / REVIEWS.length * 100) : 0;
-        return `
-          <div class="rating-row">
-            <span class="star-label">${star} star</span>
-            <div class="rating-bar-bg"><div class="rating-bar-fill" style="width:${pct}%"></div></div>
-            <span class="count">${count}</span>
-          </div>
-        `;
-      }).join('');
-
-      list.innerHTML = REVIEWS.map(r => {
-        let starsStr = '';
-        for (let i = 0; i < 5; i++) starsStr += i < r.rating ? '&#9733;' : '&#9734;';
-        return `
-          <div class="review-card">
-            <div class="review-header">
-              <div>
-                <div class="review-stars">${starsStr}</div>
-                <div class="review-customer">${r.customer}</div>
-              </div>
-              <div class="review-date">${r.date}</div>
-            </div>
-            <div class="review-comment">${r.comment}</div>
-            ${r.response ? `
-              <div class="review-response">
-                <div class="resp-label">Restaurant Response</div>
-                <div class="resp-text">${r.response}</div>
-              </div>
-            ` : ''}
-            <div class="review-actions">
-              ${!r.response ? `<button class="btn btn-primary btn-sm" onclick="openReviewResponseModal('${r.id}')">Respond</button>` : '<span class="badge badge-success">Responded</span>'}
-              <button class="btn btn-danger btn-sm" onclick="flagReview('${r.id}')">Flag</button>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function openReviewResponseModal(reviewId) {
-      document.getElementById('response-review-id').value = reviewId;
-      document.getElementById('review-response-text').value = '';
-      openModal('modal-review-response');
-    }
-
-    function submitReviewResponse() {
-      const reviewId = document.getElementById('response-review-id').value;
-      const text = document.getElementById('review-response-text').value.trim();
-      if (!text) {
-        showToast('Please write a response', 'error');
-        return;
-      }
-      const review = REVIEWS.find(r => r.id === reviewId);
-      if (review) {
-        review.response = text;
-      }
-      closeModal('modal-review-response');
-      renderReviews();
-      showToast('Response submitted successfully', 'success');
-    }
-
-    function flagReview(reviewId) {
-      showToast('Review flagged for moderation', 'info');
-    }
-
-    function renderAnalytics() {
-      const chart = document.getElementById('revenue-chart');
-      const maxAmount = Math.max(...REVENUE_DATA.map(d => d.amount));
-      chart.innerHTML = REVENUE_DATA.map(d => {
-        const heightPct = (d.amount / maxAmount * 100);
-        return `
-          <div class="bar-column">
-            <div class="bar-value">$${d.amount.toFixed(0)}</div>
-            <div class="bar" style="height:${heightPct}%"></div>
-            <div class="bar-label">${d.day}</div>
-          </div>
-        `;
-      }).join('');
-
-      const popular = document.getElementById('popular-items');
-      popular.innerHTML = POPULAR_ITEMS_DATA.map((item, i) => `
-        <li class="popular-item">
-          <span class="rank">${i + 1}</span>
-          <div class="item-info">
-            <div class="item-name">${item.name}</div>
-            <div class="item-orders">${item.orders} orders this week</div>
-          </div>
-        </li>
-      `).join('');
-
-      const peakEl = document.getElementById('peak-hours');
-      peakEl.innerHTML = PEAK_HOURS_DATA.map(h => `
-        <div class="peak-hour ${h.hot ? 'hot' : ''}">${h.time}</div>
-      `).join('');
-    }
-
-    function renderHoursGrid() {
-      const grid = document.getElementById('hours-grid');
-      grid.innerHTML = OPERATING_HOURS.map((h, i) => `
-        <div class="hours-row">
-          <span class="day-label">${h.day.substring(0, 3)}</span>
-          <input type="time" value="${h.open}" onchange="OPERATING_HOURS[${i}].open=this.value">
-          <input type="time" value="${h.close}" onchange="OPERATING_HOURS[${i}].close=this.value">
-          <label class="toggle-switch">
-            <input type="checkbox" ${!h.closed ? 'checked' : ''} onchange="OPERATING_HOURS[${i}].closed=!this.checked">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      `).join('');
-    }
-
-    function openModal(id) {
-      document.getElementById(id).classList.add('show');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.remove('show');
+    function getItemsCount(items) {
+      if (!items || !Array.isArray(items)) return 0;
+      return items.reduce((sum, i) => sum + (i.quantity || 1), 0);
     }
 
     function showToast(message, type) {
       const toast = document.getElementById('toast');
       toast.textContent = message;
-      toast.className = 'toast ' + type;
-      setTimeout(() => toast.classList.add('show'), 10);
+      toast.className = 'toast ' + (type || 'info');
+      toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    function saveProfile() {
-      showToast('Restaurant profile saved', 'success');
-    }
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
 
-    function saveHours() {
-      showToast('Operating hours updated', 'success');
-    }
+      const tabEl = document.getElementById('tab-' + tab);
+      if (tabEl) tabEl.classList.add('active');
 
-    function saveDeliverySettings() {
-      showToast('Delivery settings saved', 'success');
-    }
+      const navItems = document.querySelectorAll('.nav-item');
+      const tabNames = ['overview', 'orders', 'menu', 'reviews', 'analytics', 'settings'];
+      const idx = tabNames.indexOf(tab);
+      if (idx >= 0 && navItems[idx]) navItems[idx].classList.add('active');
 
-    async function tryFetchLiveData() {
-      try {
-        const res = await fetch('/api/restaurants');
-        if (res.ok) {
-          const restaurants = await res.json();
-          const ours = restaurants.find(r => r.name && r.name.includes('Carreta'));
-          if (ours) {
-            RESTAURANT.id = ours.id;
-            try {
-              const menuRes = await fetch(`/api/restaurants/${ours.id}/menu`);
-              if (menuRes.ok) {
-                const liveMenu = await menuRes.json();
-                if (liveMenu.length > 0) {
-                  console.log('Loaded ' + liveMenu.length + ' menu items from API');
-                }
-              }
-            } catch (e) {}
-          }
-        }
-      } catch (e) {
-        console.log('Using embedded sample data');
+      if (window.innerWidth <= 900) {
+        document.getElementById('sidebar').classList.remove('open');
+        document.getElementById('mobile-overlay').classList.remove('show');
       }
     }
 
-    function init() {
-      renderRecentOrders();
-      renderOrdersFeed();
-      renderMenuContent();
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('mobile-overlay').classList.toggle('show');
+    }
+
+    async function apiFetch(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('API error: ' + res.status);
+      return res.json();
+    }
+
+    async function loadRestaurants() {
+      try {
+        restaurantsData = await apiFetch('/api/admin/restaurants');
+        const select = document.getElementById('restaurant-select');
+        if (!restaurantsData || restaurantsData.length === 0) {
+          select.innerHTML = '<option value="">No restaurants available</option>';
+          document.getElementById('loading-state').style.display = 'none';
+          document.getElementById('no-restaurant').style.display = 'block';
+          return;
+        }
+
+        select.innerHTML = restaurantsData.map(r =>
+          '<option value="' + r.id + '">' + escapeHtml(r.name) + '</option>'
+        ).join('');
+
+        selectedRestaurantId = restaurantsData[0].id;
+        await loadMerchantData();
+      } catch (err) {
+        console.error('Failed to load restaurants:', err);
+        document.getElementById('loading-state').innerHTML =
+          '<div class="empty-state"><div class="empty-icon">&#9888;</div><h3>Connection Error</h3><p>Could not load restaurants. Please refresh the page.</p></div>';
+      }
+    }
+
+    async function onRestaurantChange() {
+      const select = document.getElementById('restaurant-select');
+      selectedRestaurantId = select.value;
+      if (!selectedRestaurantId) return;
+      document.getElementById('dashboard-content').style.display = 'none';
+      document.getElementById('loading-state').style.display = 'flex';
+      await loadMerchantData();
+    }
+
+    async function loadMerchantData() {
+      if (!selectedRestaurantId) return;
+      try {
+        merchantData = await apiFetch('/api/merchant/stats/' + selectedRestaurantId);
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('no-restaurant').style.display = 'none';
+        document.getElementById('dashboard-content').style.display = 'block';
+        renderAll();
+        document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+      } catch (err) {
+        console.error('Failed to load merchant data:', err);
+        showToast('Failed to load restaurant data', 'error');
+        document.getElementById('loading-state').style.display = 'none';
+        document.getElementById('no-restaurant').style.display = 'block';
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function renderAll() {
+      if (!merchantData) return;
+      renderOverview();
+      renderOrders();
+      renderMenu();
       renderReviews();
       renderAnalytics();
-      renderHoursGrid();
-      tryFetchLiveData();
+      renderSettings();
+    }
+
+    function renderOverview() {
+      const o = merchantData.overview;
+      const r = merchantData.restaurant;
+
+      document.getElementById('welcome-title').textContent = 'Welcome back, ' + (r.name || 'Restaurant');
+
+      const cards = [
+        { label: 'Total Orders', value: o.totalOrders, color: '' },
+        { label: "Today's Orders", value: o.todayOrders, color: 'info' },
+        { label: 'Total Revenue', value: formatCurrency(o.totalRevenue), color: 'accent' },
+        { label: "Today's Revenue", value: formatCurrency(o.todayRevenue), color: 'accent' },
+        { label: 'Avg Order Value', value: formatCurrency(o.avgOrderValue), color: 'accent' },
+        { label: 'Avg Rating', value: parseFloat(o.avgRating).toFixed(1), color: 'warning', sub: getStars(parseFloat(o.avgRating)) },
+        { label: 'Total Reviews', value: o.totalReviews, color: '' },
+        { label: 'Menu Items', value: o.menuItemCount, color: '' },
+      ];
+
+      document.getElementById('overview-stats').innerHTML = cards.map(c =>
+        '<div class="stat-card">' +
+          '<div class="label">' + c.label + '</div>' +
+          '<div class="value' + (c.color ? ' ' + c.color : '') + '">' + c.value + '</div>' +
+          (c.sub ? '<div class="sub" style="color:var(--warning);letter-spacing:2px;">' + c.sub + '</div>' : '') +
+        '</div>'
+      ).join('');
+
+      const recentOrders = (merchantData.recentOrders || []).slice(0, 10);
+      const tbody = document.getElementById('recent-orders-tbody');
+
+      if (recentOrders.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:24px;">No recent orders</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = recentOrders.map(order => {
+        const itemCount = getItemsCount(order.items);
+        return '<tr>' +
+          '<td style="font-family:monospace;font-size:12px;color:var(--accent);">' + truncateId(order.id) + '</td>' +
+          '<td>' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</td>' +
+          '<td style="font-weight:600;">' + formatCurrency(order.total) + '</td>' +
+          '<td><span class="badge ' + getStatusBadgeClass(order.status) + '">' + formatStatus(order.status) + '</span></td>' +
+          '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(order.deliveryAddress || '—') + '</td>' +
+          '<td style="white-space:nowrap;">' + formatDate(order.createdAt) + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderOrders() {
+      const filter = document.getElementById('order-status-filter').value;
+      let orders = merchantData.recentOrders || [];
+
+      if (filter !== 'all') {
+        orders = orders.filter(o => o.status === filter);
+      }
+
+      const tbody = document.getElementById('orders-tbody');
+      const emptyEl = document.getElementById('orders-empty');
+
+      if (orders.length === 0) {
+        tbody.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      tbody.innerHTML = orders.map(order => {
+        const itemCount = getItemsCount(order.items);
+        return '<tr>' +
+          '<td style="font-family:monospace;font-size:12px;color:var(--accent);">' + truncateId(order.id) + '</td>' +
+          '<td><span class="badge ' + getStatusBadgeClass(order.status) + '">' + formatStatus(order.status) + '</span></td>' +
+          '<td>' + itemCount + ' item' + (itemCount !== 1 ? 's' : '') + '</td>' +
+          '<td style="font-weight:600;">' + formatCurrency(order.total) + '</td>' +
+          '<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escapeHtml(order.deliveryAddress || '—') + '</td>' +
+          '<td style="white-space:nowrap;">' + formatDate(order.createdAt) + '</td>' +
+        '</tr>';
+      }).join('');
+    }
+
+    function renderMenu() {
+      const items = merchantData.menuItems || [];
+      const grid = document.getElementById('menu-grid');
+      const emptyEl = document.getElementById('menu-empty');
+
+      document.getElementById('menu-count').textContent = items.length + ' items';
+
+      if (items.length === 0) {
+        grid.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      grid.innerHTML = items.map(item => {
+        const isAvailable = item.available !== false;
+        const dietaryTags = item.dietaryTags || [];
+        const tagsHtml = dietaryTags.map(t => '<span class="menu-tag">' + escapeHtml(t) + '</span>').join('');
+        const alcoholHtml = item.isAlcohol ? '<span class="menu-tag alcohol">&#127863; Alcohol</span>' : '';
+        const categoryHtml = '<span class="menu-tag category">' + escapeHtml(item.category || 'Other') + '</span>';
+
+        return '<div class="menu-item-card' + (isAvailable ? '' : ' unavailable') + '">' +
+          '<div class="menu-item-name">' + escapeHtml(item.name) + '</div>' +
+          '<div class="menu-item-desc">' + escapeHtml(item.description || '') + '</div>' +
+          '<div class="menu-item-price">' + formatCurrency(item.price) + '</div>' +
+          '<div class="menu-item-tags">' + categoryHtml + tagsHtml + alcoholHtml + '</div>' +
+          '<div class="menu-item-footer">' +
+            '<div class="availability-indicator">' +
+              '<span class="availability-dot ' + (isAvailable ? 'available' : 'unavailable') + '"></span>' +
+              '<span>' + (isAvailable ? 'Available' : 'Unavailable') + '</span>' +
+            '</div>' +
+          '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderReviews() {
+      const reviews = merchantData.reviews || [];
+      const summaryEl = document.getElementById('reviews-summary');
+      const listEl = document.getElementById('reviews-list');
+      const emptyEl = document.getElementById('reviews-empty');
+
+      if (reviews.length === 0) {
+        summaryEl.style.display = 'none';
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      summaryEl.style.display = 'block';
+
+      const avgRating = parseFloat(merchantData.overview.avgRating) || 0;
+      const totalReviews = merchantData.overview.totalReviews || 0;
+
+      const ratingCounts = [0, 0, 0, 0, 0];
+      reviews.forEach(r => {
+        const rating = r.restaurantRating || 0;
+        if (rating >= 1 && rating <= 5) ratingCounts[rating - 1]++;
+      });
+
+      const maxCount = Math.max(...ratingCounts, 1);
+
+      let breakdownHtml = '';
+      for (let i = 5; i >= 1; i--) {
+        const count = ratingCounts[i - 1];
+        const pct = (count / maxCount) * 100;
+        breakdownHtml += '<div class="rating-row">' +
+          '<span class="star-label">' + i + ' ★</span>' +
+          '<div class="rating-bar-bg"><div class="rating-bar-fill" style="width:' + pct + '%;"></div></div>' +
+          '<span class="count">' + count + '</span>' +
+        '</div>';
+      }
+
+      summaryEl.innerHTML =
+        '<div style="display:flex;gap:40px;flex-wrap:wrap;">' +
+          '<div>' +
+            '<div class="avg-rating-display">' +
+              '<div class="avg-rating-big">' + avgRating.toFixed(1) + '</div>' +
+              '<div class="avg-rating-info">' +
+                '<div class="stars" style="color:var(--warning);font-size:18px;letter-spacing:2px;">' + getStars(avgRating) + '</div>' +
+                '<div class="total-reviews" style="font-size:13px;color:var(--text-secondary);">' + totalReviews + ' review' + (totalReviews !== 1 ? 's' : '') + '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>' +
+          '<div style="flex:1;min-width:250px;">' +
+            '<div class="rating-breakdown">' + breakdownHtml + '</div>' +
+          '</div>' +
+        '</div>';
+
+      listEl.innerHTML = reviews.map(r => {
+        const responseHtml = r.restaurantResponse ?
+          '<div class="review-response">' +
+            '<div class="resp-label">Restaurant Response</div>' +
+            '<div class="resp-text">' + escapeHtml(r.restaurantResponse) + '</div>' +
+          '</div>' : '';
+
+        return '<div class="review-card">' +
+          '<div class="review-header">' +
+            '<div>' +
+              '<div class="review-stars">' + getStars(r.restaurantRating || 0) + '</div>' +
+            '</div>' +
+            '<div class="review-date">' + formatDate(r.createdAt) + '</div>' +
+          '</div>' +
+          '<div class="review-comment">' + escapeHtml(r.comment || 'No comment') + '</div>' +
+          responseHtml +
+        '</div>';
+      }).join('');
+    }
+
+    function renderAnalytics() {
+      renderRevenueChart();
+      renderPopularItems();
+      renderStatusPie();
+    }
+
+    function renderRevenueChart() {
+      const dailyRevenue = merchantData.dailyRevenue || {};
+      const chartEl = document.getElementById('revenue-chart');
+
+      const today = new Date();
+      const days = [];
+      for (let i = 13; i >= 0; i--) {
+        const d = new Date(today);
+        d.setDate(d.getDate() - i);
+        days.push(d.toISOString().split('T')[0]);
+      }
+
+      const values = days.map(d => (dailyRevenue[d] || { revenue: 0 }).revenue);
+      const maxVal = Math.max(...values, 1);
+
+      if (values.every(v => v === 0)) {
+        chartEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-secondary);font-size:14px;">No revenue data for the last 14 days</div>';
+        return;
+      }
+
+      chartEl.innerHTML = days.map((day, i) => {
+        const val = values[i];
+        const heightPct = (val / maxVal) * 100;
+        const label = new Date(day + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return '<div class="bar-column">' +
+          '<div class="bar-value">' + (val > 0 ? formatCurrency(val) : '') + '</div>' +
+          '<div class="bar" style="height:' + Math.max(heightPct, 2) + '%;"></div>' +
+          '<div class="bar-label">' + label + '</div>' +
+        '</div>';
+      }).join('');
+    }
+
+    function renderPopularItems() {
+      const items = merchantData.popularItems || [];
+      const listEl = document.getElementById('popular-items');
+      const emptyEl = document.getElementById('popular-empty');
+
+      if (items.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.style.display = 'block';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      listEl.innerHTML = items.slice(0, 10).map((item, i) =>
+        '<li class="popular-item">' +
+          '<span class="rank">' + (i + 1) + '</span>' +
+          '<div class="item-info">' +
+            '<div class="item-name">' + escapeHtml(item.name) + '</div>' +
+            '<div class="item-orders">' + item.count + ' ordered</div>' +
+          '</div>' +
+          '<span class="item-revenue">' + formatCurrency(item.revenue) + '</span>' +
+        '</li>'
+      ).join('');
+    }
+
+    function renderStatusPie() {
+      const ordersByStatus = merchantData.ordersByStatus || {};
+      const container = document.getElementById('status-pie');
+
+      const statusColors = {
+        pending: '#FFB84D',
+        confirmed: '#4D9DFF',
+        preparing: '#A855F7',
+        picked_up: '#00D4AA',
+        delivered: '#10B981',
+        cancelled: '#FF4D6A',
+      };
+
+      const entries = Object.entries(ordersByStatus);
+      const total = entries.reduce((s, [, v]) => s + v, 0);
+
+      if (total === 0) {
+        container.innerHTML = '<div style="color:var(--text-secondary);font-size:14px;">No order data available</div>';
+        return;
+      }
+
+      let conicParts = [];
+      let cumulative = 0;
+      entries.forEach(([status, count]) => {
+        const pct = (count / total) * 100;
+        const color = statusColors[status] || '#8888A0';
+        conicParts.push(color + ' ' + cumulative + '% ' + (cumulative + pct) + '%');
+        cumulative += pct;
+      });
+
+      const legendHtml = entries.map(([status, count]) => {
+        const color = statusColors[status] || '#8888A0';
+        const pct = ((count / total) * 100).toFixed(1);
+        return '<div class="pie-legend-item">' +
+          '<span class="pie-legend-dot" style="background:' + color + ';"></span>' +
+          '<span>' + formatStatus(status) + ' (' + pct + '%)</span>' +
+          '<span class="legend-count">' + count + '</span>' +
+        '</div>';
+      }).join('');
+
+      container.innerHTML =
+        '<div class="pie-chart" style="background:conic-gradient(' + conicParts.join(', ') + ');"></div>' +
+        '<div class="pie-legend">' + legendHtml + '</div>';
+    }
+
+    function renderSettings() {
+      const r = merchantData.restaurant;
+      if (!r) return;
+
+      const hours = r.operatingHours;
+      let hoursDisplay = '—';
+      if (hours) {
+        if (typeof hours === 'string') {
+          hoursDisplay = hours;
+        } else if (hours.open && hours.close) {
+          const daysStr = (hours.days || []).join(', ');
+          hoursDisplay = hours.open + ' – ' + hours.close + (daysStr ? ' (' + daysStr + ')' : '');
+        }
+      }
+
+      document.getElementById('settings-info').innerHTML =
+        '<div class="info-row"><span class="info-label">Restaurant Name</span><span class="info-value">' + escapeHtml(r.name) + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Cuisine Type</span><span class="info-value">' + escapeHtml(r.cuisineType || '—') + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Address</span><span class="info-value">' + escapeHtml(r.address || '—') + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Phone</span><span class="info-value">' + escapeHtml(r.phone || '—') + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Operating Hours</span><span class="info-value">' + escapeHtml(hoursDisplay) + '</span></div>';
+
+      document.getElementById('settings-delivery').innerHTML =
+        '<div class="info-row"><span class="info-label">Delivery Fee</span><span class="info-value">' + formatCurrency(r.deliveryFee) + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Minimum Order</span><span class="info-value">' + formatCurrency(r.minimumOrder) + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Estimated Prep Time</span><span class="info-value">' + escapeHtml(r.estimatedPrepTime || '25-35 min') + '</span></div>';
+
+      const approvedBadge = r.isApproved ?
+        '<span class="badge badge-success">Approved</span>' :
+        '<span class="badge badge-warning">Pending Approval</span>';
+
+      const alcoholBadge = r.alcoholLicense ?
+        '<span class="badge badge-success">Licensed</span>' :
+        '<span class="badge badge-neutral">Not Licensed</span>';
+
+      document.getElementById('settings-compliance').innerHTML =
+        '<div class="info-row"><span class="info-label">Approval Status</span><span class="info-value">' + approvedBadge + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Alcohol License</span><span class="info-value">' + alcoholBadge + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Restaurant ID</span><span class="info-value" style="font-family:monospace;font-size:12px;">' + escapeHtml(r.id) + '</span></div>' +
+        '<div class="info-row"><span class="info-label">Created</span><span class="info-value">' + formatDate(r.createdAt) + '</span></div>';
+    }
+
+    async function init() {
+      await loadRestaurants();
+
+      refreshInterval = setInterval(async () => {
+        if (selectedRestaurantId) {
+          try {
+            merchantData = await apiFetch('/api/merchant/stats/' + selectedRestaurantId);
+            renderAll();
+            document.getElementById('last-refresh').textContent = 'Updated ' + new Date().toLocaleTimeString();
+          } catch (err) {
+            console.error('Auto-refresh failed:', err);
+          }
+        }
+      }, 30000);
     }
 
     init();
-
-    setInterval(() => {
-      renderOrdersFeed();
-      renderRecentOrders();
-      updateOverviewCounts();
-    }, 15000);
-
-    document.querySelectorAll('.modal-overlay').forEach(overlay => {
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) overlay.classList.remove('show');
-      });
-    });
   </script>
 </body>
 </html>

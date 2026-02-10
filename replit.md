@@ -27,7 +27,9 @@ Preferred communication style: Simple, everyday language.
 - **Authentication**: JWT tokens with bcryptjs for password hashing.
 - **Storage Layer**: Drizzle ORM for data access, with functions for all major entities.
 - **Database Seeding**: `server/seed.ts` populates initial data.
-- **Admin Dashboard**: Server-rendered HTML for managing platform operations.
+- **Admin Dashboard** (`/admin`): Full-featured server-rendered HTML dashboard with Overview KPIs, Orders table, Restaurants cards, Drivers table, Compliance logs, Pilot Budget tracker ($19,745 breakdown), and Settings (service status). Auto-refreshes every 30s. Fetches from `/api/admin/stats`, `/api/admin/orders`, `/api/admin/restaurants`, `/api/admin/drivers`.
+- **Merchant Dashboard** (`/merchant`): Restaurant-specific dashboard with restaurant selector, Overview KPIs, Orders management, Menu grid, Reviews with star ratings, Analytics (revenue charts, popular items), and Settings. Fetches from `/api/merchant/stats/:restaurantId`.
+- **Vercel Deployment**: Configured via `vercel.json` + `api/index.ts` serverless adapter for Express. Routes all paths to the serverless function.
 - **Open Platform API**: Versioned REST API (v1) with API key authentication for external developers, featuring webhook engine, Swagger UI, and a developer portal.
 
 ### Production Services (`server/services/`)

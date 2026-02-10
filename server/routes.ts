@@ -2500,6 +2500,195 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(getCacheStats());
   });
 
+  app.get("/api/admin/stats", async (_req: Request, res: Response) => {
+    try {
+      const allOrders = await storage.getAllOrders();
+      const allRestaurants = await storage.getAllRestaurants();
+      const allDrivers = await storage.getAllDrivers();
+      const taxSummary = await storage.getTaxSummary();
+      const complianceLogs = await storage.getComplianceLogs();
+
+      const totalRevenue = allOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const totalDeliveryFees = allOrders.reduce((sum, o) => sum + parseFloat(o.deliveryFee || "0"), 0);
+      const totalTips = allOrders.reduce((sum, o) => sum + parseFloat(o.tip || "0"), 0);
+      const avgOrderValue = allOrders.length > 0 ? totalRevenue / allOrders.length : 0;
+
+      const ordersByStatus: Record<string, number> = {};
+      allOrders.forEach(o => {
+        ordersByStatus[o.status] = (ordersByStatus[o.status] || 0) + 1;
+      });
+
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekStart = new Date(todayStart);
+      weekStart.setDate(weekStart.getDate() - 7);
+
+      const todayOrders = allOrders.filter(o => new Date(o.createdAt) >= todayStart);
+      const weekOrders = allOrders.filter(o => new Date(o.createdAt) >= weekStart);
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const weekRevenue = weekOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+
+      const activeDrivers = allDrivers.filter(d => d.isAvailable);
+      const approvedRestaurants = allRestaurants.filter(r => r.isApproved);
+
+      const dailyOrders: Record<string, { count: number; revenue: number }> = {};
+      allOrders.forEach(o => {
+        const day = new Date(o.createdAt).toISOString().split("T")[0];
+        if (!dailyOrders[day]) dailyOrders[day] = { count: 0, revenue: 0 };
+        dailyOrders[day].count++;
+        dailyOrders[day].revenue += parseFloat(o.total || "0");
+      });
+
+      const pilotBudget = {
+        total: 19745,
+        driverGuarantees: { budget: 10000, label: "Driver Guarantees" },
+        customerPromos: { budget: 3000, label: "Customer Promos" },
+        merchantIncentives: { budget: 2000, label: "Merchant Incentives" },
+        marketing: { budget: 3000, label: "Marketing" },
+        operations: { budget: 1745, label: "Operations" },
+        techHosting: { budget: 1000, label: "Tech/Hosting" },
+      };
+
+      res.json({
+        overview: {
+          totalOrders: allOrders.length,
+          totalRevenue: totalRevenue.toFixed(2),
+          avgOrderValue: avgOrderValue.toFixed(2),
+          totalDeliveryFees: totalDeliveryFees.toFixed(2),
+          totalTips: totalTips.toFixed(2),
+          todayOrders: todayOrders.length,
+          todayRevenue: todayRevenue.toFixed(2),
+          weekOrders: weekOrders.length,
+          weekRevenue: weekRevenue.toFixed(2),
+        },
+        ordersByStatus,
+        restaurants: {
+          total: allRestaurants.length,
+          approved: approvedRestaurants.length,
+          pending: allRestaurants.length - approvedRestaurants.length,
+          cuisineBreakdown: allRestaurants.reduce((acc: Record<string, number>, r) => {
+            acc[r.cuisineType] = (acc[r.cuisineType] || 0) + 1;
+            return acc;
+          }, {}),
+        },
+        drivers: {
+          total: allDrivers.length,
+          active: activeDrivers.length,
+          avgRating: allDrivers.length > 0 ? (allDrivers.reduce((s, d) => s + (d.rating || 0), 0) / allDrivers.length).toFixed(1) : "0",
+          totalDeliveries: allDrivers.reduce((s, d) => s + (d.totalDeliveries || 0), 0),
+        },
+        tax: taxSummary,
+        compliance: {
+          total: complianceLogs.length,
+          recent: complianceLogs.slice(0, 10),
+        },
+        dailyOrders,
+        pilotBudget,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin/restaurants", async (_req: Request, res: Response) => {
+    try {
+      const allRestaurants = await storage.getAllRestaurants();
+      res.json(allRestaurants);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin/drivers", async (_req: Request, res: Response) => {
+    try {
+      const allDrivers = await storage.getAllDrivers();
+      res.json(allDrivers);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/admin/orders", async (_req: Request, res: Response) => {
+    try {
+      const allOrders = await storage.getAllOrders();
+      res.json(allOrders);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/merchant/stats/:restaurantId", async (req: Request, res: Response) => {
+    try {
+      const restaurantId = getParam(req.params.restaurantId);
+      const restaurant = await storage.getRestaurantById(restaurantId);
+      if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+
+      const allOrders = await storage.getAllOrders();
+      const restaurantOrders = allOrders.filter(o => o.restaurantId === restaurantId);
+      const menuItemsList = await storage.getMenuItems(restaurantId);
+      const reviewsList = await storage.getReviewsByRestaurant(restaurantId);
+
+      const totalRevenue = restaurantOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const avgOrderValue = restaurantOrders.length > 0 ? totalRevenue / restaurantOrders.length : 0;
+      const deliveredOrders = restaurantOrders.filter(o => o.status === "delivered");
+      const avgRating = reviewsList.length > 0 ? reviewsList.reduce((s, r) => s + (r.restaurantRating || 0), 0) / reviewsList.length : 0;
+
+      const now = new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayOrders = restaurantOrders.filter(o => new Date(o.createdAt) >= todayStart);
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+
+      const ordersByStatus: Record<string, number> = {};
+      restaurantOrders.forEach(o => {
+        ordersByStatus[o.status] = (ordersByStatus[o.status] || 0) + 1;
+      });
+
+      const popularItems: Record<string, { count: number; revenue: number; name: string }> = {};
+      restaurantOrders.forEach(o => {
+        const items = o.items as any[];
+        if (items) {
+          items.forEach(item => {
+            const key = item.menuItemId || item.name;
+            if (!popularItems[key]) popularItems[key] = { count: 0, revenue: 0, name: item.name };
+            popularItems[key].count += item.quantity;
+            popularItems[key].revenue += item.price * item.quantity;
+          });
+        }
+      });
+
+      const dailyRevenue: Record<string, { orders: number; revenue: number }> = {};
+      restaurantOrders.forEach(o => {
+        const day = new Date(o.createdAt).toISOString().split("T")[0];
+        if (!dailyRevenue[day]) dailyRevenue[day] = { orders: 0, revenue: 0 };
+        dailyRevenue[day].orders++;
+        dailyRevenue[day].revenue += parseFloat(o.total || "0");
+      });
+
+      res.json({
+        restaurant,
+        overview: {
+          totalOrders: restaurantOrders.length,
+          deliveredOrders: deliveredOrders.length,
+          totalRevenue: totalRevenue.toFixed(2),
+          avgOrderValue: avgOrderValue.toFixed(2),
+          avgRating: avgRating.toFixed(1),
+          totalReviews: reviewsList.length,
+          todayOrders: todayOrders.length,
+          todayRevenue: todayRevenue.toFixed(2),
+          menuItemCount: menuItemsList.length,
+        },
+        ordersByStatus,
+        popularItems: Object.values(popularItems).sort((a, b) => b.count - a.count).slice(0, 10),
+        recentOrders: restaurantOrders.slice(0, 20),
+        reviews: reviewsList.slice(0, 20),
+        dailyRevenue,
+        menuItems: menuItemsList,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
   app.post("/api/cache/invalidate", authMiddleware as any, async (req: AuthRequest, res: Response) => {
     try {
       const { type, restaurantId } = req.body;
