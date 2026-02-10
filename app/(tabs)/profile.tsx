@@ -5,9 +5,11 @@ import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
 import Colors from '@/constants/colors';
 import { UserProfile } from '@/lib/data';
 import { useAuth } from '@/lib/auth-context';
+import { getApiUrl } from '@/lib/query-client';
 
 const DEFAULT_PROFILE: UserProfile = {
   name: 'Guest',
@@ -208,6 +210,39 @@ export default function ProfileScreen() {
             <Text style={[styles.loginText, { fontFamily: 'DMSans_600SemiBold' }]}>Sign In / Create Account</Text>
           </Pressable>
         )}
+
+        <View style={[styles.section, { backgroundColor: c.surface }]}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="grid-outline" size={18} color="#7B61FF" />
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Management</Text>
+          </View>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); WebBrowser.openBrowserAsync(`${getApiUrl()}/admin`); }}
+            style={[styles.web3Row, { borderBottomColor: c.border }]}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: '#FF6B3522' }]}>
+              <Ionicons name="stats-chart-outline" size={18} color="#FF6B35" />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Admin Dashboard</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Orders, drivers, compliance & KPIs</Text>
+            </View>
+            <Feather name="external-link" size={16} color={c.textTertiary} />
+          </Pressable>
+          <Pressable
+            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); WebBrowser.openBrowserAsync(`${getApiUrl()}/merchant`); }}
+            style={styles.web3Row}
+          >
+            <View style={[styles.web3Icon, { backgroundColor: c.orangeLight }]}>
+              <Ionicons name="restaurant-outline" size={18} color={c.orange} />
+            </View>
+            <View style={styles.web3Info}>
+              <Text style={[styles.web3Label, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Merchant Dashboard</Text>
+              <Text style={[styles.web3Sub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Menu, orders, reviews & analytics</Text>
+            </View>
+            <Feather name="external-link" size={16} color={c.textTertiary} />
+          </Pressable>
+        </View>
 
         <Pressable
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/driver'); }}
