@@ -4,6 +4,14 @@
 
 CryptoEats is a comprehensive food and alcohol delivery platform designed for the Miami market. It features a **Customer App** for browsing, ordering, and tracking deliveries, a **Driver App** for managing deliveries and earnings, and a **Backend API** handling authentication, order processing, and compliance. Key capabilities include age verification for alcohol, AI-powered sommelier recommendations, real-time tracking, driver-customer chat, and a tax engine compliant with Florida regulations. The project aims to provide a robust, compliance-aware delivery service, with future ambitions for an open platform allowing third-party integrations and white-label solutions.
 
+## Recent Changes
+
+- **Feb 10, 2026**: Updated logo and favicon across app icon, splash screen, login screen, admin dashboard, and merchant dashboard with custom CryptoEats branding (pizza-crypto fusion design)
+- **Feb 10, 2026**: Set up Android APK distribution infrastructure — production keystore (RSA 2048-bit, PKCS12, 27-year validity), EAS Build config (`eas.json`), credentials management (`credentials.json`, git-ignored), Android package `com.cryptoeats.app`
+- **Feb 10, 2026**: Added Management section to Profile page with links to Admin and Merchant dashboards (opens in device browser)
+- **Feb 10, 2026**: Added three support screens — Help & Support (FAQs, contact info), Legal & Privacy (WebBrowser links), Notification Settings (toggleable with AsyncStorage persistence)
+- **Feb 10, 2026**: Implemented full authentication system — JWT login/register, dual-mode auth screen, AsyncStorage session persistence, profile page with real backend user data
+
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
@@ -65,10 +73,12 @@ Preferred communication style: Simple, everyday language.
 
 1.  **Monorepo Structure**: Facilitates shared schema and validation, reducing duplication.
 2.  **File-based Routing**: Intuitive navigation mapping directly to URL paths.
-3.  **Dark-Only Theme**: Targets a specific aesthetic.
+3.  **Dark-Only Theme**: Targets a specific aesthetic (#0A0A0F background, #14141F surface, #00D4AA accent).
 4.  **Local Cart State**: Client-side cart operations for responsiveness, synced with backend.
 5.  **Drizzle ORM**: Chosen for its lightweight nature, TypeScript inference, and SQL-like query building.
 6.  **Socket.IO**: Powers real-time features like order tracking and chat.
+7.  **Independent APK Distribution**: Bypasses Play Store/App Store via sideloading with signed APK builds (EAS Build + local keystore).
+8.  **Auth via AuthContext**: JWT stored in AsyncStorage, auto-validates on app load via `/api/customers/profile`. Wraps entire app in `AuthProvider`.
 
 ## External Dependencies
 

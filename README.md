@@ -28,7 +28,7 @@ The platform consists of four integrated products:
 
 - **Customer App** — Browse restaurants, order food and alcohol, track deliveries in real time, chat with drivers, earn NFT rewards
 - **Driver App** — Accept deliveries, manage earnings, access support resources, complete age verification at drop-off
-- **Backend API** — 111 REST endpoints for authentication, orders, payments, tax, compliance, and platform operations
+- **Backend API** — 190 REST endpoints for authentication, orders, payments, tax, compliance, blockchain, and platform operations
 - **Open Platform** — Developer API with key management, webhooks, embeddable widgets, and white-label branding
 
 ---
@@ -47,6 +47,9 @@ The platform consists of four integrated products:
 - Coinbase Onramp for fiat-to-crypto conversion
 - Referral program
 - Reorder from order history
+- Help & Support center with FAQs and contact info
+- Legal & Privacy links (opens backend-hosted legal pages)
+- Notification settings with toggleable preferences and persistence
 
 ### Driver Experience
 - Order queue with accept/decline
@@ -57,6 +60,13 @@ The platform consists of four integrated products:
 - Engagement tiers with positive reinforcement (no deactivation threats)
 - Support hub: wellness checks, appeals, education, insurance uploads
 - Contractor agreement management
+
+### Authentication & User Management
+- JWT-based authentication with bcrypt password hashing
+- Dual-mode login/register screen with form validation
+- Session persistence via AsyncStorage (auto-validates on app load)
+- Profile page showing real user data from backend
+- Admin and Merchant dashboard access from profile (opens in device browser)
 
 ### Compliance & Tax
 - Florida sales tax: 7% Miami-Dade (6% state + 1% county surtax)
@@ -73,6 +83,20 @@ The platform consists of four integrated products:
 - Gasless transactions via Paymaster with contract allowlisting
 - Paymaster error handling with exponential backoff
 - Wallet balance display and transaction history
+
+### Admin & Merchant Dashboards
+- Admin dashboard with overview KPIs, orders table, restaurant cards, driver management, compliance logs, pilot budget tracker, and settings
+- Merchant dashboard with restaurant selector, order management, menu grid, reviews with star ratings, analytics (revenue charts, popular items), and settings
+- Both dashboards auto-refresh every 30 seconds with real-time data from dedicated API endpoints
+- Custom CryptoEats logo branding in both dashboard sidebars
+
+### Android Distribution (APK Sideloading)
+- Independent APK distribution bypassing Play Store / App Store
+- Production Android keystore (RSA 2048-bit, PKCS12, 27-year validity)
+- EAS Build configuration with development, preview, and production profiles
+- Signed APK builds with local credential management
+- SHA-256 fingerprint for APK integrity verification
+- Android package: `com.cryptoeats.app` with location, camera, and vibration permissions
 
 ### Open Platform
 - API key management with four tiers (Free / Starter / Pro / Enterprise)
@@ -400,13 +424,14 @@ cryptoeats/
 │   │   ├── index.tsx             #   Explore / Home
 │   │   ├── orders.tsx            #   Order history
 │   │   ├── cart.tsx              #   Shopping cart
-│   │   └── profile.tsx           #   User profile
+│   │   └── profile.tsx           #   User profile + dashboard links
 │   ├── driver/                   # Driver app tabs
 │   │   ├── index.tsx             #   Available orders
 │   │   ├── dashboard.tsx         #   Driver dashboard
 │   │   ├── earnings.tsx          #   Earnings tracker
 │   │   └── support.tsx           #   Support hub
 │   ├── restaurant/[id].tsx       # Restaurant detail
+│   ├── login.tsx                 # Auth screen (sign in / sign up)
 │   ├── checkout.tsx              # Checkout flow
 │   ├── tracking/[id].tsx         # Order tracking
 │   ├── chat/[orderId].tsx        # Driver chat
@@ -414,14 +439,28 @@ cryptoeats/
 │   ├── sommelier.tsx             # AI recommendations
 │   ├── wallet.tsx                # Crypto wallet
 │   ├── buy-crypto.tsx            # Coinbase Onramp
+│   ├── cash-out.tsx              # Coinbase Offramp
 │   ├── nft-collection.tsx        # NFT collection
-│   └── marketplace.tsx           # NFT marketplace
+│   ├── marketplace.tsx           # NFT marketplace
+│   ├── generate-nft.tsx          # AI NFT Studio
+│   ├── help-support.tsx          # Help & Support center
+│   ├── legal-privacy.tsx         # Legal & Privacy links
+│   └── notification-settings.tsx # Notification preferences
+├── assets/images/                # App icons and branding
+│   ├── icon.png                 #   Main app icon (1024x1024)
+│   ├── favicon.png              #   Web favicon (48x48)
+│   ├── splash-icon.png          #   Splash screen logo
+│   ├── android-icon-foreground.png # Adaptive icon foreground
+│   └── android-icon-background.png # Adaptive icon background
 ├── components/                   # Shared React Native components
 ├── constants/                    # Theme colors, config
 ├── lib/                          # Client utilities
-│   ├── cart-context.tsx          #   Cart state management
-│   ├── query-client.ts          #   API client + React Query
-│   └── data.ts                  #   Local data helpers
+│   ├── auth-context.tsx         #   Auth state management (JWT, login, register, logout)
+│   ├── cart-context.tsx         #   Cart state management
+│   ├── query-client.ts         #   API client + React Query
+│   └── data.ts                 #   Local data helpers
+├── public/images/                # Static assets served by backend
+│   └── logo.png                 #   Logo for admin/merchant dashboards
 ├── server/                       # Express.js backend
 │   ├── index.ts                 #   Server entry point
 │   ├── routes.ts                #   Core API routes (74 endpoints)
@@ -432,16 +471,33 @@ cryptoeats/
 │   ├── swagger.ts               #   OpenAPI spec generator
 │   ├── db.ts                    #   Database connection
 │   ├── seed.ts                  #   Database seeder
+│   ├── services/                #   Production services
+│   │   ├── payments.ts          #     Stripe PaymentIntents
+│   │   ├── payment-router.ts    #     Multi-provider payment routing
+│   │   ├── notifications.ts     #     SendGrid, Twilio, Expo Push
+│   │   ├── uploads.ts           #     File upload with validation
+│   │   ├── tracking.ts          #     GPS tracking with ETA
+│   │   ├── security.ts          #     Helmet, XSS, rate limiting
+│   │   ├── monitoring.ts        #     Sentry error tracking
+│   │   ├── verification.ts      #     Persona + Checkr identity
+│   │   ├── cache.ts             #     Redis with in-memory fallback
+│   │   ├── cloud-storage.ts     #     AWS S3 with local fallback
+│   │   ├── license-verification.ts #  FL liquor license verification
+│   │   └── nft-ai.ts            #     AI NFT artwork generation
 │   └── templates/               #   Server-rendered HTML
 │       ├── landing-page.html    #     Public landing page
 │       ├── admin-dashboard.html #     Admin dashboard
 │       ├── merchant-dashboard.html #  Merchant dashboard
 │       ├── developer-portal.html #    Developer docs
 │       └── widget.js            #     Embeddable widget
+├── docs/                         # Documentation
+│   └── executive-summary/       #   Strategic documents
+│       └── CryptoEats_EXECUTIVE_SUMMARY.md
 ├── shared/                       # Shared between frontend & backend
 │   └── schema.ts                #   Drizzle schema + Zod validation
 ├── .env.example                  # Environment variable template
-├── EXECUTIVE_SUMMARY.md          # Strategic overview
+├── eas.json                      # EAS Build config (APK distribution)
+├── credentials.json              # Android keystore credentials (git-ignored)
 ├── drizzle.config.ts             # Drizzle ORM configuration
 ├── app.json                      # Expo configuration
 ├── tsconfig.json                 # TypeScript configuration
@@ -483,6 +539,9 @@ cryptoeats/
 | Rate Limiting | express-rate-limit |
 | API Docs | Swagger UI (swagger-ui-express) |
 | Blockchain | Base chain (Coinbase L2) |
+| AI | Google Gemini (via Replit AI Integrations) |
+| Payments | Coinbase Commerce, Stripe, Adyen, GoDaddy, Square |
+| Mobile Build | EAS Build (APK sideloading) |
 | Typography | DM Sans (Google Fonts) |
 
 ---
