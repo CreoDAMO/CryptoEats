@@ -27,6 +27,7 @@ PORT = "5000"
 [agent]
 stack = "EXPO"
 integrations = ["javascript_gemini_ai_integrations:2.0.0"]
+expertMode = true
 
 [workflows]
 runButton = "Project"
