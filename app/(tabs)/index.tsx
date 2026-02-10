@@ -91,6 +91,16 @@ export default function HomeScreen() {
         })}
       </ScrollView>
 
+      <View style={styles.placeholderBanner}>
+        <View style={styles.bannerIconRow}>
+          <Ionicons name="information-circle" size={18} color={c.accent} />
+          <Text style={[styles.bannerTitle, { color: c.accent, fontFamily: 'DMSans_600SemiBold' }]}>Preview Data</Text>
+        </View>
+        <Text style={[styles.bannerText, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
+          The restaurants and menus shown here are placeholder listings for demonstration purposes. Real merchants will manage their own menus once they sign up through the Merchant Portal.
+        </Text>
+      </View>
+
       {selectedCuisine === 'All' && search.length === 0 && (
         <View style={styles.featuredSection}>
           <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>Popular near you</Text>
@@ -216,5 +226,27 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 16,
+  },
+  placeholderBanner: {
+    marginHorizontal: 20,
+    marginBottom: 16,
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0, 212, 170, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 212, 170, 0.2)',
+  },
+  bannerIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 6,
+  },
+  bannerTitle: {
+    fontSize: 13,
+  },
+  bannerText: {
+    fontSize: 12,
+    lineHeight: 18,
   },
 });
