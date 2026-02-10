@@ -18,11 +18,19 @@
       "bundleIdentifier": "com.cryptoeats"
     },
     "android": {
-      "package": "com.cryptoeats",
+      "package": "com.cryptoeats.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#0A0A0F",
         "foregroundImage": "./assets/images/icon.png"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png"

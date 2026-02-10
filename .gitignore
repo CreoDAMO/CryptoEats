@@ -18,7 +18,9 @@ node_modules/
 *.p8
 *.p12
 *.jks
+*.keystore
 *.mobileprovision
+credentials.json
 
 # ── Expo / React Native ─────────────────────────────────────
 .expo/
