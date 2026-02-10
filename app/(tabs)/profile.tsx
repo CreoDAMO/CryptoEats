@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Share } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Share, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -7,22 +7,26 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { UserProfile } from '@/lib/data';
+import { useAuth } from '@/lib/auth-context';
 
 const DEFAULT_PROFILE: UserProfile = {
-  name: 'Alex Rivera',
-  email: 'alex@cryptoeats.io',
-  phone: '+1 (305) 555-0123',
-  tastePreferences: ['Bold', 'Dry'],
+  name: 'Guest',
+  email: '',
+  phone: '',
+  tastePreferences: [],
   dietaryRestrictions: [],
-  savedAddresses: [
-    { label: 'Home', address: '420 Ocean Dr, Miami Beach, FL 33139' },
-    { label: 'Work', address: '1200 Brickell Ave, Miami, FL 33131' },
-  ],
-  idVerified: true,
+  savedAddresses: [],
+  idVerified: false,
 };
 
 const TASTE_OPTIONS = ['Sweet', 'Dry', 'Bold', 'Light', 'Fruity', 'Smoky', 'Spicy', 'Mellow'];
 const DIETARY_OPTIONS = ['Vegetarian', 'Vegan', 'Gluten-free', 'Halal', 'Kosher', 'Nut-free'];
+
+const PAYMENT_METHODS = [
+  { id: 'visa', icon: 'credit-card' as const, iconColor: '#00D4AA', title: 'Visa ending 4242', subtitle: 'Credit Card' },
+  { id: 'cashapp', icon: 'dollar-sign' as const, iconColor: '#2ED573', title: 'Cash App', subtitle: '$CryptoEats' },
+  { id: 'coinbase', icon: 'zap' as const, iconColor: '#FFD93D', title: 'Coinbase', subtitle: 'BTC, ETH, USDC' },
+];
 
 function generateReferralCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -39,12 +43,41 @@ export default function ProfileScreen() {
   const isWeb = Platform.OS === 'web';
   const topPad = isWeb ? 67 : insets.top;
   const router = useRouter();
+  const { user, customer, isAuthenticated, logout } = useAuth();
   const [profile, setProfile] = useState<UserProfile>(DEFAULT_PROFILE);
   const [referralCode, setReferralCode] = useState('');
+  const [selectedPayment, setSelectedPayment] = useState('visa');
 
   useEffect(() => {
-    AsyncStorage.getItem('cryptoeats_profile').then(data => {
-      if (data) setProfile(JSON.parse(data));
+    if (customer) {
+      const fullName = [customer.firstName, customer.lastName].filter(Boolean).join(' ') || user?.email || 'User';
+      setProfile(prev => ({
+        ...prev,
+        name: fullName,
+        email: customer.email || user?.email || '',
+        phone: customer.phone || '',
+        idVerified: customer.idVerified || false,
+      }));
+    } else if (user) {
+      setProfile(prev => ({
+        ...prev,
+        name: user.email.split('@')[0],
+        email: user.email,
+      }));
+    }
+  }, [customer, user]);
+
+  useEffect(() => {
+    AsyncStorage.getItem('cryptoeats_profile_prefs').then(data => {
+      if (data) {
+        const prefs = JSON.parse(data);
+        setProfile(prev => ({
+          ...prev,
+          tastePreferences: prefs.tastePreferences || prev.tastePreferences,
+          dietaryRestrictions: prefs.dietaryRestrictions || prev.dietaryRestrictions,
+          savedAddresses: prefs.savedAddresses || prev.savedAddresses,
+        }));
+      }
     });
     AsyncStorage.getItem('cryptoeats_referral').then(code => {
       if (code) {
@@ -55,25 +88,42 @@ export default function ProfileScreen() {
         AsyncStorage.setItem('cryptoeats_referral', newCode);
       }
     });
+    AsyncStorage.getItem('cryptoeats_selected_payment').then(id => {
+      if (id) setSelectedPayment(id);
+    });
   }, []);
 
-  const saveProfile = (updated: UserProfile) => {
+  const saveProfilePrefs = (updated: UserProfile) => {
     setProfile(updated);
-    AsyncStorage.setItem('cryptoeats_profile', JSON.stringify(updated));
+    AsyncStorage.setItem('cryptoeats_profile_prefs', JSON.stringify({
+      tastePreferences: updated.tastePreferences,
+      dietaryRestrictions: updated.dietaryRestrictions,
+      savedAddresses: updated.savedAddresses,
+    }));
   };
 
   const toggleTaste = (taste: string) => {
     const prefs = profile.tastePreferences.includes(taste)
       ? profile.tastePreferences.filter(t => t !== taste)
       : [...profile.tastePreferences, taste];
-    saveProfile({ ...profile, tastePreferences: prefs });
+    saveProfilePrefs({ ...profile, tastePreferences: prefs });
   };
 
   const toggleDietary = (diet: string) => {
     const restrictions = profile.dietaryRestrictions.includes(diet)
       ? profile.dietaryRestrictions.filter(d => d !== diet)
       : [...profile.dietaryRestrictions, diet];
-    saveProfile({ ...profile, dietaryRestrictions: restrictions });
+    saveProfilePrefs({ ...profile, dietaryRestrictions: restrictions });
+  };
+
+  const handleSelectPayment = (id: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedPayment(id);
+    AsyncStorage.setItem('cryptoeats_selected_payment', id);
+    const method = PAYMENT_METHODS.find(m => m.id === id);
+    if (method) {
+      Alert.alert('Payment Updated', `${method.title} is now your default payment method.`);
+    }
   };
 
   const handleShareReferral = async () => {
@@ -84,6 +134,31 @@ export default function ProfileScreen() {
       });
     } catch {}
   };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Log Out',
+      'Are you sure you want to log out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Log Out',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              router.replace('/login');
+            } catch {
+              Alert.alert('Error', 'Failed to log out. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const displayName = profile.name || 'User';
+  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
   return (
     <View style={[styles.container, { backgroundColor: c.background }]}>
@@ -96,13 +171,15 @@ export default function ProfileScreen() {
         <View style={[styles.profileCard, { backgroundColor: c.surface }]}>
           <View style={[styles.avatar, { backgroundColor: c.accent }]}>
             <Text style={[styles.avatarText, { fontFamily: 'DMSans_700Bold' }]}>
-              {profile.name.split(' ').map(n => n[0]).join('')}
+              {initials}
             </Text>
           </View>
           <View style={styles.profileInfo}>
-            <Text style={[styles.profileName, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>{profile.name}</Text>
+            <Text style={[styles.profileName, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>{displayName}</Text>
             <Text style={[styles.profileEmail, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>{profile.email}</Text>
-            <Text style={[styles.profilePhone, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>{profile.phone}</Text>
+            {profile.phone ? (
+              <Text style={[styles.profilePhone, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>{profile.phone}</Text>
+            ) : null}
           </View>
           {profile.idVerified && (
             <View style={[styles.verifiedBadge, { backgroundColor: c.greenLight }]}>
@@ -111,6 +188,26 @@ export default function ProfileScreen() {
             </View>
           )}
         </View>
+
+        {isAuthenticated && (
+          <Pressable
+            onPress={handleLogout}
+            style={({ pressed }) => [styles.logoutBtn, { backgroundColor: c.surface, opacity: pressed ? 0.85 : 1 }]}
+          >
+            <Ionicons name="log-out-outline" size={20} color={c.red} />
+            <Text style={[styles.logoutText, { color: c.red, fontFamily: 'DMSans_600SemiBold' }]}>Log Out</Text>
+          </Pressable>
+        )}
+
+        {!isAuthenticated && (
+          <Pressable
+            onPress={() => router.push('/login')}
+            style={({ pressed }) => [styles.loginBtn, { backgroundColor: c.accent, opacity: pressed ? 0.85 : 1 }]}
+          >
+            <Ionicons name="log-in-outline" size={20} color="#000" />
+            <Text style={[styles.loginText, { fontFamily: 'DMSans_600SemiBold' }]}>Sign In / Create Account</Text>
+          </Pressable>
+        )}
 
         <Pressable
           onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/driver'); }}
@@ -291,22 +388,24 @@ export default function ProfileScreen() {
           </View>
         </View>
 
-        <View style={[styles.section, { backgroundColor: c.surface }]}>
-          <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Saved Addresses</Text>
-          {profile.savedAddresses.map((addr, i) => (
-            <View key={i} style={[styles.addressRow, i > 0 && { borderTopWidth: 1, borderTopColor: c.border }]}>
-              <Ionicons
-                name={addr.label === 'Home' ? 'home-outline' : 'briefcase-outline'}
-                size={18}
-                color={c.accent}
-              />
-              <View style={styles.addressInfo}>
-                <Text style={[styles.addressLabel, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>{addr.label}</Text>
-                <Text style={[styles.addressText, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>{addr.address}</Text>
+        {profile.savedAddresses.length > 0 && (
+          <View style={[styles.section, { backgroundColor: c.surface }]}>
+            <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Saved Addresses</Text>
+            {profile.savedAddresses.map((addr, i) => (
+              <View key={i} style={[styles.addressRow, i > 0 && { borderTopWidth: 1, borderTopColor: c.border }]}>
+                <Ionicons
+                  name={addr.label === 'Home' ? 'home-outline' : 'briefcase-outline'}
+                  size={18}
+                  color={c.accent}
+                />
+                <View style={styles.addressInfo}>
+                  <Text style={[styles.addressLabel, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>{addr.label}</Text>
+                  <Text style={[styles.addressText, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>{addr.address}</Text>
+                </View>
               </View>
-            </View>
-          ))}
-        </View>
+            ))}
+          </View>
+        )}
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
           <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Taste Preferences</Text>
@@ -356,42 +455,43 @@ export default function ProfileScreen() {
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
           <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Payment Methods</Text>
-          <View style={styles.paymentItem}>
-            <Feather name="credit-card" size={18} color={c.accent} />
-            <View style={styles.paymentInfo}>
-              <Text style={[styles.paymentLabel, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Visa ending 4242</Text>
-              <Text style={[styles.paymentSub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>Default</Text>
-            </View>
-            <Ionicons name="checkmark-circle" size={20} color={c.accent} />
-          </View>
-          <View style={[styles.paymentItem, { borderTopWidth: 1, borderTopColor: c.border }]}>
-            <Feather name="dollar-sign" size={18} color={c.green} />
-            <View style={styles.paymentInfo}>
-              <Text style={[styles.paymentLabel, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Cash App</Text>
-              <Text style={[styles.paymentSub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>$CryptoEats</Text>
-            </View>
-          </View>
-          <View style={[styles.paymentItem, { borderTopWidth: 1, borderTopColor: c.border }]}>
-            <Feather name="zap" size={18} color={c.yellow} />
-            <View style={styles.paymentInfo}>
-              <Text style={[styles.paymentLabel, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Coinbase</Text>
-              <Text style={[styles.paymentSub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>BTC, ETH, USDC</Text>
-            </View>
-          </View>
+          {PAYMENT_METHODS.map((method, i) => {
+            const isSelected = selectedPayment === method.id;
+            return (
+              <Pressable
+                key={method.id}
+                onPress={() => handleSelectPayment(method.id)}
+                style={[
+                  styles.paymentItem,
+                  i > 0 && { borderTopWidth: 1, borderTopColor: c.border },
+                  isSelected && { backgroundColor: c.accentSoft, borderRadius: 12, marginHorizontal: -8, paddingHorizontal: 8 },
+                ]}
+              >
+                <Feather name={method.icon} size={18} color={method.iconColor} />
+                <View style={styles.paymentInfo}>
+                  <Text style={[styles.paymentLabel, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>{method.title}</Text>
+                  <Text style={[styles.paymentSub, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>
+                    {isSelected ? 'Default' : method.subtitle}
+                  </Text>
+                </View>
+                {isSelected && <Ionicons name="checkmark-circle" size={20} color={c.accent} />}
+              </Pressable>
+            );
+          })}
         </View>
 
         <View style={[styles.section, { backgroundColor: c.surface }]}>
-          <Pressable style={styles.menuItem}>
+          <Pressable onPress={() => router.push('/help-support')} style={styles.menuItem}>
             <Ionicons name="help-circle-outline" size={20} color={c.textSecondary} />
             <Text style={[styles.menuItemText, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Help & Support</Text>
             <Feather name="chevron-right" size={18} color={c.textTertiary} />
           </Pressable>
-          <Pressable style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: c.border }]}>
+          <Pressable onPress={() => router.push('/legal-privacy')} style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: c.border }]}>
             <Ionicons name="document-text-outline" size={20} color={c.textSecondary} />
             <Text style={[styles.menuItemText, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Legal & Privacy</Text>
             <Feather name="chevron-right" size={18} color={c.textTertiary} />
           </Pressable>
-          <Pressable style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: c.border }]}>
+          <Pressable onPress={() => router.push('/notification-settings')} style={[styles.menuItem, { borderTopWidth: 1, borderTopColor: c.border }]}>
             <Ionicons name="notifications-outline" size={20} color={c.textSecondary} />
             <Text style={[styles.menuItemText, { color: c.text, fontFamily: 'DMSans_500Medium' }]}>Notifications</Text>
             <Feather name="chevron-right" size={18} color={c.textTertiary} />
@@ -434,6 +534,26 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   verifiedText: { fontSize: 11 },
+  logoutBtn: {
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderWidth: 1,
+    borderColor: '#FF475733',
+  },
+  logoutText: { fontSize: 15 },
+  loginBtn: {
+    borderRadius: 12,
+    padding: 14,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  loginText: { fontSize: 15, color: '#000' },
   section: {
     borderRadius: 16,
     padding: 16,
