@@ -8,7 +8,10 @@ const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 const S3_BUCKET = process.env.S3_BUCKET || "cryptoeats-uploads";
 
-const LOCAL_UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+const LOCAL_UPLOAD_DIR = isServerless
+  ? path.resolve("/tmp", "uploads")
+  : path.resolve(process.cwd(), "uploads");
 
 export function isS3Configured(): boolean {
   return !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY && S3_BUCKET);

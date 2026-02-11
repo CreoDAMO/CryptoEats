@@ -2,7 +2,10 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 
-const UPLOAD_DIR = path.resolve(process.cwd(), "uploads");
+const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+const UPLOAD_DIR = isServerless
+  ? path.resolve("/tmp", "uploads")
+  : path.resolve(process.cwd(), "uploads");
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
 const ALLOWED_MIME_TYPES: Record<string, string[]> = {

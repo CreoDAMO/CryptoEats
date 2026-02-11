@@ -3,10 +3,17 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 
-const NFT_UPLOAD_DIR = path.join(process.cwd(), "uploads", "nft-art");
+const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+const NFT_UPLOAD_DIR = isServerless
+  ? path.join("/tmp", "uploads", "nft-art")
+  : path.join(process.cwd(), "uploads", "nft-art");
 
-if (!fs.existsSync(NFT_UPLOAD_DIR)) {
-  fs.mkdirSync(NFT_UPLOAD_DIR, { recursive: true });
+try {
+  if (!fs.existsSync(NFT_UPLOAD_DIR)) {
+    fs.mkdirSync(NFT_UPLOAD_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn("[NFT-AI] Could not create upload directory:", (err as Error).message);
 }
 
 export type NftArtCategory = "merchant_dish" | "driver_avatar" | "customer_loyalty" | "marketplace_art";

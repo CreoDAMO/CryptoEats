@@ -2185,9 +2185,14 @@ async function generateImage(prompt) {
 var fs = __toESM(require("fs"));
 var path = __toESM(require("path"));
 var crypto = __toESM(require("crypto"));
-var NFT_UPLOAD_DIR = path.join(process.cwd(), "uploads", "nft-art");
-if (!fs.existsSync(NFT_UPLOAD_DIR)) {
-  fs.mkdirSync(NFT_UPLOAD_DIR, { recursive: true });
+var isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var NFT_UPLOAD_DIR = isServerless ? path.join("/tmp", "uploads", "nft-art") : path.join(process.cwd(), "uploads", "nft-art");
+try {
+  if (!fs.existsSync(NFT_UPLOAD_DIR)) {
+    fs.mkdirSync(NFT_UPLOAD_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn("[NFT-AI] Could not create upload directory:", err.message);
 }
 function buildPrompt(params) {
   const baseStyle = params.style || "digital art, vibrant colors, detailed illustration";
@@ -2914,7 +2919,8 @@ function buildOrderStatusSMS(orderId, status) {
 var fs2 = __toESM(require("fs"));
 var path2 = __toESM(require("path"));
 var crypto2 = __toESM(require("crypto"));
-var UPLOAD_DIR = path2.resolve(process.cwd(), "uploads");
+var isServerless2 = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var UPLOAD_DIR = isServerless2 ? path2.resolve("/tmp", "uploads") : path2.resolve(process.cwd(), "uploads");
 var MAX_FILE_SIZE = 10 * 1024 * 1024;
 var ALLOWED_MIME_TYPES = {
   image: ["image/jpeg", "image/png", "image/webp", "image/gif"],
@@ -3768,7 +3774,8 @@ var AWS_REGION = process.env.AWS_REGION || "us-east-1";
 var AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 var AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 var S3_BUCKET = process.env.S3_BUCKET || "cryptoeats-uploads";
-var LOCAL_UPLOAD_DIR = path3.resolve(process.cwd(), "uploads");
+var isServerless3 = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var LOCAL_UPLOAD_DIR = isServerless3 ? path3.resolve("/tmp", "uploads") : path3.resolve(process.cwd(), "uploads");
 function isS3Configured() {
   return !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY && S3_BUCKET);
 }
