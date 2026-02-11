@@ -1,0 +1,1501 @@
+TimeUTC,timestampInMs,requestPath,requestMethod,requestQueryString,responseStatusCode,requestId,requestUserAgent,level,environment,branch,vercelCache,type,function,host,deploymentDomain,deploymentId,durationMs,region,maxMemoryUsed,memorySize,message,projectId,traceId,sessionId,invocationId,instanceId,concurrency
+2026-02-11 07:32:52,1770795172512,cryptoeats.net/,GET,,500,4djt2-1770795172473-8bc800de8399,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:52,1770795172473,cryptoeats.net/,GET,,500,4djt2-1770795172473-8bc800de8399,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,290,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SW0MF4WAHQ5Z011N17TBD,8d8Mj5xS0KQM,1
+2026-02-11 07:32:51,1770795171763,cryptoeats.net/,HEAD,,500,jzlqr-1770795171680-fcdb7650a762,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:51,1770795171680,cryptoeats.net/,HEAD,,500,jzlqr-1770795171680-fcdb7650a762,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,7,iad1,290,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SVZWX293EYESSVVZ2BHNN,8d8Mj5xS0KQM,1
+2026-02-11 07:32:15,1770795135925,cryptoeats.net/,HEAD,,500,m49jf-1770795135684-5f02c264b458,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),error,production,main,MISS,function,/,cryptoeats.net,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:15,1770795135684,cryptoeats.net/,HEAD,,500,m49jf-1770795135684-5f02c264b458,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),,production,main,MISS,function,/api/index,cryptoeats.net,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,290,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5STWX2SC6QR4ZKFVAKBCK6,8d8Mj5xS0KQM,1
+2026-02-11 07:32:14,1770795134459,cryptoeats.net/,HEAD,,,jxwml-1770795134381-2322d283da91,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),error,production,main,,function,,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:14,1770795134381,cryptoeats.net/,HEAD,,,jxwml-1770795134381-2322d283da91,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),,production,main,,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,8,iad1,290,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5STVF6XNXJABRXHEDE2409,8d8Mj5xS0KQM,1
+2026-02-11 07:32:12,1770795132663,crypto-eats-h9illlygd-creodamos-projects.vercel.app/,GET,,,w5c66-1770795132605-c0cce19d0937,vercel-favicon/1.0,error,production,main,,function,,crypto-eats-h9illlygd-creodamos-projects.vercel.app,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:12,1770795132605,crypto-eats-h9illlygd-creodamos-projects.vercel.app/,GET,,,w5c66-1770795132605-c0cce19d0937,vercel-favicon/1.0,,production,main,,function,/api/index,crypto-eats-h9illlygd-creodamos-projects.vercel.app,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,289,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5STSQ771WZHY74Y9JDTCGV,8d8Mj5xS0KQM,1
+2026-02-11 07:32:11,1770795131561,crypto-eats-h9illlygd-creodamos-projects.vercel.app/,GET,,500,cgw84-1770795131500-3025b2aea63d,vercel-favicon/1.0,error,production,main,MISS,function,/,crypto-eats-h9illlygd-creodamos-projects.vercel.app,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:11,1770795131500,crypto-eats-h9illlygd-creodamos-projects.vercel.app/,GET,,500,cgw84-1770795131500-3025b2aea63d,vercel-favicon/1.0,,production,main,MISS,function,/api/index,crypto-eats-h9illlygd-creodamos-projects.vercel.app,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,8,iad1,289,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5STRMP1SZXHRB9ZGDEK0AC,8d8Mj5xS0KQM,1
+2026-02-11 07:32:06,1770795126846,cryptoeats.net/,HEAD,,500,96pfz-1770795126584-45a98d3c4106,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:32:06,1770795126584,cryptoeats.net/,HEAD,,500,96pfz-1770795126584-45a98d3c4106,Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,38,iad1,290,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5STM0918EJTAT9ZVY04ATN,8d8Mj5xS0KQM,1
+2026-02-11 07:31:34,1770795094955,cryptoeats.net/https%3A/vercel.com/docs/errors/https%3A/vercel.com/docs/errors/FUNCTION_INVOCATION_FAILED,GET,,500,46z27-1770795094930-47be163de314,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",error,production,main,MISS,function,/https%3A/vercel.com/docs/errors/https%3A/vercel.com/docs/errors/FUNCTION_INVOCATION_FAILED,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:34,1770795094930,cryptoeats.net/https%3A/vercel.com/docs/errors/https%3A/vercel.com/docs/errors/FUNCTION_INVOCATION_FAILED,GET,,500,46z27-1770795094930-47be163de314,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,35,iad1,289,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SSMWTNY7KN0EHQC9MAET1,8d8Mj5xS0KQM,1
+2026-02-11 07:31:29,1770795089811,cryptoeats.net/https%3A/vercel.com/docs/errors/FUNCTION_INVOCATION_FAILED,GET,,500,chwhz-1770795089772-b23a7e0381d0,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",error,production,main,MISS,function,/https%3A/vercel.com/docs/errors/FUNCTION_INVOCATION_FAILED,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:29,1770795089772,cryptoeats.net/https%3A/vercel.com/docs/errors/FUNCTION_INVOCATION_FAILED,GET,,500,chwhz-1770795089772-b23a7e0381d0,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,33,iad1,312,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SSFVR1KGMQHXHVZ92M4XF,8d8Mj5xS0KQM,1
+2026-02-11 07:31:24,1770795084928,cryptoeats.net/,GET,,500,cvfvk-1770795084882-2d0d10c51b36,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",error,production,main,MISS,function,/,cryptoeats.net,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:24,1770795084882,cryptoeats.net/,GET,,500,cvfvk-1770795084882-2d0d10c51b36,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,44,iad1,311,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SSB2THPXR2JN6K50PQ0WZ,8d8Mj5xS0KQM,1
+2026-02-11 07:31:17,1770795077004,cryptoeats.net/,GET,,500,vpbl9-1770795076967-a41c8f5aeb5d,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:16,1770795076967,cryptoeats.net/,GET,,500,vpbl9-1770795076967-a41c8f5aeb5d,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,311,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SS3BR5R9SEPGKK3NE6HR3,8d8Mj5xS0KQM,1
+2026-02-11 07:31:16,1770795076967,cryptoeats.net/,GET,,500,p4hm2-1770795076939-69d4b8ab6f49,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:16,1770795076939,cryptoeats.net/,GET,,500,p4hm2-1770795076939-69d4b8ab6f49,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,311,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SS3AQ5CG1WSQ2QMR5ZE92,8d8Mj5xS0KQM,1
+2026-02-11 07:31:13,1770795073804,cryptoeats.net/favicon.ico,GET,,500,962pz-1770795073717-aee528d2238f,"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.41 YaBrowser/21.2.0.1097 Yowser/2.5 Safari/537.36",error,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:13,1770795073717,cryptoeats.net/favicon.ico,GET,,500,962pz-1770795073717-aee528d2238f,"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.41 YaBrowser/21.2.0.1097 Yowser/2.5 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SS07SS1JQVW0X07NK68NJ,m5PIU0KgMb71,1
+2026-02-11 07:31:13,1770795073927,cryptoeats.net/favicon.ico,GET,,500,kww9s-1770795073707-0868edc44d60,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36",error,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:13,1770795073707,cryptoeats.net/favicon.ico,GET,,500,kww9s-1770795073707-0868edc44d60,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SS0BSQMQK6ZW5PAHKWPSF,m5PIU0KgMb71,1
+2026-02-11 07:31:14,1770795074132,cryptoeats.net/favicon.ico,GET,,500,8dt8x-1770795073704-210e36250e96,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36 Edg/93.0.961.38",info,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"(node:4) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'.In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees.To prepare for this change:- If you want the current behavior, explicitly use 'sslmode=verify-full'- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'See https://www.postgresql.org/docs/current/libpq-ssl.html for libpq SSL mode definitions.(Use `node --trace-warnings ...` to show where the warning was created)",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:14,1770795074267,cryptoeats.net/favicon.ico,GET,,500,8dt8x-1770795073704-210e36250e96,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36 Edg/93.0.961.38",error,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:13,1770795073704,cryptoeats.net/favicon.ico,GET,,500,8dt8x-1770795073704-210e36250e96,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36 Edg/93.0.961.38",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,1180,iad1,310,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SS0BY3NWZWTD5ZQVN2PKM,8d8Mj5xS0KQM,1
+2026-02-11 07:31:13,1770795073779,cryptoeats.net/favicon.ico,GET,,500,6j54v-1770795073696-3c2207ae632c,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68",error,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:13,1770795073696,cryptoeats.net/favicon.ico,GET,,500,6j54v-1770795073696-3c2207ae632c,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SS07355RGPTEK19BG63GJ,m5PIU0KgMb71,1
+2026-02-11 07:31:12,1770795072889,cryptoeats.net/,GET,,500,ftx2h-1770795072504-b3890f0200b7,"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.41 YaBrowser/21.2.0.1097 Yowser/2.5 Safari/537.36",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:12,1770795072504,cryptoeats.net/,GET,,500,ftx2h-1770795072504-b3890f0200b7,"Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.41 YaBrowser/21.2.0.1097 Yowser/2.5 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,6,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SRZA8QYWRS9BWG9E17QA6,m5PIU0KgMb71,1
+2026-02-11 07:31:12,1770795072875,cryptoeats.net/,GET,,,hhp4c-1770795072502-43fda1d1062e,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36",error,production,main,,function,,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:12,1770795072502,cryptoeats.net/,GET,,,hhp4c-1770795072502-43fda1d1062e,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/89.0.4389.72 Safari/537.36",,production,main,,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,7,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SRZA4NC3T0MZ855VEEDC6,m5PIU0KgMb71,1
+2026-02-11 07:31:12,1770795072852,cryptoeats.net/,GET,,500,mmxcm-1770795072454-f7d6a70e4cac,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36 Edg/93.0.961.38",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:12,1770795072454,cryptoeats.net/,GET,,500,mmxcm-1770795072454-f7d6a70e4cac,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36 Edg/93.0.961.38",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,4,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SRZA17HN6ZBGJGRF1RZ9V,m5PIU0KgMb71,1
+2026-02-11 07:31:12,1770795072862,cryptoeats.net/,GET,,500,fpqcv-1770795072444-fd90fd2437d3,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:31:12,1770795072444,cryptoeats.net/,GET,,500,fpqcv-1770795072444-fd90fd2437d3,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36 Edg/88.0.705.68",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SRZA2QS09SMP4F1PN2DFF,m5PIU0KgMb71,1
+2026-02-11 07:30:39,1770795039923,cryptoeats.net/,GET,,500,9ncsb-1770795039896-a1eab44bcb40,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",error,production,main,MISS,function,/,cryptoeats.net,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:39,1770795039896,cryptoeats.net/,GET,,500,9ncsb-1770795039896-a1eab44bcb40,"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36 Edg/142.0.0.0",,production,main,MISS,function,/api/index,cryptoeats.net,crypto-eats-h9illlygd-creodamos-projects.vercel.app,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,6,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SQZ54AKSPKDYJ3W6SVWZ5,m5PIU0KgMb71,1
+2026-02-11 07:30:28,1770795028232,cryptoeats.net/favicon.ico,GET,,500,8md9w-1770795028034-29ae85028a97,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",error,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:28,1770795028034,cryptoeats.net/favicon.ico,GET,,500,8md9w-1770795028034-29ae85028a97,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,7,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SQKQNYP8W75FPMHYGBRVM,m5PIU0KgMb71,1
+2026-02-11 07:30:27,1770795027873,cryptoeats.net/,GET,,500,zzqrc-1770795027422-4c365c44d23c,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:27,1770795027422,cryptoeats.net/,GET,,500,zzqrc-1770795027422-4c365c44d23c,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,7,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SQKCHCA3AY8BRDWES65C9,m5PIU0KgMb71,1
+2026-02-11 07:30:06,1770795006445,cryptoeats.net/debug/default/view,GET,panel=config,500,8jx5p-1770795006363-e734c2e833b8,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/debug/default/view,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:06,1770795006363,cryptoeats.net/debug/default/view,GET,panel=config,500,8jx5p-1770795006363-e734c2e833b8,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,8,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPYER9N7B1156MVHT9ZM1,m5PIU0KgMb71,1
+2026-02-11 07:30:06,1770795006265,cryptoeats.net/login.action,GET,,500,5tgnz-1770795006209-a5ef1de58832,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/login.action,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:06,1770795006209,cryptoeats.net/login.action,GET,,500,5tgnz-1770795006209-a5ef1de58832,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,7,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPY97B5GDX8WMAV25W57Q,m5PIU0KgMb71,1
+2026-02-11 07:30:05,1770795005578,cryptoeats.net/,GET,rest_route=/wp/v2/users/,500,h89br-1770795005394-ea961a928bc6,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:05,1770795005394,cryptoeats.net/,GET,rest_route=/wp/v2/users/,500,h89br-1770795005394-ea961a928bc6,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPXKX7SKNEDK3Q7D1ZQJJ,m5PIU0KgMb71,1
+2026-02-11 07:30:04,1770795004423,cryptoeats.net/,OPTIONS,,500,rpjsz-1770795004362-852d2d06965a,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:04,1770795004362,cryptoeats.net/,OPTIONS,,500,rpjsz-1770795004362-852d2d06965a,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,9,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPWFNRGG8N8QXFXC7XHRV,m5PIU0KgMb71,1
+2026-02-11 07:30:03,1770795003427,cryptoeats.net/.vscode/sftp.json,GET,,500,zrv8b-1770795003362-6da5459d473c,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/.vscode/sftp.json,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:03,1770795003362,cryptoeats.net/.vscode/sftp.json,GET,,500,zrv8b-1770795003362-6da5459d473c,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,10,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPVGE4YT7J45G3QY0D87W,m5PIU0KgMb71,1
+2026-02-11 07:30:02,1770795002557,cryptoeats.net/@vite/env,GET,,500,6qkhw-1770795002497-bc131bdf01a7,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/@vite/env,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:02,1770795002497,cryptoeats.net/@vite/env,GET,,500,6qkhw-1770795002497-bc131bdf01a7,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPTNEE2D2JQG89ZPFT6ZJ,m5PIU0KgMb71,1
+2026-02-11 07:30:01,1770795001396,cryptoeats.net/api/swagger.json,GET,,500,plsm6-1770795001333-de63c855c191,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/api/swagger.json,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:01,1770795001333,cryptoeats.net/api/swagger.json,GET,,500,plsm6-1770795001333-de63c855c191,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPSH440RMQRMD0CR187RC,m5PIU0KgMb71,1
+2026-02-11 07:30:00,1770795000388,cryptoeats.net/api-docs/swagger.json,GET,,500,r7dwf-1770795000327-b8ad36334b04,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/api-docs/swagger.json,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:30:00,1770795000327,cryptoeats.net/api-docs/swagger.json,GET,,500,r7dwf-1770795000327-b8ad36334b04,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPRHM4V0SRT3WX8GPBZDG,m5PIU0KgMb71,1
+2026-02-11 07:29:59,1770794999386,cryptoeats.net/v3/api-docs,GET,,500,tncdp-1770794999328-848184a393d4,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/v3/api-docs,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:59,1770794999328,cryptoeats.net/v3/api-docs,GET,,500,tncdp-1770794999328-848184a393d4,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPQJD1YG7TFCMJRJ1X2CW,m5PIU0KgMb71,1
+2026-02-11 07:29:58,1770794998383,cryptoeats.net/v2/api-docs,GET,,500,tv62n-1770794998325-51c1d431c8fb,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/v2/api-docs,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:58,1770794998325,cryptoeats.net/v2/api-docs,GET,,500,tv62n-1770794998325-51c1d431c8fb,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPPK1B8KG20RGYQGGK799,m5PIU0KgMb71,1
+2026-02-11 07:29:57,1770794997384,cryptoeats.net/swagger/v1/swagger.json,GET,,500,7pcz7-1770794997325-c25201532978,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/swagger/v1/swagger.json,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:57,1770794997325,cryptoeats.net/swagger/v1/swagger.json,GET,,500,7pcz7-1770794997325-c25201532978,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPNKSRTG3FNMN39W58GTR,m5PIU0KgMb71,1
+2026-02-11 07:29:56,1770794996385,cryptoeats.net/swagger.json,GET,,500,plsm6-1770794996321-9edd51c1324a,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/swagger.json,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:56,1770794996321,cryptoeats.net/swagger.json,GET,,500,plsm6-1770794996321-9edd51c1324a,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPMMK0VQB71D0S5G5BM7Y,m5PIU0KgMb71,1
+2026-02-11 07:29:56,1770794996619,cryptoeats.net/favicon.ico,GET,,500,7xz6p-1770794996103-618e0ae4f653,python-requests/2.25.1,error,production,main,MISS,function,/favicon.ico,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:56,1770794996103,cryptoeats.net/favicon.ico,GET,,500,7xz6p-1770794996103-618e0ae4f653,python-requests/2.25.1,,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPMVQANYX0EEPZBT0YKGF,m5PIU0KgMb71,1
+2026-02-11 07:29:55,1770794995893,cryptoeats.net/,GET,,500,xxkjk-1770794995580-3d9118bf92eb,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:55,1770794995580,cryptoeats.net/,GET,,500,xxkjk-1770794995580-3d9118bf92eb,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36",,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,294,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPM56Q4VEKT0HZGF922CW,m5PIU0KgMb71,1
+2026-02-11 07:29:55,1770794995405,cryptoeats.net/webjars/swagger-ui/index.html,GET,,500,8qk8c-1770794995320-5c3b89b98fc9,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/webjars/swagger-ui/index.html,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:55,1770794995320,cryptoeats.net/webjars/swagger-ui/index.html,GET,,500,8qk8c-1770794995320-5c3b89b98fc9,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPKNYWAQDP7X3K1JDET1G,m5PIU0KgMb71,1
+2026-02-11 07:29:54,1770794994383,cryptoeats.net/swagger/swagger-ui.html,GET,,500,25vrq-1770794994320-621e568b99b7,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/swagger/swagger-ui.html,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:54,1770794994320,cryptoeats.net/swagger/swagger-ui.html,GET,,500,25vrq-1770794994320-621e568b99b7,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPJP2ZS57BDBD4BSXY93E,m5PIU0KgMb71,1
+2026-02-11 07:29:53,1770794993376,cryptoeats.net/swagger/index.html,GET,,500,9rlgq-1770794993318-60def6e18131,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/swagger/index.html,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:53,1770794993318,cryptoeats.net/swagger/index.html,GET,,500,9rlgq-1770794993318-60def6e18131,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPHPKV6F622HZ1W0EASE7,m5PIU0KgMb71,1
+2026-02-11 07:29:52,1770794992413,cryptoeats.net/swagger-ui.html,GET,,500,gkw8j-1770794992318-5675dd6eecf3,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/swagger-ui.html,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:52,1770794992318,cryptoeats.net/swagger-ui.html,GET,,500,gkw8j-1770794992318-5675dd6eecf3,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,6,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPGREKMFSQYP4JRK7H7CH,m5PIU0KgMb71,1
+2026-02-11 07:29:50,1770794990377,cryptoeats.net/actuator/env,GET,,500,chlbv-1770794990319-72b8c0a94d33,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/actuator/env,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:50,1770794990319,cryptoeats.net/actuator/env,GET,,500,chlbv-1770794990319-72b8c0a94d33,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPERWEJY4R1XMHA0AH94G,m5PIU0KgMb71,1
+2026-02-11 07:29:50,1770794990351,cryptoeats.net/,GET,,500,dsgbv-1770794989684-1eaab366421a,Go-http-client/1.1,error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:49,1770794989684,cryptoeats.net/,GET,,500,dsgbv-1770794989684-1eaab366421a,Go-http-client/1.1,,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPER179SZZSB48J2NPSVC,m5PIU0KgMb71,1
+2026-02-11 07:29:49,1770794989381,cryptoeats.net/.well-known/security.txt,GET,,500,gvznc-1770794989319-6ad1f4621101,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/.well-known/security.txt,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:49,1770794989319,cryptoeats.net/.well-known/security.txt,GET,,500,gvznc-1770794989319-6ad1f4621101,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPDSQ3F6GZ8K181J9X4DX,m5PIU0KgMb71,1
+2026-02-11 07:29:48,1770794988382,cryptoeats.net/info.php,GET,,,bk622-1770794988318-72de6b7d4ae9,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,,function,,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:48,1770794988318,cryptoeats.net/info.php,GET,,,bk622-1770794988318-72de6b7d4ae9,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,6,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPCTC0WVABASPD2M9FH67,m5PIU0KgMb71,1
+2026-02-11 07:29:48,1770794988271,cryptoeats.net/telescope/requests,GET,,500,gqv68-1770794988209-dfc17e133f58,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/telescope/requests,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:48,1770794988209,cryptoeats.net/telescope/requests,GET,,500,gqv68-1770794988209-dfc17e133f58,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,4,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPCPVP115KF1B6QS8HWSR,m5PIU0KgMb71,1
+2026-02-11 07:29:48,1770794988499,cryptoeats.net/,GET,,500,6dbrz-1770794987851-38b4276bb8cf,Go-http-client/1.1,error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:47,1770794987851,cryptoeats.net/,GET,,500,6dbrz-1770794987851-38b4276bb8cf,Go-http-client/1.1,,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,5,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPCY6K3CP0KN0AE1X42MV,m5PIU0KgMb71,1
+2026-02-11 07:29:46,1770794986269,cryptoeats.net/config.json,GET,,500,gqv68-1770794986207-474ed79955bf,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/config.json,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:46,1770794986207,cryptoeats.net/config.json,GET,,500,gqv68-1770794986207-474ed79955bf,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,14,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SPARBKM0G74W43Y1Q2TVA,m5PIU0KgMb71,1
+2026-02-11 07:29:45,1770794985278,cryptoeats.net/s/13e29373e2839313e2631323/_/;/META-INF/maven/com.atlassian.jira/jira-webapp-dist/pom.properties,GET,,500,zrv8b-1770794985211-729708d520db,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),error,production,main,MISS,function,/s/13e29373e2839313e2631323/_/;/META-INF/maven/com.atlassian.jira/jira-webapp-dist/pom.properties,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 07:29:45,1770794985211,cryptoeats.net/s/13e29373e2839313e2631323/_/;/META-INF/maven/com.atlassian.jira/jira-webapp-dist/pom.properties,GET,,500,zrv8b-1770794985211-729708d520db,Mozilla/5.0 (l9scan/2.0.13e29373e2839313e2631323; +https://leakix.net),,production,main,MISS,function,/api/index,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,9,iad1,293,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH5SP9SBMVVWKADC48234RS2,m5PIU0KgMb71,1
+2026-02-11 07:29:44,1770794984589,cryptoeats.net/,GET,,500,zp7h9-1770794984527-2e7b98d3eeb3,"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36 Edg/144.0.0.0",error,production,main,MISS,function,/,cryptoeats.net,cryptoeats.net,dpl_HZe5RzWGdc8gRe5SPA2EbQDxeSqn,,,,,"error: relation ""restaurants"" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async /var/task/node_modules/drizzle-orm/node-postgres/session.cjs:118:22
+    at async seedDatabase (/var/task/api/index.js:1378:31)
+    at async registerRoutes (/var/task/api/index.js:4027:3)
+    at async /var/task/api/index.js:7784:7
+    at async Object.handler (/var/task/api/index.js:7883:39)
+    at async r (/opt/rust/nodejs.js:2:15572)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:2:11594)
+    at async Server.<anonymous> (/opt/rust/nodejs.js:17:10042) {
+  length: 111,
+  severity: 'ERROR',
+  code: '42P01',
+  detail: undefined,
+  hint: undefined,
+  position: '314',
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: undefined,
+  table: undefined,
+  column: undefined,
+  dataType: undefined,
+  constraint: undefined,
+  file: 'parse_relation.c',
+  line: '1449',
+  routine: 'parserOpenTable'
+}",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,

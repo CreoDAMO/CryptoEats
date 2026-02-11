@@ -1375,8 +1375,17 @@ var storage = {
 
 // server/seed.ts
 async function seedDatabase() {
-  const existingRestaurants = await db.select().from(restaurants).limit(1);
-  if (existingRestaurants.length > 0) return;
+  try {
+    const existingRestaurants = await db.select().from(restaurants).limit(1);
+    if (existingRestaurants.length > 0) return;
+  } catch (err) {
+    if (err?.code === "42P01") {
+      console.warn("[Seed] Tables not created yet. Run database migrations first (npx drizzle-kit push).");
+      console.warn("[Seed] Skipping seed \u2014 tables will be created on next deployment.");
+      return;
+    }
+    throw err;
+  }
   console.log("Seeding database...");
   const [r1] = await db.insert(restaurants).values({
     name: "La Carreta Cuban Cuisine",

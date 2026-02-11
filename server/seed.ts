@@ -2,8 +2,17 @@ import { db } from "./db";
 import { restaurants, menuItems, taxJurisdictions, deliveryWindows, bundles } from "../shared/schema";
 
 export async function seedDatabase() {
-  const existingRestaurants = await db.select().from(restaurants).limit(1);
-  if (existingRestaurants.length > 0) return;
+  try {
+    const existingRestaurants = await db.select().from(restaurants).limit(1);
+    if (existingRestaurants.length > 0) return;
+  } catch (err: any) {
+    if (err?.code === "42P01") {
+      console.warn("[Seed] Tables not created yet. Run database migrations first (npx drizzle-kit push).");
+      console.warn("[Seed] Skipping seed — tables will be created on next deployment.");
+      return;
+    }
+    throw err;
+  }
 
   console.log("Seeding database...");
 
