@@ -747,7 +747,45 @@
           Sign In
         </button>
       </form>
-      <p style="text-align:center;margin-top:16px;font-size:12px;color:#8888A0;">Only authorized admin accounts can access this dashboard.</p>
+      <div id="forgot-section" style="display:none;">
+        <div id="forgot-step-email">
+          <p style="color:#8888A0;font-size:13px;margin-bottom:16px;">Enter your email and we'll send a 6-digit reset code.</p>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">Email</label>
+            <input id="forgot-email" type="email" required placeholder="admin@cryptoeats.net"
+              style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+          </div>
+          <button onclick="sendResetCode('admin')" id="send-code-btn"
+            style="width:100%;padding:14px;background:#00D4AA;color:#0A0A0F;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+            Send Reset Code
+          </button>
+        </div>
+        <div id="forgot-step-code" style="display:none;">
+          <div id="forgot-msg" style="background:rgba(0,212,170,0.15);border:1px solid #00D4AA;color:#00D4AA;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">6-Digit Code</label>
+            <input id="reset-code" type="text" maxlength="6" placeholder="000000"
+              style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:18px;letter-spacing:6px;text-align:center;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">New Password</label>
+            <input id="new-password" type="password" placeholder="At least 8 characters"
+              style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+          </div>
+          <button onclick="resetPassword('admin')" id="reset-btn"
+            style="width:100%;padding:14px;background:#00D4AA;color:#0A0A0F;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+            Reset Password
+          </button>
+        </div>
+        <div id="forgot-error" style="display:none;background:rgba(255,77,106,0.15);border:1px solid #FF4D6A;color:#FF4D6A;padding:12px;border-radius:8px;margin-top:16px;font-size:13px;"></div>
+      </div>
+      <p id="forgot-link" style="text-align:center;margin-top:16px;font-size:13px;color:#00D4AA;cursor:pointer;" onclick="showForgotPassword()">Forgot Password?</p>
+      <p id="back-link" style="text-align:center;margin-top:16px;font-size:13px;color:#00D4AA;cursor:pointer;display:none;" onclick="hideForgotPassword()">&#8592; Back to Sign In</p>
+      <p style="text-align:center;margin-top:8px;font-size:12px;color:#8888A0;">Only authorized admin accounts can access this dashboard.</p>
     </div>
   </div>
 
@@ -795,6 +833,75 @@
       document.getElementById('login-email').value = '';
       document.getElementById('login-password').value = '';
       document.getElementById('login-error').style.display = 'none';
+      hideForgotPassword();
+    }
+
+    function showForgotPassword() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('forgot-section').style.display = 'block';
+      document.getElementById('forgot-link').style.display = 'none';
+      document.getElementById('back-link').style.display = 'block';
+      document.getElementById('login-error').style.display = 'none';
+      document.getElementById('forgot-email').value = document.getElementById('login-email').value;
+    }
+
+    function hideForgotPassword() {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('forgot-section').style.display = 'none';
+      document.getElementById('forgot-link').style.display = 'block';
+      document.getElementById('back-link').style.display = 'none';
+      document.getElementById('forgot-step-email').style.display = 'block';
+      document.getElementById('forgot-step-code').style.display = 'none';
+      document.getElementById('forgot-error').style.display = 'none';
+    }
+
+    async function sendResetCode() {
+      const email = document.getElementById('forgot-email').value;
+      const btn = document.getElementById('send-code-btn');
+      const errEl = document.getElementById('forgot-error');
+      errEl.style.display = 'none';
+      btn.textContent = 'Sending...'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        document.getElementById('forgot-msg').textContent = data.message;
+        document.getElementById('forgot-step-email').style.display = 'none';
+        document.getElementById('forgot-step-code').style.display = 'block';
+      } catch (err) {
+        errEl.textContent = 'Failed to connect. Please try again.';
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Send Reset Code'; btn.disabled = false;
+      }
+    }
+
+    async function resetPassword() {
+      const email = document.getElementById('forgot-email').value;
+      const code = document.getElementById('reset-code').value;
+      const newPw = document.getElementById('new-password').value;
+      const btn = document.getElementById('reset-btn');
+      const errEl = document.getElementById('forgot-error');
+      errEl.style.display = 'none';
+      if (newPw.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+      btn.textContent = 'Resetting...'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code, newPassword: newPw }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Reset failed');
+        alert('Password reset successfully! You can now sign in.');
+        hideForgotPassword();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Reset Password'; btn.disabled = false;
+      }
     }
 
     async function verifyToken() {

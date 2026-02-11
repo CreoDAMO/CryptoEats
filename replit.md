@@ -12,6 +12,11 @@ CryptoEats is a comprehensive food and alcohol delivery platform designed for th
 - **Feb 10, 2026**: Added three support screens — Help & Support (FAQs, contact info), Legal & Privacy (WebBrowser links), Notification Settings (toggleable with AsyncStorage persistence)
 - **Feb 10, 2026**: Implemented full authentication system — JWT login/register, dual-mode auth screen, AsyncStorage session persistence, profile page with real backend user data
 - **Feb 11, 2026**: Secured admin and merchant dashboards with production-ready authentication — login screens with JWT flow, role-based middleware (adminMiddleware, merchantMiddleware), all admin/merchant API endpoints secured, default admin user seeded (admin@cryptoeats.net), merchant-accessible restaurant list endpoint, JWT secret enforced in production
+- **Feb 11, 2026**: Added password reset (forgot password) flow — 6-digit email code, 15-min expiry, password_reset_tokens table, integrated into mobile app login screen and both dashboard login screens
+
+## Future Features (Planned)
+
+- **Social Login**: Google, Facebook, X (Twitter), LinkedIn authentication
 
 ## User Preferences
 

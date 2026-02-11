@@ -7,6 +7,9 @@ import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { storage } from "./storage";
 import { seedDatabase } from "./seed";
+import { db } from "./db";
+import { eq, and, desc } from "drizzle-orm";
+import { passwordResetTokens, users } from "../shared/schema";
 const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 import {
   registerSchema, loginSchema, createOrderSchema, rateOrderSchema,
@@ -175,6 +178,92 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ token, user: req.user });
     } catch (err: any) {
       res.status(400).json({ message: "Token refresh failed" });
+    }
+  });
+
+  app.post("/api/auth/forgot-password", authLimiter, async (req: Request, res: Response) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ message: "Email is required" });
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.json({ message: "If an account with that email exists, a reset code has been sent." });
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const hashedCode = await bcrypt.hash(code, 10);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
+
+      await db.insert(passwordResetTokens).values({
+        userId: user.id,
+        token: hashedCode,
+        expiresAt,
+      });
+
+      const { sendEmail } = await import("./services/notifications");
+      await sendEmail(
+        email,
+        "CryptoEats — Password Reset Code",
+        `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0A0A0F; color: #ffffff; border-radius: 12px;">
+          <h2 style="color: #00D4AA; margin-bottom: 8px;">Password Reset</h2>
+          <p>Your password reset code is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #14141F; border-radius: 8px; color: #00D4AA; margin: 16px 0;">
+            ${code}
+          </div>
+          <p style="color: #888;">This code expires in 15 minutes. If you didn't request this, please ignore this email.</p>
+          <p style="color: #555; font-size: 12px; margin-top: 24px;">CryptoEats — Miami's Crypto-Native Delivery</p>
+        </div>`
+      );
+
+      console.log(`[Auth] Password reset code generated for ${email}${!process.env.SENDGRID_API_KEY ? ` (code: ${code})` : ""}`);
+      res.json({ message: "If an account with that email exists, a reset code has been sent." });
+    } catch (err: any) {
+      console.error("[Auth] Forgot password error:", err.message);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
+  });
+
+  app.post("/api/auth/reset-password", authLimiter, async (req: Request, res: Response) => {
+    try {
+      const { email, code, newPassword } = req.body;
+      if (!email || !code || !newPassword) {
+        return res.status(400).json({ message: "Email, code, and new password are required" });
+      }
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
+      const user = await storage.getUserByEmail(email);
+      if (!user) return res.status(400).json({ message: "Invalid or expired reset code" });
+
+      const tokens = await db.select().from(passwordResetTokens)
+        .where(and(
+          eq(passwordResetTokens.userId, user.id),
+          eq(passwordResetTokens.used, false),
+        ))
+        .orderBy(desc(passwordResetTokens.createdAt))
+        .limit(5);
+
+      let validToken = null;
+      for (const t of tokens) {
+        if (new Date() > t.expiresAt) continue;
+        const match = await bcrypt.compare(code, t.token);
+        if (match) { validToken = t; break; }
+      }
+
+      if (!validToken) {
+        return res.status(400).json({ message: "Invalid or expired reset code" });
+      }
+
+      const newHash = await bcrypt.hash(newPassword, 12);
+      await db.update(users).set({ passwordHash: newHash, updatedAt: new Date() }).where(eq(users.id, user.id));
+      await db.update(passwordResetTokens).set({ used: true }).where(eq(passwordResetTokens.id, validToken.id));
+
+      res.json({ message: "Password has been reset successfully. You can now sign in." });
+    } catch (err: any) {
+      console.error("[Auth] Reset password error:", err.message);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
     }
   });
 

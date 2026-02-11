@@ -36,6 +36,19 @@ export const users = pgTable("users", {
   index("users_role_idx").on(table.role),
 ]);
 
+// =================== PASSWORD RESET TOKENS ===================
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  token: text("token").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("reset_tokens_user_idx").on(table.userId),
+  index("reset_tokens_token_idx").on(table.token),
+]);
+
 // =================== CUSTOMERS ===================
 export const customers = pgTable("customers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),

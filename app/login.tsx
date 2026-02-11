@@ -18,8 +18,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import Colors from '@/constants/colors';
 import { useAuth } from '@/lib/auth-context';
+import { getApiUrl } from '@/lib/query-client';
 
 type AuthMode = 'signin' | 'signup';
+type ResetStep = 'email' | 'code' | 'done';
 
 export default function LoginScreen() {
   const c = Colors.dark;
@@ -42,6 +44,17 @@ export default function LoginScreen() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [signUpPasswordVisible, setSignUpPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+
+  // Forgot Password state
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetStep, setResetStep] = useState<ResetStep>('email');
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetCode, setResetCode] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetMessage, setResetMessage] = useState('');
+  const [newPasswordVisible, setNewPasswordVisible] = useState(false);
 
   const handleSignIn = async () => {
     setError('');
@@ -102,11 +115,65 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = () => {
-    Alert.alert(
-      'Password Reset',
-      'Please contact support@cryptoeats.net to reset your password.',
-      [{ text: 'OK' }]
-    );
+    setResetEmail(signInEmail);
+    setResetCode('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setResetMessage('');
+    setError('');
+    setResetStep('email');
+    setShowForgotPassword(true);
+  };
+
+  const handleSendResetCode = async () => {
+    if (!resetEmail.trim()) { setError('Please enter your email'); return; }
+    setError('');
+    setResetLoading(true);
+    try {
+      const baseUrl = getApiUrl();
+      const res = await fetch(`${baseUrl}/api/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim() }),
+      });
+      const data = await res.json();
+      setResetMessage(data.message);
+      setResetStep('code');
+    } catch {
+      setError('Could not connect to server. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetCode.trim()) { setError('Please enter the 6-digit code'); return; }
+    if (newPassword.length < 8) { setError('Password must be at least 8 characters'); return; }
+    if (newPassword !== confirmNewPassword) { setError('Passwords do not match'); return; }
+    setError('');
+    setResetLoading(true);
+    try {
+      const baseUrl = getApiUrl();
+      const res = await fetch(`${baseUrl}/api/auth/reset-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: resetEmail.trim(), code: resetCode.trim(), newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.message); return; }
+      setResetMessage(data.message);
+      setResetStep('done');
+    } catch {
+      setError('Could not connect to server. Please try again.');
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handleBackToSignIn = () => {
+    setShowForgotPassword(false);
+    setError('');
+    setResetMessage('');
   };
 
   const isSignIn = mode === 'signin';
@@ -133,6 +200,149 @@ export default function LoginScreen() {
               CryptoEats
             </Text>
           </View>
+
+          {showForgotPassword ? (
+            <View style={styles.form}>
+              <Pressable onPress={handleBackToSignIn} style={styles.backRow}>
+                <Feather name="arrow-left" size={20} color={c.accent} />
+                <Text style={[styles.backText, { color: c.accent, fontFamily: 'DMSans_500Medium' }]}>
+                  Back to Sign In
+                </Text>
+              </Pressable>
+
+              <Text style={[styles.resetTitle, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>
+                {resetStep === 'email' ? 'Reset Password' : resetStep === 'code' ? 'Enter Reset Code' : 'Password Updated'}
+              </Text>
+
+              {error ? (
+                <View style={[styles.errorContainer, { backgroundColor: c.red + '22' }]}>
+                  <Feather name="alert-circle" size={16} color={c.red} />
+                  <Text style={[styles.errorText, { color: c.red, fontFamily: 'DMSans_400Regular' }]}>{error}</Text>
+                </View>
+              ) : null}
+
+              {resetMessage && !error ? (
+                <View style={[styles.errorContainer, { backgroundColor: c.accent + '22' }]}>
+                  <Feather name="check-circle" size={16} color={c.accent} />
+                  <Text style={[styles.errorText, { color: c.accent, fontFamily: 'DMSans_400Regular' }]}>{resetMessage}</Text>
+                </View>
+              ) : null}
+
+              {resetStep === 'email' && (
+                <>
+                  <Text style={[styles.resetDesc, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
+                    Enter your email address and we'll send you a 6-digit code to reset your password.
+                  </Text>
+                  <View>
+                    <Text style={[styles.label, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Email</Text>
+                    <View style={[styles.inputContainer, { borderColor: c.border, backgroundColor: c.surface }]}>
+                      <Feather name="mail" size={18} color={c.textSecondary} />
+                      <TextInput
+                        style={[styles.input, { color: c.text, fontFamily: 'DMSans_400Regular' }]}
+                        placeholder="Enter your email"
+                        placeholderTextColor={c.textTertiary}
+                        value={resetEmail}
+                        onChangeText={setResetEmail}
+                        editable={!resetLoading}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                      />
+                    </View>
+                  </View>
+                  <LinearGradient colors={[c.accent, c.accent]} style={styles.gradientContainer}>
+                    <Pressable onPress={handleSendResetCode} disabled={resetLoading || !resetEmail.trim()} style={[styles.button, (resetLoading || !resetEmail.trim()) && { opacity: 0.5 }]}>
+                      {resetLoading ? <ActivityIndicator color="#000" size="small" /> : (
+                        <Text style={[styles.buttonText, { fontFamily: 'DMSans_600SemiBold' }]}>Send Reset Code</Text>
+                      )}
+                    </Pressable>
+                  </LinearGradient>
+                </>
+              )}
+
+              {resetStep === 'code' && (
+                <>
+                  <Text style={[styles.resetDesc, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
+                    Enter the 6-digit code sent to {resetEmail} and choose a new password.
+                  </Text>
+                  <View>
+                    <Text style={[styles.label, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Reset Code</Text>
+                    <View style={[styles.inputContainer, { borderColor: c.border, backgroundColor: c.surface }]}>
+                      <Feather name="hash" size={18} color={c.textSecondary} />
+                      <TextInput
+                        style={[styles.input, { color: c.text, fontFamily: 'DMSans_400Regular', letterSpacing: 4, fontSize: 18 }]}
+                        placeholder="000000"
+                        placeholderTextColor={c.textTertiary}
+                        value={resetCode}
+                        onChangeText={(t) => setResetCode(t.replace(/[^0-9]/g, '').slice(0, 6))}
+                        editable={!resetLoading}
+                        keyboardType="number-pad"
+                        maxLength={6}
+                      />
+                    </View>
+                  </View>
+                  <View>
+                    <Text style={[styles.label, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>New Password</Text>
+                    <View style={[styles.inputContainer, { borderColor: c.border, backgroundColor: c.surface }]}>
+                      <Feather name="lock" size={18} color={c.textSecondary} />
+                      <TextInput
+                        style={[styles.input, { color: c.text, fontFamily: 'DMSans_400Regular' }]}
+                        placeholder="At least 8 characters"
+                        placeholderTextColor={c.textTertiary}
+                        value={newPassword}
+                        onChangeText={setNewPassword}
+                        secureTextEntry={!newPasswordVisible}
+                        editable={!resetLoading}
+                      />
+                      <Pressable onPress={() => setNewPasswordVisible(!newPasswordVisible)}>
+                        <Feather name={newPasswordVisible ? 'eye' : 'eye-off'} size={18} color={c.textSecondary} />
+                      </Pressable>
+                    </View>
+                  </View>
+                  <View>
+                    <Text style={[styles.label, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Confirm New Password</Text>
+                    <View style={[styles.inputContainer, { borderColor: c.border, backgroundColor: c.surface }]}>
+                      <Feather name="lock" size={18} color={c.textSecondary} />
+                      <TextInput
+                        style={[styles.input, { color: c.text, fontFamily: 'DMSans_400Regular' }]}
+                        placeholder="Re-enter new password"
+                        placeholderTextColor={c.textTertiary}
+                        value={confirmNewPassword}
+                        onChangeText={setConfirmNewPassword}
+                        secureTextEntry
+                        editable={!resetLoading}
+                      />
+                    </View>
+                  </View>
+                  <LinearGradient colors={[c.accent, c.accent]} style={styles.gradientContainer}>
+                    <Pressable onPress={handleResetPassword} disabled={resetLoading || !resetCode || !newPassword || !confirmNewPassword} style={[styles.button, (resetLoading || !resetCode || !newPassword || !confirmNewPassword) && { opacity: 0.5 }]}>
+                      {resetLoading ? <ActivityIndicator color="#000" size="small" /> : (
+                        <Text style={[styles.buttonText, { fontFamily: 'DMSans_600SemiBold' }]}>Reset Password</Text>
+                      )}
+                    </Pressable>
+                  </LinearGradient>
+                  <Pressable onPress={() => { setResetStep('email'); setError(''); setResetMessage(''); }}>
+                    <Text style={[styles.forgotPassword, { color: c.accent, fontFamily: 'DMSans_500Medium', textAlign: 'center' }]}>
+                      Didn't get a code? Send again
+                    </Text>
+                  </Pressable>
+                </>
+              )}
+
+              {resetStep === 'done' && (
+                <>
+                  <View style={styles.doneIcon}>
+                    <Feather name="check-circle" size={64} color={c.accent} />
+                  </View>
+                  <LinearGradient colors={[c.accent, c.accent]} style={styles.gradientContainer}>
+                    <Pressable onPress={handleBackToSignIn} style={styles.button}>
+                      <Text style={[styles.buttonText, { fontFamily: 'DMSans_600SemiBold' }]}>Sign In Now</Text>
+                    </Pressable>
+                  </LinearGradient>
+                </>
+              )}
+            </View>
+          ) : (
+            <>
 
           {/* Tab Buttons */}
           <View style={[styles.tabContainer, { backgroundColor: c.surface }]}>
@@ -423,6 +633,9 @@ export default function LoginScreen() {
               </LinearGradient>
             </View>
           )}
+
+          </>
+          )}
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -527,5 +740,27 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: 'row',
     gap: 12,
+  },
+  backRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  backText: {
+    fontSize: 14,
+  },
+  resetTitle: {
+    fontSize: 22,
+    marginBottom: 4,
+  },
+  resetDesc: {
+    fontSize: 14,
+    lineHeight: 20,
+    marginBottom: 4,
+  },
+  doneIcon: {
+    alignItems: 'center',
+    marginVertical: 24,
   },
 });
