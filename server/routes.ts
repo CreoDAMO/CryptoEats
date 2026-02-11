@@ -7,6 +7,7 @@ import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { storage } from "./storage";
 import { seedDatabase } from "./seed";
+const isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 import {
   registerSchema, loginSchema, createOrderSchema, rateOrderSchema,
   merchantOnboardingSchema, driverOnboardingSchema,
@@ -89,7 +90,9 @@ const authLimiter = rateLimit({
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  await seedDatabase();
+  if (!isServerless) {
+    await seedDatabase();
+  }
   await initCache();
 
   // =================== AUTH ===================

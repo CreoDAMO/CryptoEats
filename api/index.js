@@ -4004,6 +4004,7 @@ function getCloudStorageStatus() {
 }
 
 // server/routes.ts
+var isServerless4 = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
 var JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
 function getParam(val) {
   return Array.isArray(val) ? val[0] : val;
@@ -4033,7 +4034,9 @@ var authLimiter = (0, import_express_rate_limit.default)({
 });
 var upload = (0, import_multer.default)({ storage: import_multer.default.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 async function registerRoutes(app2) {
-  await seedDatabase();
+  if (!isServerless4) {
+    await seedDatabase();
+  }
   await initCache();
   app2.post("/api/auth/register", authLimiter, async (req, res) => {
     try {

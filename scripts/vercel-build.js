@@ -21,8 +21,15 @@ if (process.env.DATABASE_URL) {
     console.log('[CryptoEats] Database migrations complete.');
   } catch (err) {
     console.warn('[CryptoEats] Database migration warning:', err.message);
-    console.warn('[CryptoEats] Tables may need to be created manually. Run: npx drizzle-kit push');
+  }
+
+  console.log('[CryptoEats] Running database seed...');
+  try {
+    execSync('npx tsx scripts/run-seed.ts', { stdio: 'inherit', cwd, timeout: 60000 });
+    console.log('[CryptoEats] Database seed complete.');
+  } catch (err) {
+    console.warn('[CryptoEats] Seed warning:', err.message);
   }
 } else {
-  console.log('[CryptoEats] No DATABASE_URL — skipping migrations.');
+  console.log('[CryptoEats] No DATABASE_URL — skipping migrations and seed.');
 }
