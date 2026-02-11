@@ -2806,7 +2806,7 @@ async function sendEmail(to, subject, html, from) {
     console.warn("[Email] SendGrid not configured, skipping email to:", to);
     return { success: false };
   }
-  const senderEmail = from || process.env.SENDGRID_FROM_EMAIL || "noreply@cryptoeats.io";
+  const senderEmail = from || process.env.SENDGRID_FROM_EMAIL || "noreply@cryptoeats.net";
   const response = await fetch(SENDGRID_API_URL, {
     method: "POST",
     headers: {
@@ -7349,7 +7349,7 @@ var options = {
       description: "The Delivery Layer \u2014 Full-featured food & alcohol delivery platform with blockchain integration, NFT rewards, escrow payments, and open API platform. Build on top of CryptoEats to power your own delivery experience.",
       contact: {
         name: "CryptoEats Developer Support",
-        email: "developers@cryptoeats.io"
+        email: "developers@cryptoeats.net"
       },
       license: {
         name: "Proprietary"

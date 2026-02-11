@@ -9,7 +9,7 @@ const options: swaggerJsdoc.Options = {
       description: "The Delivery Layer — Full-featured food & alcohol delivery platform with blockchain integration, NFT rewards, escrow payments, and open API platform. Build on top of CryptoEats to power your own delivery experience.",
       contact: {
         name: "CryptoEats Developer Support",
-        email: "developers@cryptoeats.io",
+        email: "developers@cryptoeats.net",
       },
       license: {
         name: "Proprietary",

@@ -280,7 +280,7 @@ export default function DriverOnboarding() {
             </View>
             <Text style={[styles.statusTitle, { color: c.text }]}>Not Approved</Text>
             <Text style={[styles.statusDesc, { color: c.textSecondary }]}>
-              Your driver application was not approved at this time. Please contact support@cryptoeats.io for details or to appeal.
+              Your driver application was not approved at this time. Please contact support@cryptoeats.net for details or to appeal.
             </Text>
             <View style={[styles.statusBadge, { backgroundColor: c.redLight }]}>
               <Text style={[styles.statusBadgeText, { color: c.red }]}>Rejected</Text>

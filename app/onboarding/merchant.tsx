@@ -279,7 +279,7 @@ export default function MerchantOnboarding() {
             </View>
             <Text style={[styles.statusTitle, { color: c.text }]}>Not Approved</Text>
             <Text style={[styles.statusDesc, { color: c.textSecondary }]}>
-              Unfortunately, your application was not approved at this time. Please contact support@cryptoeats.io for more information or to reapply.
+              Unfortunately, your application was not approved at this time. Please contact support@cryptoeats.net for more information or to reapply.
             </Text>
             <View style={[styles.statusBadge, { backgroundColor: c.redLight }]}>
               <Text style={[styles.statusBadgeText, { color: c.red }]}>Rejected</Text>

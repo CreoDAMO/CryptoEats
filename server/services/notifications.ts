@@ -30,7 +30,7 @@ export async function sendEmail(
     return { success: false };
   }
 
-  const senderEmail = from || process.env.SENDGRID_FROM_EMAIL || "noreply@cryptoeats.io";
+  const senderEmail = from || process.env.SENDGRID_FROM_EMAIL || "noreply@cryptoeats.net";
 
   const response = await fetch(SENDGRID_API_URL, {
     method: "POST",
