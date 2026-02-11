@@ -1,0 +1,70 @@
+TimeUTC,timestampInMs,requestPath,requestMethod,requestQueryString,responseStatusCode,requestId,requestUserAgent,level,environment,branch,vercelCache,type,function,host,deploymentDomain,deploymentId,durationMs,region,maxMemoryUsed,memorySize,message,projectId,traceId,sessionId,invocationId,instanceId,concurrency
+2026-02-11 01:22:47,1770772967785,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/favicon.ico,GET,,500,w68qm-1770772967058-b78ec5615ae2,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",error,production,main,MISS,function,/favicon.ico,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,,,,,"Error: DATABASE_URL must be set
+    at Object.<anonymous> (/var/task/api/index.js:837:9)
+    at Module.<anonymous> (/opt/rust/bytecode.js:2:1435)
+    at A.d._compile (/opt/rust/bytecode.js:2:3186)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1300:12)
+    at /opt/rust/nodejs.js:2:13531
+    at Module.un (/opt/rust/nodejs.js:2:13909)
+    at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:22:47,1770772967058,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/favicon.ico,GET,,500,w68qm-1770772967058-b78ec5615ae2,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",,production,main,MISS,function,/api/index,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,693,iad1,-1,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH54PBMTBK9RMQP9ZQZSW2Y8,,-1
+2026-02-11 01:22:46,1770772966352,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,401,cb42r-1770772966352-626f14617034,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)",,production,main,,static,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,2,iad1,,,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:22:46,1770772966323,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,401,txsnq-1770772966323-5dc3435189ee,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)",,production,main,,static,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,2,iad1,,,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:22:46,1770772966168,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,401,kckhd-1770772966168-fd5e88f94390,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Mobile Safari/537.36 (compatible; Google-Read-Aloud; +https://support.google.com/webmasters/answer/1061943)",,production,main,,static,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,33,iad1,,,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:22:46,1770772966562,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,500,8wzrq-1770772965703-67540d4aa4da,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",error,production,main,MISS,function,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,,,,,"Error: DATABASE_URL must be set
+    at Object.<anonymous> (/var/task/api/index.js:837:9)
+    at Module.<anonymous> (/opt/rust/bytecode.js:2:1435)
+    at A.d._compile (/opt/rust/bytecode.js:2:3186)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1300:12)
+    at /opt/rust/nodejs.js:2:13531
+    at Module.un (/opt/rust/nodejs.js:2:13909)
+    at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:22:45,1770772965703,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,500,8wzrq-1770772965703-67540d4aa4da,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",,production,main,MISS,function,/api/index,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,800,iad1,-1,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH54PAB7PNKGW9ZQWX7Q41PR,,-1
+2026-02-11 01:22:45,1770772965607,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,_vercel_jwt=eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJzc28tcHJvdGVjdGlvbi1jYWxsYmFjayIsImF1ZCI6ImNyeXB0by1lYXRzLWllYjJvdGdnZy1jcmVvZGFtb3MtcHJvamVjdHMudmVyY2VsLmFwcCIsImlhdCI6MTc3MDc3Mjk2NSwiZXhwIjoxNzcwNzcyOTc1LCJ1c2VySWQiOiJ4Y2R2aEYydmQ1OGd6UFlGaEZBUmlXdHIiLCJ1c2VybmFtZSI6ImNyZW9kYW1vIiwibm9uY2UiOiI5YmUxOWJkMGZkN2ZkNDc3NjkzZTI2ZjBiNjZhNzViYjdjMTIzYTJmYmU4NzgzODBkMDU5NzZmNWJjMjNmYjgyIn0.BPvWGrMqVljCWL1r94WXZTjLKvJLSXJ198YjgB9ZEO0&_vercel_jwe=eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..IDQXpQ6fhohJ43Wc.QDUZ3tyaF8Y9D9P_e7xXPpgvwkQRj5mGlsTtMANs_AAK_SP77RbJrsskAnr9mo9fJt58B-FhY9VsMYKFQn8dXj9qefuyoe9oV1zYzTXhWUXzPd9m0TbymmIqEyJ6oIs6EZuGK3nF-fVbpjn8f7hFf1nyB6hL1kqVspuYDsN9XL-XqQd_iGo7DKa6xYLe0svVKw__20bvDoYXf4I2nxoGkrSGNGqvFxztExiwDNnPC4s77uV5FM9Fg93uSQam_cVP1nB84vIkcWtEb4pZpntqQuyS0yEp9YmdV761irG3ADrLQvoj17m3Y8BkE8yuSs8MGMaUY_ud0_RWZGwwGojh5WF8MZmI.nBrGdAaclw7R_T1hdXxVWA,307,h6xtp-1770772965607-412a70a7361d,"Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Mobile Safari/537.36",,production,main,,static,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,36,iad1,,,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:22:43,1770772963267,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,401,dgvz4-1770772963267-bbd43de3bbf4,"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/145.0.0.0 Safari/537.36",,production,main,,static,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,37,iad1,,,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:18:06,1770772686291,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,500,tw4f9-1770772685492-3e379b464f20,vercel-favicon/1.0,error,production,main,MISS,function,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,,,,,"Error: DATABASE_URL must be set
+    at Object.<anonymous> (/var/task/api/index.js:837:9)
+    at Module.<anonymous> (/opt/rust/bytecode.js:2:1435)
+    at A.d._compile (/opt/rust/bytecode.js:2:3186)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1300:12)
+    at /opt/rust/nodejs.js:2:13531
+    at Module.un (/opt/rust/nodejs.js:2:13909)
+    at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:18:05,1770772685492,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,500,tw4f9-1770772685492-3e379b464f20,vercel-favicon/1.0,,production,main,MISS,function,/api/index,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,738,iad1,-1,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH54DRPVQJ42QJ34ABNYGN64,,-1
+2026-02-11 01:18:04,1770772684447,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,500,2rzxd-1770772682489-fe0082fb070c,vercel-favicon/1.0,error,production,main,MISS,function,/,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,,,,,"Error: DATABASE_URL must be set
+    at Object.<anonymous> (/var/task/api/index.js:837:9)
+    at Module.<anonymous> (/opt/rust/bytecode.js:2:1435)
+    at A.d._compile (/opt/rust/bytecode.js:2:3186)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1300:12)
+    at /opt/rust/nodejs.js:2:13531
+    at Module.un (/opt/rust/nodejs.js:2:13909)
+    at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.
+Error: DATABASE_URL must be set
+    at Object.<anonymous> (/var/task/api/index.js:837:9)
+    at Module.<anonymous> (/opt/rust/bytecode.js:2:1435)
+    at A.d._compile (/opt/rust/bytecode.js:2:3186)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1300:12)
+    at /opt/rust/nodejs.js:2:13531
+    at Module.un (/opt/rust/nodejs.js:2:13909)
+    at Xe.e.<computed>.Ye._load (/opt/rust/nodejs.js:2:13501)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+Node.js process exited with exit status: 1. The logs above can help with debugging the issue.",prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,,,
+2026-02-11 01:18:02,1770772682489,crypto-eats-ieb2otggg-creodamos-projects.vercel.app/,GET,,500,2rzxd-1770772682489-fe0082fb070c,vercel-favicon/1.0,,production,main,MISS,function,/api/index,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,crypto-eats-ieb2otggg-creodamos-projects.vercel.app,dpl_FMM6nEqxJnDGYH6pBy7LzJxg8Yat,742,iad1,-1,2048,,prj_Ddoi0xPnduwC53AnaX9n4N7PG8YK,,,01KH54DNS75TV2VP76QH7W9HSE,,-1

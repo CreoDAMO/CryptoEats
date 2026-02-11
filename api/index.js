@@ -27,12 +27,12 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// api/handler.ts
-var handler_exports = {};
-__export(handler_exports, {
-  default: () => handler_default
+// server/vercel-entry.ts
+var vercel_entry_exports = {};
+__export(vercel_entry_exports, {
+  default: () => vercel_entry_default
 });
-module.exports = __toCommonJS(handler_exports);
+module.exports = __toCommonJS(vercel_entry_exports);
 var import_express = __toESM(require("express"));
 
 // server/routes.ts
@@ -833,20 +833,24 @@ var rateOrderSchema = import_zod.z.object({
 });
 
 // server/db.ts
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set");
+var hasDatabase = !!process.env.DATABASE_URL;
+if (!hasDatabase) {
+  console.warn("[DB] DATABASE_URL is not set. The server will start but database operations will fail.");
+  console.warn("[DB] Set DATABASE_URL in your Vercel project settings to connect a PostgreSQL database.");
 }
-var pool = new import_pg.Pool({
+var pool = hasDatabase ? new import_pg.Pool({
   connectionString: process.env.DATABASE_URL,
   max: 20,
   idleTimeoutMillis: 3e4,
   connectionTimeoutMillis: 5e3,
   allowExitOnIdle: false
-});
-pool.on("error", (err) => {
-  console.error("[DB Pool] Unexpected error on idle client:", err.message);
-});
-var db = (0, import_node_postgres.drizzle)(pool, { schema: schema_exports });
+}) : null;
+if (pool) {
+  pool.on("error", (err) => {
+    console.error("[DB Pool] Unexpected error on idle client:", err.message);
+  });
+}
+var db = hasDatabase ? (0, import_node_postgres.drizzle)(pool, { schema: schema_exports }) : null;
 
 // server/storage.ts
 var storage = {
@@ -7680,7 +7684,7 @@ var options = {
 };
 var swaggerSpec = (0, import_swagger_jsdoc.default)(options);
 
-// api/handler.ts
+// server/vercel-entry.ts
 var import_swagger_ui_express = __toESM(require("swagger-ui-express"));
 var fs4 = __toESM(require("fs"));
 var path4 = __toESM(require("path"));
@@ -7742,7 +7746,7 @@ setInterval(() => {
   }
 }, 6e4);
 
-// api/handler.ts
+// server/vercel-entry.ts
 var app = (0, import_express.default)();
 app.use((req, res, next) => {
   const origin = req.header("origin");
@@ -7764,6 +7768,7 @@ app.use(import_express.default.urlencoded({ extended: false }));
 app.use(securityHeaders);
 app.use(inputSanitizationMiddleware);
 app.use(monitoringMiddleware);
+var hasDatabaseUrl = !!process.env.DATABASE_URL;
 var initPromise = null;
 var initialized = false;
 function getInitPromise() {
@@ -7781,58 +7786,94 @@ function getInitPromise() {
   return initPromise;
 }
 app.get("/health", (_req, res) => {
-  res.json({ status: "healthy", timestamp: (/* @__PURE__ */ new Date()).toISOString(), ...getHealthMetrics() });
+  res.json({ status: hasDatabaseUrl ? "healthy" : "setup_required", database: hasDatabaseUrl, timestamp: (/* @__PURE__ */ new Date()).toISOString(), ...getHealthMetrics() });
 });
 app.get("/api/health", (_req, res) => {
-  res.json({ status: "healthy", timestamp: (/* @__PURE__ */ new Date()).toISOString(), ...getHealthMetrics() });
+  res.json({ status: hasDatabaseUrl ? "healthy" : "setup_required", database: hasDatabaseUrl, timestamp: (/* @__PURE__ */ new Date()).toISOString(), ...getHealthMetrics() });
 });
-app.get("/api/health/errors", (_req, res) => {
-  res.json(getRecentErrors());
-});
-app.get("/api/health/stats", (_req, res) => {
-  res.json(getErrorStats());
-});
-app.get("/admin", (_req, res) => {
-  const adminPath = path4.resolve(process.cwd(), "server", "templates", "admin-dashboard.html");
-  res.sendFile(adminPath);
-});
-app.get("/merchant", (_req, res) => {
-  const merchantPath = path4.resolve(process.cwd(), "server", "templates", "merchant-dashboard.html");
-  res.sendFile(merchantPath);
-});
-app.get("/developers", (req, res) => {
-  const devPortalPath = path4.resolve(process.cwd(), "server", "templates", "developer-portal.html");
-  let html = fs4.readFileSync(devPortalPath, "utf-8");
-  const forwardedProto = req.header("x-forwarded-proto") || req.protocol || "https";
-  const forwardedHost = req.header("x-forwarded-host") || req.get("host");
-  const baseUrl = `${forwardedProto}://${forwardedHost}`;
-  html = html.replace(/BASE_URL_PLACEHOLDER/g, baseUrl);
-  res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.status(200).send(html);
-});
-app.get("/legal/tos", (_req, res) => {
-  res.sendFile(path4.resolve(process.cwd(), "server", "templates", "terms-of-service.html"));
-});
-app.get("/legal/privacy", (_req, res) => {
-  res.sendFile(path4.resolve(process.cwd(), "server", "templates", "privacy-policy.html"));
-});
-app.get("/legal/contractor", (_req, res) => {
-  res.sendFile(path4.resolve(process.cwd(), "server", "templates", "contractor-agreement.html"));
-});
-app.get("/widget.js", (_req, res) => {
-  const widgetPath = path4.resolve(process.cwd(), "server", "templates", "widget.js");
-  res.setHeader("Content-Type", "application/javascript");
-  res.setHeader("Cache-Control", "public, max-age=3600");
-  res.sendFile(widgetPath);
-});
-app.use("/api-docs", import_swagger_ui_express.default.serve, import_swagger_ui_express.default.setup(swaggerSpec, {
-  customCss: ".swagger-ui .topbar { display: none }",
-  customSiteTitle: "CryptoEats API Docs"
-}));
-registerPlatformRoutes(app);
-getInitPromise();
+var setupPageHtml = `<!DOCTYPE html>
+<html><head><title>CryptoEats - Setup Required</title>
+<style>
+body{font-family:system-ui,sans-serif;background:#0A0A0F;color:#E8E8F0;display:flex;justify-content:center;align-items:center;min-height:100vh;margin:0}
+.card{max-width:600px;padding:40px;background:#14141F;border-radius:16px;border:1px solid #1E1E2E}
+h1{color:#00D4AA;margin-bottom:8px}
+.step{background:#1E1E2E;padding:16px;border-radius:8px;margin:12px 0;font-size:14px}
+.step b{color:#00D4AA}
+code{background:#0A0A0F;padding:2px 6px;border-radius:4px;font-size:13px}
+a{color:#00D4AA}
+</style></head><body>
+<div class="card">
+<h1>CryptoEats</h1>
+<p>Your deployment is live, but a <b>PostgreSQL database</b> needs to be connected.</p>
+<div class="step"><b>Option A: Neon (recommended, free tier)</b><br>
+1. Sign up at <a href="https://neon.tech" target="_blank">neon.tech</a><br>
+2. Create a project (choose US East for lowest latency)<br>
+3. Copy the connection string from the dashboard<br>
+4. In Vercel: Settings &rarr; Environment Variables &rarr; add <code>DATABASE_URL</code> with the connection string<br>
+5. Redeploy</div>
+<div class="step"><b>Option B: Supabase (free tier)</b><br>
+1. Sign up at <a href="https://supabase.com" target="_blank">supabase.com</a><br>
+2. Create a project &rarr; go to Settings &rarr; Database<br>
+3. Copy the connection string (use "Transaction" mode)<br>
+4. Add as <code>DATABASE_URL</code> in Vercel and redeploy</div>
+<div class="step"><b>Option C: Any PostgreSQL provider</b><br>
+Use any PostgreSQL database &mdash; set <code>DATABASE_URL</code> to:<br>
+<code>postgresql://user:password@host:5432/dbname?sslmode=require</code></div>
+<p style="font-size:13px;color:#888;margin-top:16px">After adding DATABASE_URL, redeploy from the Vercel dashboard. The database tables will be created automatically on first start.</p>
+</div></body></html>`;
+if (hasDatabaseUrl) {
+  app.get("/api/health/errors", (_req, res) => {
+    res.json(getRecentErrors());
+  });
+  app.get("/api/health/stats", (_req, res) => {
+    res.json(getErrorStats());
+  });
+  app.get("/admin", (_req, res) => {
+    const adminPath = path4.resolve(process.cwd(), "server", "templates", "admin-dashboard.html");
+    res.sendFile(adminPath);
+  });
+  app.get("/merchant", (_req, res) => {
+    const merchantPath = path4.resolve(process.cwd(), "server", "templates", "merchant-dashboard.html");
+    res.sendFile(merchantPath);
+  });
+  app.get("/developers", (req, res) => {
+    const devPortalPath = path4.resolve(process.cwd(), "server", "templates", "developer-portal.html");
+    let html = fs4.readFileSync(devPortalPath, "utf-8");
+    const forwardedProto = req.header("x-forwarded-proto") || req.protocol || "https";
+    const forwardedHost = req.header("x-forwarded-host") || req.get("host");
+    const baseUrl = `${forwardedProto}://${forwardedHost}`;
+    html = html.replace(/BASE_URL_PLACEHOLDER/g, baseUrl);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.status(200).send(html);
+  });
+  app.get("/legal/tos", (_req, res) => {
+    res.sendFile(path4.resolve(process.cwd(), "server", "templates", "terms-of-service.html"));
+  });
+  app.get("/legal/privacy", (_req, res) => {
+    res.sendFile(path4.resolve(process.cwd(), "server", "templates", "privacy-policy.html"));
+  });
+  app.get("/legal/contractor", (_req, res) => {
+    res.sendFile(path4.resolve(process.cwd(), "server", "templates", "contractor-agreement.html"));
+  });
+  app.get("/widget.js", (_req, res) => {
+    const widgetPath = path4.resolve(process.cwd(), "server", "templates", "widget.js");
+    res.setHeader("Content-Type", "application/javascript");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.sendFile(widgetPath);
+  });
+  app.use("/api-docs", import_swagger_ui_express.default.serve, import_swagger_ui_express.default.setup(swaggerSpec, {
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "CryptoEats API Docs"
+  }));
+  registerPlatformRoutes(app);
+  getInitPromise();
+} else {
+  app.use((_req, res) => {
+    res.status(503).send(setupPageHtml);
+  });
+}
 var handler = async (req, res) => {
-  if (!initialized) await getInitPromise();
+  if (hasDatabaseUrl && !initialized) await getInitPromise();
   app(req, res);
 };
-var handler_default = handler;
+var vercel_entry_default = handler;

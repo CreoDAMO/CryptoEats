@@ -37,6 +37,7 @@
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.39.3",
     "drizzle-zod": "^0.7.1",
+    "esbuild": "^0.25.12",
     "ethers": "^6.16.0",
     "expo": "~54.0.27",
     "expo-blur": "~15.0.8",
@@ -98,6 +99,9 @@
     "eslint-config-expo": "~10.0.0",
     "patch-package": "^8.0.0",
     "typescript": "~5.9.2"
+  },
+  "overrides": {
+    "esbuild": "$esbuild"
   },
   "private": true
 }

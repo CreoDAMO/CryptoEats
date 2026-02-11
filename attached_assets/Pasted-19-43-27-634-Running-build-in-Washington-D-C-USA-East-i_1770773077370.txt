@@ -1,0 +1,241 @@
+19:43:27.634 Running build in Washington, D.C., USA (East) – iad1
+19:43:27.635 Build machine configuration: 2 cores, 8 GB
+19:43:27.740 Cloning github.com/CreoDAMO/CryptoEats (Branch: main, Commit: 643119d)
+19:43:28.246 Cloning completed: 505.000ms
+19:43:29.090 Restored build cache from previous deployment (FgaQcAB1avb73WTeTuRz3rbLd4Yr)
+19:43:29.364 Running "vercel build"
+19:43:30.547 Vercel CLI 50.14.1
+19:43:31.194 Running "install" command: `npm install`...
+19:43:34.909 
+19:43:34.910 > expo-app@1.0.0 postinstall
+19:43:34.910 > patch-package
+19:43:34.910 
+19:43:35.096 patch-package 8.0.1
+19:43:35.097 Applying patches...
+19:43:35.102 expo-asset@12.0.12 ✔
+19:43:35.115 
+19:43:35.115 changed 1 package, and audited 1370 packages in 4s
+19:43:35.116 
+19:43:35.116 228 packages are looking for funding
+19:43:35.116   run `npm fund` for details
+19:43:35.142 
+19:43:35.143 4 moderate severity vulnerabilities
+19:43:35.143 
+19:43:35.143 To address all issues (including breaking changes), run:
+19:43:35.144   npm audit fix --force
+19:43:35.144 
+19:43:35.144 Run `npm audit` for details.
+19:43:35.371 
+19:43:35.371 > expo-app@1.0.0 vercel-build
+19:43:35.371 > node scripts/vercel-build.js
+19:43:35.372 
+19:43:35.400 [CryptoEats] Building API with esbuild...
+19:43:35.702 
+19:43:35.703   api/index.js  331.7kb
+19:43:35.703 
+19:43:35.703 ⚡ Done in 31ms
+19:43:35.712 [CryptoEats] API build complete.
+19:43:35.749 Installing dependencies...
+19:43:37.419 
+19:43:37.419 > expo-app@1.0.0 postinstall
+19:43:37.419 > patch-package
+19:43:37.420 
+19:43:37.547 patch-package 8.0.1
+19:43:37.548 Applying patches...
+19:43:37.554 expo-asset@12.0.12 ✔
+19:43:37.570 
+19:43:37.571 up to date in 2s
+19:43:37.571 
+19:43:37.572 228 packages are looking for funding
+19:43:37.572   run `npm fund` for details
+19:43:37.589 Running "npm run vercel-build"
+19:43:37.694 
+19:43:37.697 > expo-app@1.0.0 vercel-build
+19:43:37.697 > node scripts/vercel-build.js
+19:43:37.697 
+19:43:37.723 [CryptoEats] Building API with esbuild...
+19:43:38.022 
+19:43:38.022   api/index.js  331.7kb
+19:43:38.023 
+19:43:38.023 ⚡ Done in 28ms
+19:43:38.032 [CryptoEats] API build complete.
+19:43:38.250 Using TypeScript 5.9.3 (local user-provided)
+19:43:51.072 server/routes.ts(190,9): error TS2322: Type '{ days?: string[]; close?: string; open?: string; }' is not assignable to type '{ open: string; close: string; days: string[]; }'.
+19:43:51.072   Property 'open' is optional in type '{ days?: string[]; close?: string; open?: string; }' but required in type '{ open: string; close: string; days: string[]; }'.
+19:43:51.073 
+19:43:51.876 server/platform-routes.ts(332,67): error TS2345: Argument of type '{ brandName?: string; primaryColor?: string; secondaryColor?: string; accentColor?: string; logoUrl?: string; customDomain?: string; supportEmail?: string; apiKeyId: string; }' is not assignable to parameter of type '{ apiKeyId: string; brandName: string; primaryColor?: string; secondaryColor?: string; accentColor?: string; logoUrl?: string; customDomain?: string; supportEmail?: string; }'.
+19:43:51.877   Property 'brandName' is optional in type '{ brandName?: string; primaryColor?: string; secondaryColor?: string; accentColor?: string; logoUrl?: string; customDomain?: string; supportEmail?: string; apiKeyId: string; }' but required in type '{ apiKeyId: string; brandName: string; primaryColor?: string; secondaryColor?: string; accentColor?: string; logoUrl?: string; customDomain?: string; supportEmail?: string; }'.
+19:43:51.882 server/platform-routes.ts(547,9): error TS2322: Type '{ name?: string; price?: number; isAlcohol?: boolean; quantity?: number; }[]' is not assignable to type '{ name: string; price: number; quantity: number; isAlcohol?: boolean; }[]'.
+19:43:51.882   Type '{ name?: string; price?: number; isAlcohol?: boolean; quantity?: number; }' is not assignable to type '{ name: string; price: number; quantity: number; isAlcohol?: boolean; }'.
+19:43:51.882     Property 'name' is optional in type '{ name?: string; price?: number; isAlcohol?: boolean; quantity?: number; }' but required in type '{ name: string; price: number; quantity: number; isAlcohol?: boolean; }'.
+19:43:51.883 
+19:43:53.385 server/storage.ts(21,43): error TS2769: No overload matches this call.
+19:43:53.386   Overload 1 of 2, '(value: { email: string | SQL<unknown> | Placeholder<string, any>; passwordHash: string | SQL<unknown> | Placeholder<string, any>; }): PgInsertBase<PgTableWithColumns<{ name: "users"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.387     Object literal may only specify known properties, and 'phone' does not exist in type '{ email: string | SQL<unknown> | Placeholder<string, any>; passwordHash: string | SQL<unknown> | Placeholder<string, any>; }'.
+19:43:53.389   Overload 2 of 2, '(values: { email: string | SQL<unknown> | Placeholder<string, any>; passwordHash: string | SQL<unknown> | Placeholder<string, any>; }[]): PgInsertBase<PgTableWithColumns<{ name: "users"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.390     Object literal may only specify known properties, and 'email' does not exist in type '{ email: string | SQL<unknown> | Placeholder<string, any>; passwordHash: string | SQL<unknown> | Placeholder<string, any>; }[]'.
+19:43:53.390 server/storage.ts(70,56): error TS2353: Object literal may only specify known properties, and 'favoriteRestaurants' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:53.391 server/storage.ts(80,56): error TS2353: Object literal may only specify known properties, and 'favoriteItems' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:53.391 server/storage.ts(142,51): error TS2353: Object literal may only specify known properties, and 'driverId' does not exist in type '{ deliveryFee?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; restaurantId?: string | SQL<unknown> | PgColumn<...>; ... 6 more ...; deliveryAddress?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:53.391 server/storage.ts(160,53): error TS2353: Object literal may only specify known properties, and 'restaurantResponse' does not exist in type '{ customerId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; orderId?: string | SQL<unknown> | PgColumn<...>; }'.
+19:43:53.392 server/storage.ts(196,47): error TS2769: No overload matches this call.
+19:43:53.392   Overload 1 of 2, '(value: { userId: string | SQL<unknown> | Placeholder<string, any>; firstName: string | SQL<unknown> | Placeholder<string, any>; lastName: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.392     Object literal may only specify known properties, and 'licenseNumber' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; firstName: string | SQL<unknown> | Placeholder<string, any>; lastName: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.392   Overload 2 of 2, '(values: { userId: string | SQL<unknown> | Placeholder<string, any>; firstName: string | SQL<unknown> | Placeholder<string, any>; lastName: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.393     Object literal may only specify known properties, and 'userId' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; firstName: string | SQL<unknown> | Placeholder<string, any>; lastName: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.393 server/storage.ts(216,53): error TS2353: Object literal may only specify known properties, and 'currentLat' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:53.393 server/storage.ts(221,53): error TS2353: Object literal may only specify known properties, and 'isAvailable' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:53.394 server/storage.ts(263,43): error TS2769: No overload matches this call.
+19:43:53.394   Overload 1 of 2, '(value: { message: string | SQL<unknown> | Placeholder<string, any>; orderId: string | SQL<unknown> | Placeholder<string, any>; senderId: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.394     Object literal may only specify known properties, and 'type' does not exist in type '{ message: string | SQL<unknown> | Placeholder<string, any>; orderId: string | SQL<unknown> | Placeholder<string, any>; senderId: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.394   Overload 2 of 2, '(values: { message: string | SQL<unknown> | Placeholder<string, any>; orderId: string | SQL<unknown> | Placeholder<string, any>; senderId: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.395     Object literal may only specify known properties, and 'orderId' does not exist in type '{ message: string | SQL<unknown> | Placeholder<string, any>; orderId: string | SQL<unknown> | Placeholder<string, any>; senderId: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.395 server/storage.ts(328,56): error TS2561: Object literal may only specify known properties, but 'referredId' does not exist in type '{ code?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; referrerId?: string | SQL<unknown> | PgColumn<...>; }'. Did you mean to write 'referrerId'?
+19:43:53.395 server/storage.ts(378,47): error TS2769: No overload matches this call.
+19:43:53.396   Overload 1 of 2, '(value: { userId: string | SQL<unknown> | Placeholder<string, any>; walletAddress: string | SQL<unknown> | Placeholder<string, any>; }): PgInsertBase<PgTableWithColumns<{ name: "wallets"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.396     Object literal may only specify known properties, and 'walletType' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; walletAddress: string | SQL<unknown> | Placeholder<string, any>; }'.
+19:43:53.396   Overload 2 of 2, '(values: { userId: string | SQL<unknown> | Placeholder<string, any>; walletAddress: string | SQL<unknown> | Placeholder<string, any>; }[]): PgInsertBase<PgTableWithColumns<{ name: "wallets"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.397     Object literal may only specify known properties, and 'userId' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; walletAddress: string | SQL<unknown> | Placeholder<string, any>; }[]'.
+19:43:53.397 server/storage.ts(560,59): error TS2353: Object literal may only specify known properties, and 'active' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; token?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<...>, {}, {}>; }'.
+19:43:53.397 server/storage.ts(563,46): error TS2769: No overload matches this call.
+19:43:53.398   Overload 1 of 2, '(value: { userId: string | SQL<unknown> | Placeholder<string, any>; token: string | SQL<unknown> | Placeholder<string, any>; }): PgInsertBase<PgTableWithColumns<{ name: "push_tokens"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.398     Object literal may only specify known properties, and 'platform' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; token: string | SQL<unknown> | Placeholder<string, any>; }'.
+19:43:53.398   Overload 2 of 2, '(values: { userId: string | SQL<unknown> | Placeholder<string, any>; token: string | SQL<unknown> | Placeholder<string, any>; }[]): PgInsertBase<PgTableWithColumns<{ name: "push_tokens"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.399     Object literal may only specify known properties, and 'userId' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; token: string | SQL<unknown> | Placeholder<string, any>; }[]'.
+19:43:53.399 server/storage.ts(572,39): error TS2353: Object literal may only specify known properties, and 'active' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; token?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<...>, {}, {}>; }'.
+19:43:53.399 server/storage.ts(576,59): error TS2769: No overload matches this call.
+19:43:53.400   Overload 1 of 2, '(value: { role: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; }): PgInsertBase<PgTableWithColumns<{ name: "onboarding_applications"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.400     Object literal may only specify known properties, and 'status' does not exist in type '{ role: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; }'.
+19:43:53.400   Overload 2 of 2, '(values: { role: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; }[]): PgInsertBase<PgTableWithColumns<{ name: "onboarding_applications"; schema: undefined; columns: { ...; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.401     Object literal may only specify known properties, and 'userId' does not exist in type '{ role: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; }[]'.
+19:43:53.401 server/storage.ts(597,23): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ role?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; }'.
+19:43:53.401 
+19:43:53.728 server/seed.ts(10,45): error TS2769: No overload matches this call.
+19:43:53.728   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.728     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.728   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.728     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.728 server/seed.ts(28,45): error TS2769: No overload matches this call.
+19:43:53.729   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.729     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.729   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.729     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.729 server/seed.ts(46,45): error TS2769: No overload matches this call.
+19:43:53.729   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.729     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.729   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.729     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.729 server/seed.ts(64,45): error TS2769: No overload matches this call.
+19:43:53.729   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.729     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.729   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.729     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.730 server/seed.ts(82,45): error TS2769: No overload matches this call.
+19:43:53.730   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.730   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.730 server/seed.ts(100,45): error TS2769: No overload matches this call.
+19:43:53.730   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.730   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.730 server/seed.ts(118,45): error TS2769: No overload matches this call.
+19:43:53.730   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.730   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.730 server/seed.ts(136,45): error TS2769: No overload matches this call.
+19:43:53.730   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'phone' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.730   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:53.730     Object literal may only specify known properties, and 'name' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; cuisineType: string | SQL<unknown> | Placeholder<string, any>; address: string | SQL<unknown> | Placeholder<...>; }[]'.
+19:43:53.731 server/seed.ts(154,37): error TS2769: No overload matches this call.
+19:43:53.731   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; restaurantId: string | SQL<unknown> | Placeholder<string, any>; price: string | SQL<unknown> | Placeholder<...>; category: string | ... 1 more ... | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.731     Argument of type '({ restaurantId: string; name: string; description: string; price: string; category: string; dietaryTags: string[]; imageUrl: string; } | { restaurantId: string; name: string; description: string; price: string; category: string; imageUrl: string; } | { ...; })[]' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; restaurantId: string | SQL<unknown> | Placeholder<string, any>; price: string | SQL<unknown> | Placeholder<...>; category: string | ... 1 more ... | Placeholder<...>; }'.
+19:43:53.731       Type '({ restaurantId: string; name: string; description: string; price: string; category: string; dietaryTags: string[]; imageUrl: string; } | { restaurantId: string; name: string; description: string; price: string; category: string; imageUrl: string; } | { ...; })[]' is missing the following properties from type '{ name: string | SQL<unknown> | Placeholder<string, any>; restaurantId: string | SQL<unknown> | Placeholder<string, any>; price: string | SQL<unknown> | Placeholder<...>; category: string | ... 1 more ... | Placeholder<...>; }': name, restaurantId, price, category
+19:43:53.731 server/seed.ts(244,43): error TS2769: No overload matches this call.
+19:43:53.731   Overload 1 of 2, '(value: { region: string | SQL<unknown> | Placeholder<string, any>; }): PgInsertBase<PgTableWithColumns<{ name: "delivery_windows"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "delivery_windows"; ... 12 more ...; generated: undefined; }, {}, { ...; }>; region: PgColumn<...>; alcoholStartHour: PgColumn<...>; alcoholEndHour: PgColumn<...>; isActive: PgColumn<...>; }; dialect: "pg"; }>, ... 4 more ..., never>', gave the following error.
+19:43:53.731     Argument of type '{ region: string; alcoholStartHour: number; alcoholEndHour: number; isActive: boolean; }[]' is not assignable to parameter of type '{ region: string | SQL<unknown> | Placeholder<string, any>; }'.
+19:43:53.731       Property 'region' is missing in type '{ region: string; alcoholStartHour: number; alcoholEndHour: number; isActive: boolean; }[]' but required in type '{ region: string | SQL<unknown> | Placeholder<string, any>; }'.
+19:43:53.731 server/seed.ts(265,35): error TS2769: No overload matches this call.
+19:43:53.731   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; items: string[] | SQL<unknown> | Placeholder<string, any>; discountPercentage: number | SQL<...> | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:53.731     Argument of type '({ name: string; items: string[]; discountPercentage: number; active: boolean; conditions: { minItems: number; validDays: string[]; }; } | { name: string; items: string[]; discountPercentage: number; active: boolean; conditions: { ...; }; })[]' is not assignable to parameter of type '{ name: string | SQL<unknown> | Placeholder<string, any>; items: string[] | SQL<unknown> | Placeholder<string, any>; discountPercentage: number | SQL<unknown> | Placeholder<...>; }'.
+19:43:53.731       Type '({ name: string; items: string[]; discountPercentage: number; active: boolean; conditions: { minItems: number; validDays: string[]; }; } | { name: string; items: string[]; discountPercentage: number; active: boolean; conditions: { ...; }; })[]' is missing the following properties from type '{ name: string | SQL<unknown> | Placeholder<string, any>; items: string[] | SQL<unknown> | Placeholder<string, any>; discountPercentage: number | SQL<unknown> | Placeholder<...>; }': name, items, discountPercentage
+19:43:53.731 
+19:43:54.311 server/services/verification.ts(44,37): error TS2769: No overload matches this call.
+19:43:54.312   Overload 1 of 2, '(value: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }): PgInsertBase<...>', gave the following error.
+19:43:54.312     Object literal may only specify known properties, and 'entityId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }'.
+19:43:54.313   Overload 2 of 2, '(values: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]): PgInsertBase<...>', gave the following error.
+19:43:54.313     Object literal may only specify known properties, and 'type' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]'.
+19:43:54.313 server/services/verification.ts(94,37): error TS2769: No overload matches this call.
+19:43:54.314   Overload 1 of 2, '(value: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }): PgInsertBase<...>', gave the following error.
+19:43:54.314     Object literal may only specify known properties, and 'entityId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }'.
+19:43:54.315   Overload 2 of 2, '(values: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]): PgInsertBase<...>', gave the following error.
+19:43:54.315     Object literal may only specify known properties, and 'type' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]'.
+19:43:54.315 server/services/verification.ts(150,37): error TS2769: No overload matches this call.
+19:43:54.316   Overload 1 of 2, '(value: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }): PgInsertBase<...>', gave the following error.
+19:43:54.316     Object literal may only specify known properties, and 'entityId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }'.
+19:43:54.316   Overload 2 of 2, '(values: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]): PgInsertBase<...>', gave the following error.
+19:43:54.317     Object literal may only specify known properties, and 'type' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]'.
+19:43:54.317 server/services/verification.ts(171,13): error TS2353: Object literal may only specify known properties, and 'backgroundCheckStatus' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.317 server/services/verification.ts(182,13): error TS2353: Object literal may only specify known properties, and 'idVerified' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.318 server/services/verification.ts(232,37): error TS2769: No overload matches this call.
+19:43:54.318   Overload 1 of 2, '(value: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }): PgInsertBase<...>', gave the following error.
+19:43:54.319     Object literal may only specify known properties, and 'entityId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }'.
+19:43:54.319   Overload 2 of 2, '(values: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]): PgInsertBase<...>', gave the following error.
+19:43:54.319     Object literal may only specify known properties, and 'type' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]'.
+19:43:54.320 server/services/verification.ts(269,37): error TS2769: No overload matches this call.
+19:43:54.320   Overload 1 of 2, '(value: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }): PgInsertBase<...>', gave the following error.
+19:43:54.321     Object literal may only specify known properties, and 'entityId' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }'.
+19:43:54.321   Overload 2 of 2, '(values: { status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]): PgInsertBase<...>', gave the following error.
+19:43:54.321     Object literal may only specify known properties, and 'type' does not exist in type '{ status: string | SQL<unknown> | Placeholder<string, any>; type: SQL<unknown> | "license" | "tax_filing" | "agreement" | "insurance" | Placeholder<string, any>; }[]'.
+19:43:54.322 server/services/verification.ts(285,9): error TS2353: Object literal may only specify known properties, and 'backgroundCheckStatus' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.322 server/services/verification.ts(289,9): error TS2353: Object literal may only specify known properties, and 'backgroundCheckStatus' does not exist in type '{ userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; firstName?: string | SQL<unknown> | PgColumn<...>; lastName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.322 
+19:43:54.368 server/services/cache.ts(20,23): error TS2351: This expression is not constructable.
+19:43:54.369   Type 'typeof import("/vercel/path0/node_modules/ioredis/built/index")' has no construct signatures.
+19:43:54.369 
+19:43:54.825 server/platform-storage.ts(47,47): error TS2769: No overload matches this call.
+19:43:54.826   Overload 1 of 2, '(value: { name: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; publicKey: string | SQL<unknown> | Placeholder<...>; secretKeyHash: string | ... 1 more ... | Placeholder<...>; }): PgInsertBase<...>', gave the following error.
+19:43:54.827     Object literal may only specify known properties, and 'tier' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; publicKey: string | SQL<unknown> | Placeholder<...>; secretKeyHash: string | ... 1 more ... | Placeholder<...>; }'.
+19:43:54.827   Overload 2 of 2, '(values: { name: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; publicKey: string | SQL<unknown> | Placeholder<...>; secretKeyHash: string | ... 1 more ... | Placeholder<...>; }[]): PgInsertBase<...>', gave the following error.
+19:43:54.828     Object literal may only specify known properties, and 'userId' does not exist in type '{ name: string | SQL<unknown> | Placeholder<string, any>; userId: string | SQL<unknown> | Placeholder<string, any>; publicKey: string | SQL<unknown> | Placeholder<...>; secretKeyHash: string | ... 1 more ... | Placeholder<...>; }[]'.
+19:43:54.828 server/platform-storage.ts(75,59): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; publicKey?: string | ... 1 more ... | PgColumn<...>; secretKeyHash?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.828 server/platform-storage.ts(83,76): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; publicKey?: string | ... 1 more ... | PgColumn<...>; secretKeyHash?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.828 server/platform-storage.ts(89,50): error TS2353: Object literal may only specify known properties, and 'isActive' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; publicKey?: string | ... 1 more ... | PgColumn<...>; secretKeyHash?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.829 server/platform-storage.ts(95,7): error TS2353: Object literal may only specify known properties, and 'dailyRequests' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; publicKey?: string | ... 1 more ... | PgColumn<...>; secretKeyHash?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.829 server/platform-storage.ts(101,36): error TS2353: Object literal may only specify known properties, and 'dailyRequests' does not exist in type '{ name?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; userId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; publicKey?: string | ... 1 more ... | PgColumn<...>; secretKeyHash?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.829 server/platform-storage.ts(145,64): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ url?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; apiKeyId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<...>, {}, {}>; events?: string[] | ... 1 more ... | PgColumn<...>; secret?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.829 server/platform-storage.ts(150,37): error TS2353: Object literal may only specify known properties, and 'isActive' does not exist in type '{ url?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; apiKeyId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<...>, {}, {}>; events?: string[] | ... 1 more ... | PgColumn<...>; secret?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.829 server/platform-storage.ts(190,72): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ apiKeyId?: string | SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}>; brandName?: string | SQL<unknown> | PgColumn<...>; }'.
+19:43:54.829 server/platform-storage.ts(218,67): error TS2353: Object literal may only specify known properties, and 'updatedAt' does not exist in type '{ items?: SQL<unknown> | PgColumn<ColumnBaseConfig<ColumnDataType, string>, {}, {}> | { name: string; price: number; quantity: number; isAlcohol?: boolean; }[]; ... 6 more ...; customerName?: string | ... 1 more ... | PgColumn<...>; }'.
+19:43:54.829 
+19:43:55.014 shared/schema.ts(689,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.014 shared/schema.ts(690,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.014 shared/schema.ts(691,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.017 shared/schema.ts(692,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.017 
+19:43:55.214 shared/models/chat.ts(21,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.214 shared/models/chat.ts(22,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.220 shared/models/chat.ts(26,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.220 shared/models/chat.ts(27,3): error TS2322: Type 'true' is not assignable to type 'never'.
+19:43:55.220 
+19:44:12.122 Running "npm run vercel-build"
+19:44:12.342 
+19:44:12.342 > expo-app@1.0.0 vercel-build
+19:44:12.342 > node scripts/vercel-build.js
+19:44:12.342 
+19:44:12.400 [CryptoEats] Building API with esbuild...
+19:44:12.724 
+19:44:12.724   api/index.js  331.7kb
+19:44:12.724 
+19:44:12.724 ⚡ Done in 35ms
+19:44:12.732 [CryptoEats] API build complete.
+19:44:26.224 Build Completed in /vercel/output [55s]
+19:44:27.766 Deploying outputs...
+19:44:40.181 Deployment completed
+19:44:41.254 Creating build cache...
+19:45:48.206 Created build cache: 1m
+19:45:48.206 Uploading build cache [150.59 MB]
+19:45:50.997 Build cache uploaded: 2.791s
