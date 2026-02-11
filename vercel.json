@@ -1,47 +1,49 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "api/index.ts",
-      "use": "@vercel/node"
+  "framework": null,
+  "buildCommand": "npm run vercel-build",
+  "installCommand": "npm install",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "server/templates/**,public/**"
     }
-  ],
+  },
   "routes": [
     {
       "src": "/admin",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/merchant",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/api/(.*)",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/legal/(.*)",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/developers",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/health",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/api-docs(.*)",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/widget.js",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     },
     {
       "src": "/(.*)",
-      "dest": "/api/index.ts"
+      "dest": "/api/index.js"
     }
   ]
 }

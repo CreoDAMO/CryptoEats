@@ -22,6 +22,9 @@ node_modules/
 *.mobileprovision
 credentials.json
 
+# ── Build Artifacts ─────────────────────────────────────────
+server_dist/
+
 # ── Expo / React Native ─────────────────────────────────────
 .expo/
 dist/
