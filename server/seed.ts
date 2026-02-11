@@ -1,10 +1,15 @@
 import { db } from "./db";
-import { restaurants, menuItems, taxJurisdictions, deliveryWindows, bundles } from "../shared/schema";
+import { restaurants, menuItems, taxJurisdictions, deliveryWindows, bundles, users } from "../shared/schema";
+import { eq } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 
 export async function seedDatabase() {
   try {
     const existingRestaurants = await db.select().from(restaurants).limit(1);
-    if (existingRestaurants.length > 0) return;
+    if (existingRestaurants.length > 0) {
+      await seedAdminUser();
+      return;
+    }
   } catch (err: any) {
     if (err?.code === "42P01") {
       console.warn("[Seed] Tables not created yet. Run database migrations first (npx drizzle-kit push).");
@@ -15,6 +20,7 @@ export async function seedDatabase() {
   }
 
   console.log("Seeding database...");
+  await seedAdminUser();
 
   const [r1] = await db.insert(restaurants).values({
     name: "La Carreta Cuban Cuisine",
@@ -303,4 +309,21 @@ export async function seedDatabase() {
   ]);
 
   console.log("Database seeded successfully!");
+}
+
+async function seedAdminUser() {
+  try {
+    const existing = await db.select().from(users).where(eq(users.email, "admin@cryptoeats.net")).limit(1);
+    if (existing.length > 0) return;
+
+    const passwordHash = await bcrypt.hash("CryptoEats2026!", 12);
+    await db.insert(users).values({
+      email: "admin@cryptoeats.net",
+      passwordHash,
+      role: "admin",
+    });
+    console.log("[Seed] Default admin user created (admin@cryptoeats.net)");
+  } catch (err: any) {
+    console.warn("[Seed] Admin user seed warning:", err.message);
+  }
 }

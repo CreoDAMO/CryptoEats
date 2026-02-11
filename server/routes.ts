@@ -51,7 +51,7 @@ import {
   validateCloudUpload, isS3Configured, getCloudStorageStatus,
 } from "./services/cloud-storage";
 
-const JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
+const JWT_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("SESSION_SECRET must be set in production"); })() : "dev-only-secret-not-for-production");
 
 function getParam(val: string | string[]): string {
   return Array.isArray(val) ? val[0] : val;
@@ -79,6 +79,26 @@ function authMiddleware(req: AuthRequest, res: Response, next: NextFunction): vo
   } catch {
     res.status(401).json({ message: "Invalid or expired token" });
   }
+}
+
+function adminMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== "admin") {
+      res.status(403).json({ message: "Admin access required" });
+      return;
+    }
+    next();
+  });
+}
+
+function merchantMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== "restaurant" && req.user?.role !== "admin") {
+      res.status(403).json({ message: "Merchant or admin access required" });
+      return;
+    }
+    next();
+  });
 }
 
 const authLimiter = rateLimit({
@@ -800,7 +820,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // =================== ADMIN ===================
-  app.get("/api/admin/restaurants", async (_req: Request, res: Response) => {
+  app.get("/api/admin/restaurants", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const list = await storage.getAllRestaurants();
       res.json(list);
@@ -809,7 +829,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/restaurants/:id/approve", async (req: Request, res: Response) => {
+  app.put("/api/admin/restaurants/:id/approve", adminMiddleware as any, async (req: Request, res: Response) => {
     try {
       const updated = await storage.updateRestaurant(getParam(req.params.id), { isApproved: true });
       if (!updated) return res.status(404).json({ message: "Restaurant not found" });
@@ -819,7 +839,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/drivers", async (_req: Request, res: Response) => {
+  app.get("/api/admin/drivers", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const list = await storage.getAllDrivers();
       res.json(list);
@@ -828,7 +848,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/drivers/:id/approve", async (req: Request, res: Response) => {
+  app.put("/api/admin/drivers/:id/approve", adminMiddleware as any, async (req: Request, res: Response) => {
     try {
       const updated = await storage.updateDriver(getParam(req.params.id), { backgroundCheckStatus: "approved" });
       if (!updated) return res.status(404).json({ message: "Driver not found" });
@@ -838,7 +858,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/orders", async (_req: Request, res: Response) => {
+  app.get("/api/admin/orders", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const list = await storage.getAllOrders();
       res.json(list);
@@ -847,7 +867,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/tax/summary", async (_req: Request, res: Response) => {
+  app.get("/api/admin/tax/summary", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const summary = await storage.getTaxSummary();
       res.json(summary);
@@ -856,7 +876,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/admin/tax/file", async (req: Request, res: Response) => {
+  app.post("/api/admin/tax/file", adminMiddleware as any, async (req: Request, res: Response) => {
     try {
       const remittance = await storage.createRemittance({
         jurisdictionId: req.body.jurisdictionId || null,
@@ -872,7 +892,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/compliance", async (_req: Request, res: Response) => {
+  app.get("/api/admin/compliance", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const logs = await storage.getComplianceLogs();
       res.json(logs);
@@ -1130,7 +1150,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put("/api/admin/delivery-windows", async (req: Request, res: Response) => {
+  app.put("/api/admin/delivery-windows", adminMiddleware as any, async (req: Request, res: Response) => {
     try {
       const { id, ...data } = req.body;
       if (!id) return res.status(400).json({ message: "Window ID required" });
@@ -1141,7 +1161,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/drivers/status", async (_req: Request, res: Response) => {
+  app.get("/api/admin/drivers/status", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const statuses = await storage.getAllDriverStatuses();
       res.json(statuses);
@@ -2503,7 +2523,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.json(getCacheStats());
   });
 
-  app.get("/api/admin/stats", async (_req: Request, res: Response) => {
+  app.get("/api/admin/stats", adminMiddleware as any, async (_req: Request, res: Response) => {
     try {
       const allOrders = await storage.getAllOrders();
       const allRestaurants = await storage.getAllRestaurants();
@@ -2593,7 +2613,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/restaurants", async (_req: Request, res: Response) => {
+  app.get("/api/merchant/restaurants", merchantMiddleware as any, async (req: Request, res: Response) => {
     try {
       const allRestaurants = await storage.getAllRestaurants();
       res.json(allRestaurants);
@@ -2602,25 +2622,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/admin/drivers", async (_req: Request, res: Response) => {
-    try {
-      const allDrivers = await storage.getAllDrivers();
-      res.json(allDrivers);
-    } catch (err: any) {
-      res.status(500).json({ message: err.message });
-    }
-  });
-
-  app.get("/api/admin/orders", async (_req: Request, res: Response) => {
-    try {
-      const allOrders = await storage.getAllOrders();
-      res.json(allOrders);
-    } catch (err: any) {
-      res.status(500).json({ message: err.message });
-    }
-  });
-
-  app.get("/api/merchant/stats/:restaurantId", async (req: Request, res: Response) => {
+  app.get("/api/merchant/stats/:restaurantId", merchantMiddleware as any, async (req: Request, res: Response) => {
     try {
       const restaurantId = getParam(req.params.restaurantId);
       const restaurant = await storage.getRestaurantById(restaurantId);

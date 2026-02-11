@@ -74,6 +74,20 @@
       margin-top: 4px;
     }
 
+    .logout-btn {
+      margin: auto 16px 16px;
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
     .nav-section {
       padding: 12px 24px 6px;
       font-size: 11px;
@@ -605,6 +619,7 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
         Settings
       </button>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
       <div class="sidebar-footer">
         <div style="display:flex;align-items:center;gap:6px;">
           <span class="refresh-dot"></span>
@@ -707,9 +722,100 @@
     </main>
   </div>
 
+  <div id="login-overlay" style="position:fixed;inset:0;background:#0A0A0F;z-index:10000;display:flex;align-items:center;justify-content:center;">
+    <div style="width:100%;max-width:400px;padding:40px;background:#14141F;border-radius:16px;border:1px solid #1E1E30;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="color:#00D4AA;font-size:24px;margin-bottom:4px;">CryptoEats</h1>
+        <p style="color:#8888A0;font-size:14px;">Admin Dashboard Login</p>
+      </div>
+      <div id="login-error" style="display:none;background:rgba(255,77,106,0.15);border:1px solid #FF4D6A;color:#FF4D6A;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">Email</label>
+          <input id="login-email" type="email" required placeholder="admin@cryptoeats.net"
+            style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+            onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+        </div>
+        <div style="margin-bottom:24px;">
+          <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">Password</label>
+          <input id="login-password" type="password" required placeholder="Enter password"
+            style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+            onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+        </div>
+        <button type="submit" id="login-btn"
+          style="width:100%;padding:14px;background:#00D4AA;color:#0A0A0F;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+          Sign In
+        </button>
+      </form>
+      <p style="text-align:center;margin-top:16px;font-size:12px;color:#8888A0;">Only authorized admin accounts can access this dashboard.</p>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
+    let authToken = localStorage.getItem('cryptoeats_admin_token');
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+      const errEl = document.getElementById('login-error');
+      btn.textContent = 'Signing in...';
+      btn.disabled = true;
+      errEl.style.display = 'none';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+        if (data.user.role !== 'admin') throw new Error('Access denied. Admin accounts only.');
+        authToken = data.token;
+        localStorage.setItem('cryptoeats_admin_token', authToken);
+        document.getElementById('login-overlay').style.display = 'none';
+        init();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+      }
+    }
+
+    function logout() {
+      authToken = null;
+      localStorage.removeItem('cryptoeats_admin_token');
+      if (refreshInterval) clearInterval(refreshInterval);
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-error').style.display = 'none';
+    }
+
+    async function verifyToken() {
+      if (!authToken) return false;
+      try {
+        const res = await fetch('/api/customers/profile', {
+          headers: { 'Authorization': 'Bearer ' + authToken },
+        });
+        if (!res.ok) return false;
+        const data = await res.json();
+        return data.role === 'admin';
+      } catch { return false; }
+    }
+
+    (async function checkAuth() {
+      if (await verifyToken()) {
+        document.getElementById('login-overlay').style.display = 'none';
+        init();
+      }
+    })();
+
     const TAB_NAMES = ['overview', 'orders', 'restaurants', 'drivers', 'compliance', 'budget', 'settings'];
     let statsData = null;
     let ordersData = [];
@@ -736,7 +842,10 @@
 
     async function apiFetch(url) {
       try {
-        const res = await fetch(url, { headers: { 'Content-Type': 'application/json' } });
+        const headers = { 'Content-Type': 'application/json' };
+        if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+        const res = await fetch(url, { headers });
+        if (res.status === 401 || res.status === 403) { logout(); return null; }
         if (!res.ok) throw new Error('Request failed');
         return await res.json();
       } catch (e) {
@@ -1062,8 +1171,6 @@
       await fetchAllData();
       refreshInterval = setInterval(fetchAllData, 30000);
     }
-
-    init();
   </script>
 </body>
 </html>
