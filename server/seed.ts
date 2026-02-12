@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { restaurants, menuItems, taxJurisdictions, deliveryWindows, bundles, users } from "../shared/schema";
+import { restaurants, menuItems, taxJurisdictions, deliveryWindows, bundles, users, drivers } from "../shared/schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
@@ -8,6 +8,7 @@ export async function seedDatabase() {
     const existingRestaurants = await db.select().from(restaurants).limit(1);
     if (existingRestaurants.length > 0) {
       await seedAdminUser();
+      await seedDriverUser();
       return;
     }
   } catch (err: any) {
@@ -21,6 +22,7 @@ export async function seedDatabase() {
 
   console.log("Seeding database...");
   await seedAdminUser();
+  await seedDriverUser();
 
   const [r1] = await db.insert(restaurants).values({
     name: "La Carreta Cuban Cuisine",
@@ -325,5 +327,38 @@ async function seedAdminUser() {
     console.log("[Seed] Default admin user created (admin@cryptoeats.net)");
   } catch (err: any) {
     console.warn("[Seed] Admin user seed warning:", err.message);
+  }
+}
+
+async function seedDriverUser() {
+  try {
+    const existing = await db.select().from(users).where(eq(users.email, "driver@cryptoeats.net")).limit(1);
+    if (existing.length > 0) return;
+
+    const passwordHash = await bcrypt.hash("CryptoEats2026!", 12);
+    const [driverUser] = await db.insert(users).values({
+      email: "driver@cryptoeats.net",
+      passwordHash,
+      role: "driver",
+    }).returning();
+
+    await db.insert(drivers).values({
+      userId: driverUser.id,
+      firstName: "Demo",
+      lastName: "Driver",
+      licenseNumber: "FL-DL-2026-001",
+      vehicleInfo: "2024 Toyota Camry - White",
+      backgroundCheckStatus: "approved",
+      isAvailable: true,
+      currentLat: 25.7617,
+      currentLng: -80.1918,
+      rating: 4.9,
+      totalDeliveries: 47,
+      earningsData: { totalEarnings: 1842.50, weeklyEarnings: 385.75 },
+      bio: "Experienced delivery driver in the Miami area. Fast and reliable.",
+    });
+    console.log("[Seed] Default driver user created (driver@cryptoeats.net)");
+  } catch (err: any) {
+    console.warn("[Seed] Driver user seed warning:", err.message);
   }
 }

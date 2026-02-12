@@ -264,6 +264,11 @@ function setupErrorHandler(app: express.Application) {
     res.sendFile(merchantPath);
   });
 
+  app.get('/driver', (req, res) => {
+    const driverPath = path.resolve(process.cwd(), 'server', 'templates', 'driver-dashboard.html');
+    res.sendFile(driverPath);
+  });
+
   app.get('/developers', (req, res) => {
     const devPortalPath = path.resolve(process.cwd(), 'server', 'templates', 'developer-portal.html');
     let html = fs.readFileSync(devPortalPath, 'utf-8');

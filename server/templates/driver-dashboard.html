@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>CryptoEats Driver Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0A0A0F;
+      --surface: #14141F;
+      --surface-hover: #1A1A2E;
+      --border: #1E1E30;
+      --accent: #00D4AA;
+      --accent-dim: rgba(0, 212, 170, 0.15);
+      --text: #E8E8ED;
+      --text-secondary: #8888A0;
+      --danger: #FF4D6A;
+      --warning: #FFB84D;
+      --success: #00D4AA;
+      --info: #4D9DFF;
+      --purple: #A855F7;
+    }
+
+    body {
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 250px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 24px 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar-brand {
+      padding: 0 24px 24px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+    }
+
+    .sidebar-brand h1 {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-brand span {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: block;
+      margin-top: 4px;
+    }
+
+    .logout-btn {
+      margin: auto 16px 16px;
+      padding: 10px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-secondary);
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+      width: calc(100% - 32px);
+    }
+    .logout-btn:hover { border-color: var(--danger); color: var(--danger); }
+
+    .nav-section {
+      padding: 12px 24px 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 24px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.2s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+
+    .nav-item:hover { background: var(--surface-hover); color: var(--text); }
+    .nav-item.active { color: var(--accent); background: var(--accent-dim); border-right: 3px solid var(--accent); }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 16px 24px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .main-content {
+      padding: 32px;
+      overflow-y: auto;
+      max-height: 100vh;
+    }
+
+    .page-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .page-header h2 { font-size: 24px; font-weight: 700; }
+
+    .page-header .refresh-info {
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .refresh-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .stat-card:hover { border-color: var(--accent); }
+
+    .stat-card .stat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .stat-card .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-card .stat-icon svg { width: 20px; height: 20px; }
+    .stat-card .stat-icon.green { background: rgba(0,212,170,0.15); color: var(--success); }
+    .stat-card .stat-icon.blue { background: rgba(77,157,255,0.15); color: var(--info); }
+    .stat-card .stat-icon.yellow { background: rgba(255,184,77,0.15); color: var(--warning); }
+    .stat-card .stat-icon.purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+    .stat-card .stat-icon.red { background: rgba(255,77,106,0.15); color: var(--danger); }
+
+    .stat-card .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
+    .stat-card .sub {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+
+    th {
+      text-align: left;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 12px;
+      font-size: 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-hover); }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: capitalize;
+    }
+
+    .badge-success { background: rgba(0,212,170,0.15); color: var(--success); }
+    .badge-warning { background: rgba(255,184,77,0.15); color: var(--warning); }
+    .badge-danger { background: rgba(255,77,106,0.15); color: var(--danger); }
+    .badge-info { background: rgba(77,157,255,0.15); color: var(--info); }
+    .badge-neutral { background: rgba(136,136,160,0.15); color: var(--text-secondary); }
+    .badge-purple { background: rgba(168,85,247,0.15); color: var(--purple); }
+
+    .order-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .order-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      transition: border-color 0.2s;
+    }
+
+    .order-card:hover { border-color: var(--accent); }
+
+    .order-card .o-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+
+    .order-card .o-id {
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    .order-card .o-restaurant {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .order-card .o-address {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+
+    .order-card .o-details {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .order-card .o-payout {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .btn {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.2s;
+    }
+
+    .btn-accent {
+      background: var(--accent);
+      color: #0A0A0F;
+    }
+    .btn-accent:hover { opacity: 0.9; }
+    .btn-accent:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    .btn-danger {
+      background: rgba(255,77,106,0.15);
+      color: var(--danger);
+      border: 1px solid transparent;
+    }
+    .btn-danger:hover { border-color: var(--danger); }
+
+    .btn-warning {
+      background: rgba(255,184,77,0.15);
+      color: var(--warning);
+      border: 1px solid transparent;
+    }
+    .btn-warning:hover { border-color: var(--warning); }
+
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+    .btn-full { width: 100%; }
+
+    .status-toggle {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .status-toggle .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .status-toggle .status-dot.online { background: var(--success); }
+    .status-toggle .status-dot.offline { background: var(--danger); }
+
+    .status-toggle .status-text {
+      flex: 1;
+      font-weight: 600;
+    }
+
+    select.filter-select {
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      outline: none;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238888A0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 30px;
+    }
+
+    select.filter-select:focus { border-color: var(--accent); }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus { border-color: var(--accent); }
+
+    .form-group textarea { resize: vertical; min-height: 100px; }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+
+    .info-row:last-child { border-bottom: none; }
+    .info-row .info-label { color: var(--text-secondary); font-weight: 500; }
+    .info-row .info-value { font-weight: 500; text-align: right; }
+
+    .loading-skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface-hover) 50%, var(--surface) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+      border-radius: 8px;
+      height: 20px;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .loading-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .loading-card .loading-skeleton { margin-bottom: 12px; }
+    .loading-card .loading-skeleton:last-child { margin-bottom: 0; width: 60%; }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-secondary);
+    }
+
+    .empty-state svg { width: 48px; height: 48px; margin-bottom: 12px; opacity: 0.4; }
+    .empty-state h3 { font-size: 18px; color: var(--text); margin-bottom: 8px; }
+    .empty-state p { font-size: 14px; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 20px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+      max-width: 360px;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: var(--success); color: #0A0A0F; }
+    .toast.error { background: var(--danger); color: #fff; }
+
+    .table-wrapper { overflow-x: auto; }
+
+    @media (max-width: 768px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: auto;
+        z-index: 100;
+        flex-direction: row;
+        overflow-x: auto;
+        padding: 0;
+        border-right: none;
+        border-top: 1px solid var(--border);
+      }
+      .sidebar-brand, .nav-section, .sidebar-footer, .logout-btn { display: none; }
+      .nav-item {
+        flex-direction: column;
+        padding: 10px 14px;
+        font-size: 10px;
+        gap: 4px;
+        white-space: nowrap;
+        min-width: fit-content;
+      }
+      .nav-item.active { border-right: none; border-top: 2px solid var(--accent); }
+      .main-content { padding: 20px; padding-bottom: 80px; max-height: none; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .order-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <h1>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:24px;height:24px;"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          CryptoEats
+        </h1>
+        <span>Driver Dashboard</span>
+      </div>
+      <div class="nav-section">Dashboard</div>
+      <button class="nav-item active" onclick="switchTab('overview')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Overview
+      </button>
+      <div class="nav-section">Deliveries</div>
+      <button class="nav-item" onclick="switchTab('available')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 14l2 2 4-4"/></svg>
+        Available Orders
+      </button>
+      <button class="nav-item" onclick="switchTab('active')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        Active Deliveries
+      </button>
+      <button class="nav-item" onclick="switchTab('history')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+        History
+      </button>
+      <div class="nav-section">Earnings</div>
+      <button class="nav-item" onclick="switchTab('earnings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        My Earnings
+      </button>
+      <div class="nav-section">Account</div>
+      <button class="nav-item" onclick="switchTab('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        Status &amp; Settings
+      </button>
+      <button class="nav-item" onclick="switchTab('support')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        Support
+      </button>
+      <button class="logout-btn" onclick="logout()">Sign Out</button>
+      <div class="sidebar-footer">
+        <div style="display:flex;align-items:center;gap:6px;">
+          <span class="refresh-dot"></span>
+          <span id="sidebar-status">Live</span>
+        </div>
+      </div>
+    </nav>
+
+    <main class="main-content">
+
+      <div id="tab-overview" class="tab-content active">
+        <div class="page-header">
+          <h2>Overview</h2>
+          <span class="refresh-info"><span class="refresh-dot"></span> <span id="last-refresh">Auto-refresh: 30s</span></span>
+        </div>
+        <div id="status-bar"></div>
+        <div class="stats-grid" id="overview-stats">
+          <div class="loading-card"><div class="loading-skeleton" style="height:14px;width:40%"></div><div class="loading-skeleton" style="height:28px;width:60%"></div><div class="loading-skeleton" style="height:12px;width:30%"></div></div>
+          <div class="loading-card"><div class="loading-skeleton" style="height:14px;width:40%"></div><div class="loading-skeleton" style="height:28px;width:60%"></div><div class="loading-skeleton" style="height:12px;width:30%"></div></div>
+          <div class="loading-card"><div class="loading-skeleton" style="height:14px;width:40%"></div><div class="loading-skeleton" style="height:28px;width:60%"></div><div class="loading-skeleton" style="height:12px;width:30%"></div></div>
+          <div class="loading-card"><div class="loading-skeleton" style="height:14px;width:40%"></div><div class="loading-skeleton" style="height:28px;width:60%"></div><div class="loading-skeleton" style="height:12px;width:30%"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Available Orders</div>
+          <div id="overview-available" class="order-grid"><div class="loading-skeleton" style="height:200px"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-available" class="tab-content">
+        <div class="page-header">
+          <h2>Available Orders</h2>
+        </div>
+        <div id="available-orders" class="order-grid"><div class="loading-skeleton" style="height:300px"></div></div>
+      </div>
+
+      <div id="tab-active" class="tab-content">
+        <div class="page-header">
+          <h2>Active Deliveries</h2>
+        </div>
+        <div class="card">
+          <div class="table-wrapper" id="active-table"><div class="loading-skeleton" style="height:300px"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-history" class="tab-content">
+        <div class="page-header">
+          <h2>Delivery History</h2>
+        </div>
+        <div class="card">
+          <div class="table-wrapper" id="history-table"><div class="loading-skeleton" style="height:300px"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-earnings" class="tab-content">
+        <div class="page-header">
+          <h2>My Earnings</h2>
+        </div>
+        <div class="stats-grid" id="earnings-stats"></div>
+        <div class="card">
+          <div class="card-title">Earnings Breakdown</div>
+          <div class="table-wrapper" id="earnings-table"><div class="loading-skeleton" style="height:300px"></div></div>
+        </div>
+      </div>
+
+      <div id="tab-settings" class="tab-content">
+        <div class="page-header">
+          <h2>Status &amp; Settings</h2>
+        </div>
+        <div class="card" id="driver-profile-card">
+          <div class="card-title">Driver Profile</div>
+          <div id="driver-profile"><div class="loading-skeleton" style="height:200px"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Availability Controls</div>
+          <div id="availability-controls"></div>
+        </div>
+      </div>
+
+      <div id="tab-support" class="tab-content">
+        <div class="page-header">
+          <h2>Support</h2>
+        </div>
+        <div class="card">
+          <div class="card-title">Submit Support Request</div>
+          <form id="support-form" onsubmit="submitSupport(event)">
+            <div class="form-group">
+              <label>Interaction Type</label>
+              <select id="support-type" class="filter-select" style="width:100%;padding-right:30px;">
+                <option value="appeal">Appeal</option>
+                <option value="question">Question</option>
+                <option value="complaint">Complaint</option>
+                <option value="feedback">Feedback</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Notes</label>
+              <textarea id="support-notes" placeholder="Describe your issue or feedback..." required></textarea>
+            </div>
+            <button type="submit" class="btn btn-accent" id="support-submit-btn">Submit Request</button>
+          </form>
+          <div id="support-feedback" style="display:none;margin-top:16px;padding:12px;border-radius:8px;font-size:13px;"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="login-overlay" style="position:fixed;inset:0;background:#0A0A0F;z-index:10000;display:flex;align-items:center;justify-content:center;">
+    <div style="width:100%;max-width:400px;padding:40px;background:#14141F;border-radius:16px;border:1px solid #1E1E30;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="color:#00D4AA;font-size:24px;margin-bottom:4px;">CryptoEats</h1>
+        <p style="color:#8888A0;font-size:14px;">Driver Dashboard Login</p>
+      </div>
+      <div id="login-error" style="display:none;background:rgba(255,77,106,0.15);border:1px solid #FF4D6A;color:#FF4D6A;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div style="margin-bottom:16px;">
+          <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">Email</label>
+          <input id="login-email" type="email" required placeholder="driver@cryptoeats.net"
+            style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+            onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+        </div>
+        <div style="margin-bottom:24px;">
+          <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">Password</label>
+          <input id="login-password" type="password" required placeholder="Enter password"
+            style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+            onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+        </div>
+        <button type="submit" id="login-btn"
+          style="width:100%;padding:14px;background:#00D4AA;color:#0A0A0F;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+          Sign In
+        </button>
+      </form>
+      <div id="forgot-section" style="display:none;">
+        <div id="forgot-step-email">
+          <p style="color:#8888A0;font-size:13px;margin-bottom:16px;">Enter your email and we'll send a 6-digit reset code.</p>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">Email</label>
+            <input id="forgot-email" type="email" required placeholder="driver@cryptoeats.net"
+              style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+          </div>
+          <button onclick="sendResetCode()" id="send-code-btn"
+            style="width:100%;padding:14px;background:#00D4AA;color:#0A0A0F;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+            Send Reset Code
+          </button>
+        </div>
+        <div id="forgot-step-code" style="display:none;">
+          <div id="forgot-msg" style="background:rgba(0,212,170,0.15);border:1px solid #00D4AA;color:#00D4AA;padding:12px;border-radius:8px;margin-bottom:16px;font-size:13px;"></div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">6-Digit Code</label>
+            <input id="reset-code" type="text" maxlength="6" placeholder="000000"
+              style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:18px;letter-spacing:6px;text-align:center;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'"
+              oninput="this.value=this.value.replace(/[^0-9]/g,'').slice(0,6)">
+          </div>
+          <div style="margin-bottom:16px;">
+            <label style="display:block;font-size:13px;color:#8888A0;margin-bottom:6px;">New Password</label>
+            <input id="new-password" type="password" placeholder="At least 8 characters"
+              style="width:100%;padding:12px 16px;background:#0A0A0F;border:1px solid #1E1E30;border-radius:8px;color:#E8E8ED;font-size:14px;outline:none;font-family:inherit;"
+              onfocus="this.style.borderColor='#00D4AA'" onblur="this.style.borderColor='#1E1E30'">
+          </div>
+          <button onclick="resetPassword()" id="reset-btn"
+            style="width:100%;padding:14px;background:#00D4AA;color:#0A0A0F;border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;">
+            Reset Password
+          </button>
+        </div>
+        <div id="forgot-error" style="display:none;background:rgba(255,77,106,0.15);border:1px solid #FF4D6A;color:#FF4D6A;padding:12px;border-radius:8px;margin-top:16px;font-size:13px;"></div>
+      </div>
+      <p id="forgot-link" style="text-align:center;margin-top:16px;font-size:13px;color:#00D4AA;cursor:pointer;" onclick="showForgotPassword()">Forgot Password?</p>
+      <p id="back-link" style="text-align:center;margin-top:16px;font-size:13px;color:#00D4AA;cursor:pointer;display:none;" onclick="hideForgotPassword()">&larr; Back to Sign In</p>
+      <p style="text-align:center;margin-top:8px;font-size:12px;color:#8888A0;">Only approved driver accounts can access this dashboard.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let authToken = localStorage.getItem('cryptoeats_driver_token');
+    let dashboardData = null;
+    let refreshInterval = null;
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('login-btn');
+      const errEl = document.getElementById('login-error');
+      btn.textContent = 'Signing in...';
+      btn.disabled = true;
+      errEl.style.display = 'none';
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+        if (data.user.role !== 'driver' && data.user.role !== 'admin') {
+          throw new Error('Access denied. Only driver or admin accounts can sign in.');
+        }
+        authToken = data.token;
+        localStorage.setItem('cryptoeats_driver_token', authToken);
+        document.getElementById('login-overlay').style.display = 'none';
+        startApp();
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Sign In';
+        btn.disabled = false;
+      }
+    }
+
+    function logout() {
+      authToken = null;
+      localStorage.removeItem('cryptoeats_driver_token');
+      if (refreshInterval) clearInterval(refreshInterval);
+      document.getElementById('login-overlay').style.display = 'flex';
+      document.getElementById('login-email').value = '';
+      document.getElementById('login-password').value = '';
+      document.getElementById('login-error').style.display = 'none';
+      hideForgotPassword();
+    }
+
+    function showForgotPassword() {
+      document.getElementById('login-form').style.display = 'none';
+      document.getElementById('forgot-section').style.display = 'block';
+      document.getElementById('forgot-link').style.display = 'none';
+      document.getElementById('back-link').style.display = 'block';
+      document.getElementById('login-error').style.display = 'none';
+      document.getElementById('forgot-email').value = document.getElementById('login-email').value;
+    }
+
+    function hideForgotPassword() {
+      document.getElementById('login-form').style.display = 'block';
+      document.getElementById('forgot-section').style.display = 'none';
+      document.getElementById('forgot-link').style.display = 'block';
+      document.getElementById('back-link').style.display = 'none';
+      document.getElementById('forgot-step-email').style.display = 'block';
+      document.getElementById('forgot-step-code').style.display = 'none';
+      document.getElementById('forgot-error').style.display = 'none';
+    }
+
+    async function sendResetCode() {
+      const email = document.getElementById('forgot-email').value;
+      const btn = document.getElementById('send-code-btn');
+      const errEl = document.getElementById('forgot-error');
+      errEl.style.display = 'none';
+      btn.textContent = 'Sending...'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/forgot-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        document.getElementById('forgot-msg').textContent = data.message;
+        document.getElementById('forgot-step-email').style.display = 'none';
+        document.getElementById('forgot-step-code').style.display = 'block';
+      } catch (err) {
+        errEl.textContent = err.message || 'Failed to send reset code';
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Send Reset Code'; btn.disabled = false;
+      }
+    }
+
+    async function resetPassword() {
+      const email = document.getElementById('forgot-email').value;
+      const code = document.getElementById('reset-code').value;
+      const newPassword = document.getElementById('new-password').value;
+      const btn = document.getElementById('reset-btn');
+      const errEl = document.getElementById('forgot-error');
+      errEl.style.display = 'none';
+      if (!code || code.length !== 6) { errEl.textContent = 'Please enter the 6-digit code'; errEl.style.display = 'block'; return; }
+      if (!newPassword || newPassword.length < 8) { errEl.textContent = 'Password must be at least 8 characters'; errEl.style.display = 'block'; return; }
+      btn.textContent = 'Resetting...'; btn.disabled = true;
+      try {
+        const res = await fetch('/api/auth/reset-password', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, code, newPassword }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        showToast(data.message, 'success');
+        hideForgotPassword();
+      } catch (err) {
+        errEl.textContent = err.message || 'Password reset failed';
+        errEl.style.display = 'block';
+      } finally {
+        btn.textContent = 'Reset Password'; btn.disabled = false;
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.className = 'toast ' + type;
+      setTimeout(() => t.classList.add('show'), 10);
+      setTimeout(() => { t.classList.remove('show'); }, 3500);
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tab).classList.add('active');
+      const btns = document.querySelectorAll('.nav-item');
+      btns.forEach(b => { if (b.getAttribute('onclick') === `switchTab('${tab}')`) b.classList.add('active'); });
+      renderCurrentTab();
+    }
+
+    async function apiFetch(url, options = {}) {
+      const headers = { 'Content-Type': 'application/json', ...options.headers };
+      if (authToken) headers['Authorization'] = 'Bearer ' + authToken;
+      const res = await fetch(url, { ...options, headers });
+      if (res.status === 401) { logout(); throw new Error('Session expired'); }
+      return res;
+    }
+
+    async function startApp() {
+      await loadDashboard();
+      if (refreshInterval) clearInterval(refreshInterval);
+      refreshInterval = setInterval(loadDashboard, 30000);
+    }
+
+    async function loadDashboard() {
+      try {
+        const res = await apiFetch('/api/driver/dashboard/stats');
+        if (!res.ok) throw new Error('Failed to load dashboard');
+        dashboardData = await res.json();
+        document.getElementById('last-refresh').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+        renderCurrentTab();
+      } catch (err) {
+        console.error('Dashboard load error:', err);
+      }
+    }
+
+    function renderCurrentTab() {
+      if (!dashboardData) return;
+      const activeTab = document.querySelector('.tab-content.active');
+      if (!activeTab) return;
+      const tabId = activeTab.id.replace('tab-', '');
+      switch (tabId) {
+        case 'overview': renderOverview(); break;
+        case 'available': renderAvailableOrders(); break;
+        case 'active': renderActiveDeliveries(); break;
+        case 'history': renderHistory(); break;
+        case 'earnings': renderEarnings(); break;
+        case 'settings': renderSettings(); break;
+      }
+    }
+
+    function renderOverview() {
+      const s = dashboardData.stats;
+      document.getElementById('overview-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon green">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+          </div>
+          <div class="label">Today's Earnings</div>
+          <div class="value" style="color:var(--accent)">$${parseFloat(s.todayEarnings).toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon blue">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+          </div>
+          <div class="label">Active Deliveries</div>
+          <div class="value" style="color:var(--info)">${s.activeDeliveries}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon purple">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+            </div>
+          </div>
+          <div class="label">Total Deliveries</div>
+          <div class="value">${s.totalDeliveries}</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-header">
+            <div class="stat-icon yellow">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            </div>
+          </div>
+          <div class="label">Rating</div>
+          <div class="value" style="color:var(--warning)">★ ${parseFloat(s.rating).toFixed(1)}</div>
+        </div>
+      `;
+
+      const isOnline = s.isAvailable;
+      document.getElementById('status-bar').innerHTML = `
+        <div class="status-toggle">
+          <div class="status-dot ${isOnline ? 'online' : 'offline'}"></div>
+          <div class="status-text">${isOnline ? 'You are Online' : 'You are Offline'}</div>
+          <button class="btn ${isOnline ? 'btn-danger' : 'btn-accent'} btn-sm" onclick="toggleAvailability(${!isOnline})">
+            ${isOnline ? 'Go Offline' : 'Go Online'}
+          </button>
+        </div>
+      `;
+
+      renderOrderCards('overview-available', dashboardData.availableOrders || []);
+    }
+
+    function renderOrderCards(containerId, orders) {
+      const container = document.getElementById(containerId);
+      if (!orders.length) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/></svg>
+          <h3>No Available Orders</h3>
+          <p>New orders will appear here when available.</p>
+        </div>`;
+        return;
+      }
+      container.innerHTML = orders.map(o => `
+        <div class="order-card">
+          <div class="o-header">
+            <span class="o-id">#${(o.id || '').slice(0, 8)}</span>
+            <span class="badge badge-warning">Pending</span>
+          </div>
+          <div class="o-restaurant">${o.restaurantName || 'Restaurant'}</div>
+          <div class="o-address">${o.deliveryAddress || 'Address not provided'}</div>
+          <div class="o-details">
+            <span>${(o.items || []).length} item${(o.items || []).length !== 1 ? 's' : ''}</span>
+            <span class="o-payout">$${parseFloat(o.total || o.estimatedPayout || '0').toFixed(2)}</span>
+          </div>
+          <button class="btn btn-accent btn-full btn-sm" onclick="acceptOrder('${o.id}')">Accept Order</button>
+        </div>
+      `).join('');
+    }
+
+    function renderAvailableOrders() {
+      renderOrderCards('available-orders', dashboardData.availableOrders || []);
+    }
+
+    function renderActiveDeliveries() {
+      const orders = dashboardData.activeOrders || [];
+      const container = document.getElementById('active-table');
+      if (!orders.length) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <h3>No Active Deliveries</h3>
+          <p>Accept an order to start delivering.</p>
+        </div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Order #</th>
+            <th>Restaurant</th>
+            <th>Customer</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr></thead>
+          <tbody>
+            ${orders.map(o => {
+              const statusOptions = getNextStatuses(o.status);
+              return `<tr>
+                <td style="font-weight:600">#${(o.id || '').slice(0, 8)}</td>
+                <td>${o.restaurantName || 'Restaurant'}</td>
+                <td>${o.customerName || o.deliveryAddress || '—'}</td>
+                <td><span class="badge ${getStatusBadge(o.status)}">${formatStatus(o.status)}</span></td>
+                <td>
+                  ${statusOptions.length ? `
+                    <select class="filter-select" id="status-select-${o.id}" style="margin-right:8px;">
+                      ${statusOptions.map(s => `<option value="${s}">${formatStatus(s)}</option>`).join('')}
+                    </select>
+                    <button class="btn btn-accent btn-sm" onclick="updateOrderStatus('${o.id}')">Update</button>
+                  ` : '<span style="color:var(--text-secondary);font-size:12px">—</span>'}
+                </td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function getNextStatuses(current) {
+      const flow = {
+        'confirmed': ['picked_up'],
+        'preparing': ['picked_up'],
+        'ready': ['picked_up'],
+        'picked_up': ['on_the_way'],
+        'on_the_way': ['delivered'],
+      };
+      return flow[current] || [];
+    }
+
+    function getStatusBadge(status) {
+      const map = {
+        'pending': 'badge-warning',
+        'confirmed': 'badge-info',
+        'preparing': 'badge-info',
+        'ready': 'badge-purple',
+        'picked_up': 'badge-warning',
+        'on_the_way': 'badge-info',
+        'delivered': 'badge-success',
+        'cancelled': 'badge-danger',
+      };
+      return map[status] || 'badge-neutral';
+    }
+
+    function formatStatus(status) {
+      return (status || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    }
+
+    function renderHistory() {
+      const orders = dashboardData.recentDeliveries || [];
+      const container = document.getElementById('history-table');
+      if (!orders.length) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+          <h3>No Delivery History</h3>
+          <p>Your completed deliveries will appear here.</p>
+        </div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Order #</th>
+            <th>Restaurant</th>
+            <th>Delivered At</th>
+            <th>Payout</th>
+            <th>Tip</th>
+            <th>Rating</th>
+          </tr></thead>
+          <tbody>
+            ${orders.map(o => `<tr>
+              <td style="font-weight:600">#${(o.id || '').slice(0, 8)}</td>
+              <td>${o.restaurantName || 'Restaurant'}</td>
+              <td>${o.deliveredAt ? new Date(o.deliveredAt).toLocaleDateString() : '—'}</td>
+              <td style="color:var(--accent);font-weight:600">$${parseFloat(o.total || '0').toFixed(2)}</td>
+              <td>$${parseFloat(o.tip || '0').toFixed(2)}</td>
+              <td>${o.rating ? '★ ' + o.rating : '—'}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderEarnings() {
+      const s = dashboardData.stats;
+      const earnings = dashboardData.earnings || [];
+
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+      const weekEarnings = earnings
+        .filter(e => new Date(e.createdAt) >= weekStart)
+        .reduce((sum, e) => sum + parseFloat(e.totalPayout || '0'), 0);
+
+      document.getElementById('earnings-stats').innerHTML = `
+        <div class="stat-card">
+          <div class="label">Total Earnings</div>
+          <div class="value" style="color:var(--accent)">$${parseFloat(s.totalEarnings).toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">This Week</div>
+          <div class="value" style="color:var(--info)">$${weekEarnings.toFixed(2)}</div>
+        </div>
+        <div class="stat-card">
+          <div class="label">Total Tips</div>
+          <div class="value" style="color:var(--warning)">$${parseFloat(s.totalTips).toFixed(2)}</div>
+        </div>
+      `;
+
+      const container = document.getElementById('earnings-table');
+      if (!earnings.length) {
+        container.innerHTML = `<div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+          <h3>No Earnings Yet</h3>
+          <p>Complete deliveries to start earning.</p>
+        </div>`;
+        return;
+      }
+      container.innerHTML = `
+        <table>
+          <thead><tr>
+            <th>Date</th>
+            <th>Order</th>
+            <th>Base Pay</th>
+            <th>Mileage</th>
+            <th>Tips</th>
+            <th>Bonus</th>
+            <th>Total</th>
+          </tr></thead>
+          <tbody>
+            ${earnings.map(e => `<tr>
+              <td>${new Date(e.createdAt).toLocaleDateString()}</td>
+              <td style="font-weight:600">#${(e.orderId || '').slice(0, 8)}</td>
+              <td>$${parseFloat(e.basePay || '0').toFixed(2)}</td>
+              <td>$${parseFloat(e.mileagePay || '0').toFixed(2)}</td>
+              <td>$${parseFloat(e.tipAmount || '0').toFixed(2)}</td>
+              <td>$${parseFloat(e.bonusPay || '0').toFixed(2)}</td>
+              <td style="color:var(--accent);font-weight:600">$${parseFloat(e.totalPayout || '0').toFixed(2)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    function renderSettings() {
+      const d = dashboardData.driver;
+      const s = dashboardData.stats;
+      const st = dashboardData.status;
+
+      document.getElementById('driver-profile').innerHTML = `
+        <div class="info-row"><span class="info-label">Name</span><span class="info-value">${d.firstName || ''} ${d.lastName || ''}</span></div>
+        <div class="info-row"><span class="info-label">Vehicle</span><span class="info-value">${d.vehicleInfo || 'Not set'}</span></div>
+        <div class="info-row"><span class="info-label">License</span><span class="info-value">${d.licenseNumber || 'Not set'}</span></div>
+        <div class="info-row"><span class="info-label">Background Check</span><span class="info-value"><span class="badge ${d.backgroundCheckStatus === 'approved' ? 'badge-success' : d.backgroundCheckStatus === 'pending' ? 'badge-warning' : 'badge-neutral'}">${d.backgroundCheckStatus || 'Pending'}</span></span></div>
+        <div class="info-row"><span class="info-label">Rating</span><span class="info-value" style="color:var(--warning)">★ ${parseFloat(s.rating).toFixed(1)}</span></div>
+        <div class="info-row"><span class="info-label">Total Deliveries</span><span class="info-value">${s.totalDeliveries}</span></div>
+        <div class="info-row"><span class="info-label">Status</span><span class="info-value"><span class="badge ${st.status === 'active' ? 'badge-success' : st.status === 'on_break' ? 'badge-warning' : 'badge-neutral'}">${formatStatus(st.status)}</span></span></div>
+      `;
+
+      const isOnline = s.isAvailable;
+      const isOnBreak = st.status === 'on_break';
+      document.getElementById('availability-controls').innerHTML = `
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <button class="btn ${isOnline ? 'btn-danger' : 'btn-accent'}" onclick="toggleAvailability(${!isOnline})">
+            ${isOnline ? 'Go Offline' : 'Go Online'}
+          </button>
+          <button class="btn ${isOnBreak ? 'btn-warning' : 'btn-outline'}" onclick="toggleBreak(${!isOnBreak})">
+            ${isOnBreak ? 'End Break' : 'Take Break'}
+          </button>
+        </div>
+        <p style="margin-top:12px;font-size:13px;color:var(--text-secondary)">
+          ${isOnline ? 'You are currently online and can receive orders.' : 'You are currently offline. Go online to receive orders.'}
+          ${isOnBreak ? ' You are on break.' : ''}
+        </p>
+      `;
+    }
+
+    async function toggleAvailability(isAvailable) {
+      try {
+        const res = await apiFetch('/api/driver/availability', {
+          method: 'PUT',
+          body: JSON.stringify({ isAvailable }),
+        });
+        if (!res.ok) throw new Error('Failed to update availability');
+        showToast(isAvailable ? 'You are now online!' : 'You are now offline', 'success');
+        await loadDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function toggleBreak(onBreak) {
+      try {
+        const res = await apiFetch('/api/driver/break', {
+          method: 'PUT',
+          body: JSON.stringify({ onBreak }),
+        });
+        if (!res.ok) throw new Error('Failed to update break status');
+        showToast(onBreak ? 'Break started' : 'Break ended', 'success');
+        await loadDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function acceptOrder(orderId) {
+      try {
+        const res = await apiFetch('/api/driver/orders/' + orderId + '/accept', { method: 'POST' });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Failed to accept order'); }
+        showToast('Order accepted!', 'success');
+        await loadDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function updateOrderStatus(orderId) {
+      const select = document.getElementById('status-select-' + orderId);
+      if (!select) return;
+      const status = select.value;
+      try {
+        const res = await apiFetch('/api/driver/orders/' + orderId + '/status', {
+          method: 'PUT',
+          body: JSON.stringify({ status }),
+        });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Failed to update status'); }
+        showToast('Status updated to ' + formatStatus(status), 'success');
+        await loadDashboard();
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    }
+
+    async function submitSupport(e) {
+      e.preventDefault();
+      const btn = document.getElementById('support-submit-btn');
+      const feedback = document.getElementById('support-feedback');
+      const type = document.getElementById('support-type').value;
+      const notes = document.getElementById('support-notes').value;
+      btn.textContent = 'Submitting...'; btn.disabled = true;
+      feedback.style.display = 'none';
+      try {
+        const res = await apiFetch('/api/driver/support', {
+          method: 'POST',
+          body: JSON.stringify({ interactionType: type, notes }),
+        });
+        if (!res.ok) { const d = await res.json(); throw new Error(d.message || 'Failed to submit'); }
+        feedback.textContent = 'Support request submitted successfully!';
+        feedback.style.background = 'rgba(0,212,170,0.15)';
+        feedback.style.border = '1px solid #00D4AA';
+        feedback.style.color = '#00D4AA';
+        feedback.style.display = 'block';
+        document.getElementById('support-notes').value = '';
+        showToast('Support request submitted', 'success');
+      } catch (err) {
+        feedback.textContent = err.message;
+        feedback.style.background = 'rgba(255,77,106,0.15)';
+        feedback.style.border = '1px solid #FF4D6A';
+        feedback.style.color = '#FF4D6A';
+        feedback.style.display = 'block';
+      } finally {
+        btn.textContent = 'Submit Request'; btn.disabled = false;
+      }
+    }
+
+    async function checkAuth() {
+      if (!authToken) return;
+      try {
+        const res = await apiFetch('/api/customers/profile');
+        if (!res.ok) throw new Error('Invalid token');
+        const data = await res.json();
+        if (data.role !== 'driver' && data.role !== 'admin') {
+          throw new Error('Not a driver account');
+        }
+        document.getElementById('login-overlay').style.display = 'none';
+        startApp();
+      } catch {
+        authToken = null;
+        localStorage.removeItem('cryptoeats_driver_token');
+      }
+    }
+
+    checkAuth();
+  </script>
+</body>
+</html>

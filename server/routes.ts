@@ -104,6 +104,16 @@ function merchantMiddleware(req: AuthRequest, res: Response, next: NextFunction)
   });
 }
 
+function driverMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== "driver" && req.user?.role !== "admin") {
+      res.status(403).json({ message: "Driver or admin access required" });
+      return;
+    }
+    next();
+  });
+}
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -844,6 +854,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!driver) return res.status(404).json({ message: "Driver profile not found" });
       const updated = await storage.updateDriverAvailability(driver.id, req.body.isAvailable);
       res.json(updated);
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  // =================== DRIVER DASHBOARD ENDPOINTS ===================
+  app.get("/api/driver/dashboard/stats", driverMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const driver = await storage.getDriverByUserId(req.user!.id);
+      if (!driver) return res.status(404).json({ message: "Driver profile not found" });
+      const earnings = await storage.getDriverEarnings(driver.id);
+      const status = await storage.getDriverStatus(driver.id);
+      const allOrders = await storage.getAllOrders();
+      const myOrders = allOrders.filter((o: any) => o.driverId === driver.id);
+      const activeOrders = myOrders.filter((o: any) => ["confirmed", "preparing", "ready", "picked_up", "on_the_way"].includes(o.status));
+      const completedOrders = myOrders.filter((o: any) => o.status === "delivered");
+      const pendingOrders = await storage.getPendingOrders();
+
+      const totalEarnings = earnings.reduce((sum: number, e: any) => sum + parseFloat(e.totalPayout || "0"), 0);
+      const todayEarnings = earnings
+        .filter((e: any) => {
+          const d = new Date(e.createdAt);
+          const now = new Date();
+          return d.toDateString() === now.toDateString();
+        })
+        .reduce((sum: number, e: any) => sum + parseFloat(e.totalPayout || "0"), 0);
+
+      const totalTips = earnings.reduce((sum: number, e: any) => sum + parseFloat(e.tipAmount || "0"), 0);
+
+      res.json({
+        driver,
+        status: status || { status: "active", engagementTier: "active" },
+        stats: {
+          totalDeliveries: driver.totalDeliveries || completedOrders.length,
+          activeDeliveries: activeOrders.length,
+          availableOrders: pendingOrders.length,
+          totalEarnings: totalEarnings.toFixed(2),
+          todayEarnings: todayEarnings.toFixed(2),
+          totalTips: totalTips.toFixed(2),
+          rating: driver.rating || 5.0,
+          isAvailable: driver.isAvailable || false,
+        },
+        activeOrders,
+        recentDeliveries: completedOrders.slice(-10).reverse(),
+        availableOrders: pendingOrders,
+        earnings,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+
+  app.get("/api/driver/dashboard/orders", driverMiddleware as any, async (req: AuthRequest, res: Response) => {
+    try {
+      const driver = await storage.getDriverByUserId(req.user!.id);
+      if (!driver) return res.status(404).json({ message: "Driver profile not found" });
+      const allOrders = await storage.getAllOrders();
+      const myOrders = allOrders.filter((o: any) => o.driverId === driver.id);
+      res.json(myOrders);
     } catch (err: any) {
       res.status(500).json({ message: err.message });
     }
