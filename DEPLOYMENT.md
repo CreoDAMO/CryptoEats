@@ -160,6 +160,7 @@ All platforms require these environment variables. Only `DATABASE_URL` is requir
    - Environment: Node
    - Build Command: `npm install && npm run server:build`
    - Start Command: `npm run server:prod`
+   - **Environment Variables:** Add `PORT=5000` (Render needs to know which port to proxy)
 
 2. **Add PostgreSQL**
    - Click "New" → "PostgreSQL"
@@ -168,13 +169,14 @@ All platforms require these environment variables. Only `DATABASE_URL` is requir
 
 3. **Environment Variables**
    - Add `DATABASE_URL` (from step 2)
+   - Add `NODE_ENV=production`
    - Add any optional variables under Environment tab
 
 4. **Run Migrations and Seed** (first deploy only)
    - After the first deploy, go to your service → Shell
    ```bash
    npx drizzle-kit push
-   npx tsx scripts/run-seed.ts
+   npm run db:seed
    ```
 
 5. **Custom Domain**
