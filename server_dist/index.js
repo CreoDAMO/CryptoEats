@@ -1,8 +1,193 @@
 var __defProp = Object.defineProperty;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
+};
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
 };
+
+// server/services/notifications.ts
+var notifications_exports = {};
+__export(notifications_exports, {
+  buildOrderConfirmationEmail: () => buildOrderConfirmationEmail,
+  buildOrderStatusEmail: () => buildOrderStatusEmail,
+  buildOrderStatusSMS: () => buildOrderStatusSMS,
+  isPushConfigured: () => isPushConfigured,
+  isSendGridConfigured: () => isSendGridConfigured,
+  isTwilioConfigured: () => isTwilioConfigured,
+  sendEmail: () => sendEmail,
+  sendPushNotification: () => sendPushNotification,
+  sendSMS: () => sendSMS
+});
+import { Expo } from "expo-server-sdk";
+function isSendGridConfigured() {
+  return !!process.env.SENDGRID_API_KEY;
+}
+function isTwilioConfigured() {
+  return !!(process.env.TWILIO_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE);
+}
+function isPushConfigured() {
+  return true;
+}
+async function sendEmail(to, subject, html, from) {
+  const apiKey = process.env.SENDGRID_API_KEY;
+  if (!apiKey) {
+    console.warn("[Email] SendGrid not configured, skipping email to:", to);
+    return { success: false };
+  }
+  const senderEmail = from || process.env.SENDGRID_FROM_EMAIL || "noreply@cryptoeats.net";
+  const response = await fetch(SENDGRID_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: to }] }],
+      from: { email: senderEmail, name: "CryptoEats" },
+      subject,
+      content: [{ type: "text/html", value: html }]
+    })
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[Email] SendGrid error:", errorText);
+    return { success: false };
+  }
+  const messageId = response.headers.get("x-message-id") || void 0;
+  console.log(`[Email] Sent to ${to}: "${subject}"`);
+  return { success: true, messageId };
+}
+async function sendSMS(to, body) {
+  const sid = process.env.TWILIO_SID;
+  const authToken = process.env.TWILIO_AUTH_TOKEN;
+  const fromPhone = process.env.TWILIO_PHONE;
+  if (!sid || !authToken || !fromPhone) {
+    console.warn("[SMS] Twilio not configured, skipping SMS to:", to);
+    return { success: false };
+  }
+  const url = `${TWILIO_API_BASE}/Accounts/${sid}/Messages.json`;
+  const auth = Buffer.from(`${sid}:${authToken}`).toString("base64");
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${auth}`,
+      "Content-Type": "application/x-www-form-urlencoded"
+    },
+    body: new URLSearchParams({ To: to, From: fromPhone, Body: body }).toString()
+  });
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[SMS] Twilio error:", errorText);
+    return { success: false };
+  }
+  const data = await response.json();
+  console.log(`[SMS] Sent to ${to}: "${body.substring(0, 50)}..."`);
+  return { success: true, sid: data.sid };
+}
+async function sendPushNotification(tokens, title, body, data) {
+  const validTokens = tokens.filter(Expo.isExpoPushToken);
+  if (validTokens.length === 0) {
+    console.warn("[Push] No valid Expo push tokens provided");
+    return { sent: 0, failed: 0 };
+  }
+  const messages2 = validTokens.map((token) => ({
+    to: token,
+    sound: "default",
+    title,
+    body,
+    data: data || {},
+    priority: "high"
+  }));
+  const chunks = expo.chunkPushNotifications(messages2);
+  let sent = 0;
+  let failed = 0;
+  for (const chunk of chunks) {
+    try {
+      const tickets = await expo.sendPushNotificationsAsync(chunk);
+      for (const ticket of tickets) {
+        if (ticket.status === "ok") sent++;
+        else failed++;
+      }
+    } catch (err) {
+      console.error("[Push] Error sending chunk:", err);
+      failed += chunk.length;
+    }
+  }
+  console.log(`[Push] Sent: ${sent}, Failed: ${failed}`);
+  return { sent, failed };
+}
+function buildOrderConfirmationEmail(orderId, total, restaurantName, items) {
+  const itemRows = items.map(
+    (item) => `<tr><td style="padding:8px;border-bottom:1px solid #333;">${item.name || item.menuItem?.name}</td><td style="padding:8px;border-bottom:1px solid #333;text-align:center;">${item.quantity}</td><td style="padding:8px;border-bottom:1px solid #333;text-align:right;">$${(item.price || item.menuItem?.price || 0).toFixed(2)}</td></tr>`
+  ).join("");
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#1a1a2e;color:#eee;padding:32px;border-radius:12px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="color:#00d4aa;margin:0;font-size:28px;">CryptoEats</h1>
+        <p style="color:#999;margin:4px 0;">Order Confirmed</p>
+      </div>
+      <div style="background:#16213e;padding:20px;border-radius:8px;margin-bottom:16px;">
+        <h2 style="margin:0 0 4px;font-size:18px;color:#fff;">${restaurantName}</h2>
+        <p style="margin:0;color:#999;font-size:14px;">Order #${orderId.substring(0, 8).toUpperCase()}</p>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+        <thead><tr style="color:#999;font-size:13px;"><th style="text-align:left;padding:8px;">Item</th><th style="text-align:center;padding:8px;">Qty</th><th style="text-align:right;padding:8px;">Price</th></tr></thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+      <div style="background:#16213e;padding:16px;border-radius:8px;text-align:right;">
+        <p style="margin:0;font-size:20px;font-weight:bold;color:#00d4aa;">Total: $${total}</p>
+      </div>
+      <p style="text-align:center;color:#666;font-size:12px;margin-top:24px;">Thank you for your order! Track your delivery in the CryptoEats app.</p>
+    </div>
+  `;
+}
+function buildOrderStatusEmail(orderId, status, driverName) {
+  const statusMessages = {
+    confirmed: "Your order has been confirmed and is being prepared.",
+    preparing: "The restaurant is preparing your food.",
+    ready: "Your order is ready for pickup!",
+    picked_up: `${driverName || "Your driver"} has picked up your order and is on the way.`,
+    delivered: "Your order has been delivered. Enjoy your meal!",
+    cancelled: "Your order has been cancelled. A refund will be processed."
+  };
+  const message = statusMessages[status] || `Order status updated to: ${status}`;
+  return `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#1a1a2e;color:#eee;padding:32px;border-radius:12px;">
+      <div style="text-align:center;margin-bottom:24px;">
+        <h1 style="color:#00d4aa;margin:0;font-size:28px;">CryptoEats</h1>
+      </div>
+      <div style="background:#16213e;padding:20px;border-radius:8px;text-align:center;">
+        <p style="margin:0;color:#999;font-size:14px;">Order #${orderId.substring(0, 8).toUpperCase()}</p>
+        <h2 style="margin:8px 0;font-size:22px;color:#fff;text-transform:capitalize;">${status.replace("_", " ")}</h2>
+        <p style="margin:8px 0 0;color:#ccc;font-size:15px;">${message}</p>
+      </div>
+    </div>
+  `;
+}
+function buildOrderStatusSMS(orderId, status) {
+  const shortId = orderId.substring(0, 8).toUpperCase();
+  const messages2 = {
+    confirmed: `CryptoEats: Order #${shortId} confirmed! We're preparing your food.`,
+    preparing: `CryptoEats: Order #${shortId} is being prepared.`,
+    ready: `CryptoEats: Order #${shortId} is ready for pickup!`,
+    picked_up: `CryptoEats: Your driver has your order #${shortId} and is on the way!`,
+    delivered: `CryptoEats: Order #${shortId} delivered! Enjoy your meal.`,
+    cancelled: `CryptoEats: Order #${shortId} has been cancelled.`
+  };
+  return messages2[status] || `CryptoEats: Order #${shortId} status: ${status}`;
+}
+var expo, SENDGRID_API_URL, TWILIO_API_BASE;
+var init_notifications = __esm({
+  "server/services/notifications.ts"() {
+    "use strict";
+    expo = new Expo();
+    SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send";
+    TWILIO_API_BASE = "https://api.twilio.com/2010-04-01";
+  }
+});
 
 // server/index.ts
 import express from "express";
@@ -10,7 +195,7 @@ import express from "express";
 // server/routes.ts
 import { createServer } from "node:http";
 import { Server as SocketIOServer } from "socket.io";
-import bcrypt from "bcryptjs";
+import bcrypt2 from "bcryptjs";
 import jwt from "jsonwebtoken";
 import rateLimit from "express-rate-limit";
 import multer from "multer";
@@ -74,6 +259,7 @@ __export(schema_exports, {
   onrampTransactions: () => onrampTransactions,
   orderStatusEnum: () => orderStatusEnum,
   orders: () => orders,
+  passwordResetTokens: () => passwordResetTokens,
   paymentStatusEnum: () => paymentStatusEnum,
   pushTokens: () => pushTokens,
   rateOrderSchema: () => rateOrderSchema,
@@ -163,6 +349,17 @@ var users = pgTable2("users", {
 }, (table) => [
   index("users_email_idx").on(table.email),
   index("users_role_idx").on(table.role)
+]);
+var passwordResetTokens = pgTable2("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql2`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  token: text2("token").notNull(),
+  expiresAt: timestamp2("expires_at").notNull(),
+  used: boolean("used").default(false).notNull(),
+  createdAt: timestamp2("created_at").defaultNow().notNull()
+}, (table) => [
+  index("reset_tokens_user_idx").on(table.userId),
+  index("reset_tokens_token_idx").on(table.token)
 ]);
 var customers = pgTable2("customers", {
   id: varchar("id").primaryKey().default(sql2`gen_random_uuid()`),
@@ -817,20 +1014,24 @@ var rateOrderSchema = z.object({
 });
 
 // server/db.ts
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL must be set");
+var hasDatabase = !!process.env.DATABASE_URL;
+if (!hasDatabase) {
+  console.warn("[DB] DATABASE_URL is not set. The server will start but database operations will fail.");
+  console.warn("[DB] Set DATABASE_URL in your Vercel project settings to connect a PostgreSQL database.");
 }
-var pool = new Pool({
+var pool = hasDatabase ? new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 20,
   idleTimeoutMillis: 3e4,
   connectionTimeoutMillis: 5e3,
   allowExitOnIdle: false
-});
-pool.on("error", (err) => {
-  console.error("[DB Pool] Unexpected error on idle client:", err.message);
-});
-var db = drizzle(pool, { schema: schema_exports });
+}) : null;
+if (pool) {
+  pool.on("error", (err) => {
+    console.error("[DB Pool] Unexpected error on idle client:", err.message);
+  });
+}
+var db = hasDatabase ? drizzle(pool, { schema: schema_exports }) : null;
 
 // server/storage.ts
 var storage = {
@@ -1354,10 +1555,27 @@ var storage = {
 };
 
 // server/seed.ts
+import { eq as eq2 } from "drizzle-orm";
+import bcrypt from "bcryptjs";
 async function seedDatabase() {
-  const existingRestaurants = await db.select().from(restaurants).limit(1);
-  if (existingRestaurants.length > 0) return;
+  try {
+    const existingRestaurants = await db.select().from(restaurants).limit(1);
+    if (existingRestaurants.length > 0) {
+      await seedAdminUser();
+      await seedDriverUser();
+      return;
+    }
+  } catch (err) {
+    if (err?.code === "42P01") {
+      console.warn("[Seed] Tables not created yet. Run database migrations first (npx drizzle-kit push).");
+      console.warn("[Seed] Skipping seed \u2014 tables will be created on next deployment.");
+      return;
+    }
+    throw err;
+  }
   console.log("Seeding database...");
+  await seedAdminUser();
+  await seedDriverUser();
   const [r1] = await db.insert(restaurants).values({
     name: "La Carreta Cuban Cuisine",
     cuisineType: "Cuban",
@@ -1627,6 +1845,54 @@ async function seedDatabase() {
   ]);
   console.log("Database seeded successfully!");
 }
+async function seedAdminUser() {
+  try {
+    const existing = await db.select().from(users).where(eq2(users.email, "admin@cryptoeats.net")).limit(1);
+    if (existing.length > 0) return;
+    const passwordHash = await bcrypt.hash("CryptoEats2026!", 12);
+    await db.insert(users).values({
+      email: "admin@cryptoeats.net",
+      passwordHash,
+      role: "admin"
+    });
+    console.log("[Seed] Default admin user created (admin@cryptoeats.net)");
+  } catch (err) {
+    console.warn("[Seed] Admin user seed warning:", err.message);
+  }
+}
+async function seedDriverUser() {
+  try {
+    const existing = await db.select().from(users).where(eq2(users.email, "driver@cryptoeats.net")).limit(1);
+    if (existing.length > 0) return;
+    const passwordHash = await bcrypt.hash("CryptoEats2026!", 12);
+    const [driverUser] = await db.insert(users).values({
+      email: "driver@cryptoeats.net",
+      passwordHash,
+      role: "driver"
+    }).returning();
+    await db.insert(drivers).values({
+      userId: driverUser.id,
+      firstName: "Demo",
+      lastName: "Driver",
+      licenseNumber: "FL-DL-2026-001",
+      vehicleInfo: "2024 Toyota Camry - White",
+      backgroundCheckStatus: "approved",
+      isAvailable: true,
+      currentLat: 25.7617,
+      currentLng: -80.1918,
+      rating: 4.9,
+      totalDeliveries: 47,
+      earningsData: { totalEarnings: 1842.5, weeklyEarnings: 385.75 },
+      bio: "Experienced delivery driver in the Miami area. Fast and reliable."
+    });
+    console.log("[Seed] Default driver user created (driver@cryptoeats.net)");
+  } catch (err) {
+    console.warn("[Seed] Driver user seed warning:", err.message);
+  }
+}
+
+// server/routes.ts
+import { eq as eq4, and as and2, desc as desc2 } from "drizzle-orm";
 
 // server/blockchain.ts
 import { ethers, JsonRpcProvider, Contract, formatUnits, parseUnits } from "ethers";
@@ -2064,85 +2330,22 @@ function getPaymasterStatus() {
   };
 }
 
-// server/services/payments.ts
-import Stripe from "stripe";
-var stripe = process.env.STRIPE_SECRET_KEY ? new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-12-18.acacia" }) : null;
-function isStripeConfigured() {
-  return stripe !== null;
-}
-async function createPaymentIntent(amount, orderId, customerEmail, metadata) {
-  if (!stripe) throw new Error("Stripe is not configured. Set STRIPE_SECRET_KEY.");
-  const intent = await stripe.paymentIntents.create({
-    amount: Math.round(amount * 100),
-    currency: "usd",
-    payment_method_types: ["card"],
-    capture_method: "manual",
-    metadata: {
-      orderId,
-      customerEmail,
-      platform: "cryptoeats",
-      ...metadata
-    },
-    receipt_email: customerEmail
-  });
-  return {
-    clientSecret: intent.client_secret,
-    intentId: intent.id,
-    amount: intent.amount,
-    currency: intent.currency
-  };
-}
-async function capturePayment(intentId) {
-  if (!stripe) throw new Error("Stripe is not configured.");
-  const captured = await stripe.paymentIntents.capture(intentId);
-  return {
-    success: captured.status === "succeeded",
-    intentId: captured.id,
-    status: captured.status
-  };
-}
-async function cancelPayment(intentId, reason) {
-  if (!stripe) throw new Error("Stripe is not configured.");
-  await stripe.paymentIntents.cancel(intentId, {
-    cancellation_reason: "requested_by_customer"
-  });
-  return { success: true };
-}
-async function createRefund(intentId, amount) {
-  if (!stripe) throw new Error("Stripe is not configured.");
-  const refund = await stripe.refunds.create({
-    payment_intent: intentId,
-    ...amount ? { amount: Math.round(amount * 100) } : {}
-  });
-  return { refundId: refund.id, status: refund.status };
-}
-async function getPaymentStatus(intentId) {
-  if (!stripe) throw new Error("Stripe is not configured.");
-  const intent = await stripe.paymentIntents.retrieve(intentId);
-  return {
-    intentId: intent.id,
-    status: intent.status,
-    amount: intent.amount / 100,
-    capturedAmount: intent.amount_received / 100
-  };
-}
-async function constructWebhookEvent(payload, signature) {
-  if (!stripe) throw new Error("Stripe is not configured.");
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-  if (!webhookSecret) throw new Error("STRIPE_WEBHOOK_SECRET not set.");
-  return stripe.webhooks.constructEvent(payload, signature, webhookSecret);
-}
-
 // server/replit_integrations/image/client.ts
 import { GoogleGenAI, Modality } from "@google/genai";
-var ai = new GoogleGenAI({
-  apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
-  httpOptions: {
-    apiVersion: "",
-    baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL
-  }
-});
+var ai = null;
+if (process.env.AI_INTEGRATIONS_GEMINI_API_KEY) {
+  ai = new GoogleGenAI({
+    apiKey: process.env.AI_INTEGRATIONS_GEMINI_API_KEY,
+    httpOptions: {
+      apiVersion: "",
+      baseUrl: process.env.AI_INTEGRATIONS_GEMINI_BASE_URL
+    }
+  });
+}
 async function generateImage(prompt) {
+  if (!ai) {
+    throw new Error("AI integration not configured. Set AI_INTEGRATIONS_GEMINI_API_KEY.");
+  }
   const response = await ai.models.generateContent({
     model: "gemini-2.5-flash-image",
     contents: [{ role: "user", parts: [{ text: prompt }] }],
@@ -2165,9 +2368,14 @@ async function generateImage(prompt) {
 import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
-var NFT_UPLOAD_DIR = path.join(process.cwd(), "uploads", "nft-art");
-if (!fs.existsSync(NFT_UPLOAD_DIR)) {
-  fs.mkdirSync(NFT_UPLOAD_DIR, { recursive: true });
+var isServerless = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var NFT_UPLOAD_DIR = isServerless ? path.join("/tmp", "uploads", "nft-art") : path.join(process.cwd(), "uploads", "nft-art");
+try {
+  if (!fs.existsSync(NFT_UPLOAD_DIR)) {
+    fs.mkdirSync(NFT_UPLOAD_DIR, { recursive: true });
+  }
+} catch (err) {
+  console.warn("[NFT-AI] Could not create upload directory:", err.message);
 }
 function buildPrompt(params) {
   const baseStyle = params.style || "digital art, vibrant colors, detailed illustration";
@@ -2226,49 +2434,6 @@ function getStylePresets() {
 }
 
 // server/services/payment-router.ts
-var StripePaymentProvider = class {
-  name = "stripe";
-  isConfigured() {
-    return isStripeConfigured();
-  }
-  async createPayment(order) {
-    const result = await createPaymentIntent(order.amount, order.id, order.customerEmail, order.metadata);
-    return {
-      clientSecret: result.clientSecret,
-      intentId: result.intentId,
-      provider: "stripe",
-      amount: result.amount,
-      currency: result.currency
-    };
-  }
-  async capturePayment(intentId) {
-    const result = await capturePayment(intentId);
-    return { ...result, provider: "stripe" };
-  }
-  async refundPayment(intentId, amount, reason) {
-    const result = await createRefund(intentId, amount);
-    return { success: true, refundId: result.refundId, status: result.status, provider: "stripe" };
-  }
-  async cancelPayment(intentId) {
-    return cancelPayment(intentId);
-  }
-  async getStatus(intentId) {
-    const result = await getPaymentStatus(intentId);
-    return { status: result.status, amount: result.amount };
-  }
-  async handleDispute(webhookData) {
-    if (webhookData.type === "charge.dispute.created") {
-      const disputeId = webhookData.data?.object?.id;
-      console.log(`[PaymentRouter] Stripe dispute created: ${disputeId}`);
-      return { resolution: "logged_for_review", provider: "stripe", disputeId };
-    }
-    return { resolution: "no_action", provider: "stripe" };
-  }
-  getFeeEstimate(amount, _type) {
-    const fee = amount * 0.029 + 0.3;
-    return { rate: "2.9% + $0.30", estimated: Math.round(fee * 100) / 100 };
-  }
-};
 var AdyenPaymentProvider = class {
   name = "adyen";
   isConfigured() {
@@ -2645,12 +2810,12 @@ var CoinbasePaymentProvider = class {
   }
 };
 var defaultRoutingConfig = {
-  defaultProvider: "stripe",
+  defaultProvider: "adyen",
   cryptoProvider: "coinbase",
   internationalProvider: "adyen",
   inPersonProvider: "godaddy",
   posProvider: "square",
-  fallbackChain: ["stripe", "adyen", "square", "godaddy"]
+  fallbackChain: ["adyen", "square", "godaddy", "coinbase"]
 };
 var PaymentRouter = class {
   providers = /* @__PURE__ */ new Map();
@@ -2662,7 +2827,6 @@ var PaymentRouter = class {
   };
   constructor(config) {
     this.config = { ...defaultRoutingConfig, ...config };
-    this.providers.set("stripe", new StripePaymentProvider());
     this.providers.set("adyen", new AdyenPaymentProvider());
     this.providers.set("godaddy", new GoDaddyPaymentProvider());
     this.providers.set("square", new SquarePaymentProvider());
@@ -2688,7 +2852,7 @@ var PaymentRouter = class {
         }
       }
     }
-    throw new Error("No payment providers are configured. Set at least STRIPE_SECRET_KEY.");
+    throw new Error("No payment providers are configured. Set credentials for at least one provider (Adyen, GoDaddy, Square, or Coinbase).");
   }
   async createPayment(order) {
     const preferred = this.selectProvider(order);
@@ -2755,146 +2919,15 @@ function getPaymentRouter() {
   return paymentRouter;
 }
 
-// server/services/notifications.ts
-import { Expo } from "expo-server-sdk";
-var expo = new Expo();
-var SENDGRID_API_URL = "https://api.sendgrid.com/v3/mail/send";
-var TWILIO_API_BASE = "https://api.twilio.com/2010-04-01";
-function isSendGridConfigured() {
-  return !!process.env.SENDGRID_API_KEY;
-}
-function isTwilioConfigured() {
-  return !!(process.env.TWILIO_SID && process.env.TWILIO_AUTH_TOKEN && process.env.TWILIO_PHONE);
-}
-async function sendEmail(to, subject, html, from) {
-  const apiKey = process.env.SENDGRID_API_KEY;
-  if (!apiKey) {
-    console.warn("[Email] SendGrid not configured, skipping email to:", to);
-    return { success: false };
-  }
-  const senderEmail = from || process.env.SENDGRID_FROM_EMAIL || "noreply@cryptoeats.io";
-  const response = await fetch(SENDGRID_API_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      personalizations: [{ to: [{ email: to }] }],
-      from: { email: senderEmail, name: "CryptoEats" },
-      subject,
-      content: [{ type: "text/html", value: html }]
-    })
-  });
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[Email] SendGrid error:", errorText);
-    return { success: false };
-  }
-  const messageId = response.headers.get("x-message-id") || void 0;
-  console.log(`[Email] Sent to ${to}: "${subject}"`);
-  return { success: true, messageId };
-}
-async function sendSMS(to, body) {
-  const sid = process.env.TWILIO_SID;
-  const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const fromPhone = process.env.TWILIO_PHONE;
-  if (!sid || !authToken || !fromPhone) {
-    console.warn("[SMS] Twilio not configured, skipping SMS to:", to);
-    return { success: false };
-  }
-  const url = `${TWILIO_API_BASE}/Accounts/${sid}/Messages.json`;
-  const auth = Buffer.from(`${sid}:${authToken}`).toString("base64");
-  const response = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Basic ${auth}`,
-      "Content-Type": "application/x-www-form-urlencoded"
-    },
-    body: new URLSearchParams({ To: to, From: fromPhone, Body: body }).toString()
-  });
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("[SMS] Twilio error:", errorText);
-    return { success: false };
-  }
-  const data = await response.json();
-  console.log(`[SMS] Sent to ${to}: "${body.substring(0, 50)}..."`);
-  return { success: true, sid: data.sid };
-}
-async function sendPushNotification(tokens, title, body, data) {
-  const validTokens = tokens.filter(Expo.isExpoPushToken);
-  if (validTokens.length === 0) {
-    console.warn("[Push] No valid Expo push tokens provided");
-    return { sent: 0, failed: 0 };
-  }
-  const messages2 = validTokens.map((token) => ({
-    to: token,
-    sound: "default",
-    title,
-    body,
-    data: data || {},
-    priority: "high"
-  }));
-  const chunks = expo.chunkPushNotifications(messages2);
-  let sent = 0;
-  let failed = 0;
-  for (const chunk of chunks) {
-    try {
-      const tickets = await expo.sendPushNotificationsAsync(chunk);
-      for (const ticket of tickets) {
-        if (ticket.status === "ok") sent++;
-        else failed++;
-      }
-    } catch (err) {
-      console.error("[Push] Error sending chunk:", err);
-      failed += chunk.length;
-    }
-  }
-  console.log(`[Push] Sent: ${sent}, Failed: ${failed}`);
-  return { sent, failed };
-}
-function buildOrderStatusEmail(orderId, status, driverName) {
-  const statusMessages = {
-    confirmed: "Your order has been confirmed and is being prepared.",
-    preparing: "The restaurant is preparing your food.",
-    ready: "Your order is ready for pickup!",
-    picked_up: `${driverName || "Your driver"} has picked up your order and is on the way.`,
-    delivered: "Your order has been delivered. Enjoy your meal!",
-    cancelled: "Your order has been cancelled. A refund will be processed."
-  };
-  const message = statusMessages[status] || `Order status updated to: ${status}`;
-  return `
-    <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;background:#1a1a2e;color:#eee;padding:32px;border-radius:12px;">
-      <div style="text-align:center;margin-bottom:24px;">
-        <h1 style="color:#00d4aa;margin:0;font-size:28px;">CryptoEats</h1>
-      </div>
-      <div style="background:#16213e;padding:20px;border-radius:8px;text-align:center;">
-        <p style="margin:0;color:#999;font-size:14px;">Order #${orderId.substring(0, 8).toUpperCase()}</p>
-        <h2 style="margin:8px 0;font-size:22px;color:#fff;text-transform:capitalize;">${status.replace("_", " ")}</h2>
-        <p style="margin:8px 0 0;color:#ccc;font-size:15px;">${message}</p>
-      </div>
-    </div>
-  `;
-}
-function buildOrderStatusSMS(orderId, status) {
-  const shortId = orderId.substring(0, 8).toUpperCase();
-  const messages2 = {
-    confirmed: `CryptoEats: Order #${shortId} confirmed! We're preparing your food.`,
-    preparing: `CryptoEats: Order #${shortId} is being prepared.`,
-    ready: `CryptoEats: Order #${shortId} is ready for pickup!`,
-    picked_up: `CryptoEats: Your driver has your order #${shortId} and is on the way!`,
-    delivered: `CryptoEats: Order #${shortId} delivered! Enjoy your meal.`,
-    cancelled: `CryptoEats: Order #${shortId} has been cancelled.`
-  };
-  return messages2[status] || `CryptoEats: Order #${shortId} status: ${status}`;
-}
+// server/routes.ts
+init_notifications();
 
 // server/services/uploads.ts
 import * as fs2 from "fs";
 import * as path2 from "path";
 import * as crypto2 from "crypto";
-var UPLOAD_DIR = path2.resolve(process.cwd(), "uploads");
+var isServerless2 = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var UPLOAD_DIR = isServerless2 ? path2.resolve("/tmp", "uploads") : path2.resolve(process.cwd(), "uploads");
 var MAX_FILE_SIZE = 10 * 1024 * 1024;
 var ALLOWED_MIME_TYPES = {
   image: ["image/jpeg", "image/png", "image/webp", "image/gif"],
@@ -3228,7 +3261,7 @@ function getErrorStats() {
 }
 
 // server/services/verification.ts
-import { eq as eq2 } from "drizzle-orm";
+import { eq as eq3 } from "drizzle-orm";
 var PERSONA_API_KEY = process.env.PERSONA_API_KEY;
 var PERSONA_TEMPLATE_ALCOHOL = process.env.PERSONA_TEMPLATE_ALCOHOL || "tmpl_age21_alcohol";
 var PERSONA_TEMPLATE_DRIVER = process.env.PERSONA_TEMPLATE_DRIVER || "tmpl_driver_background";
@@ -3352,17 +3385,17 @@ async function handleVerificationWebhook(event, data) {
     if (verificationStatus === "passed" && referenceId) {
       const isDriverVerification = templateId?.includes("driver");
       if (isDriverVerification) {
-        const driver = await db.select().from(drivers).where(eq2(drivers.userId, referenceId)).limit(1);
+        const driver = await db.select().from(drivers).where(eq3(drivers.userId, referenceId)).limit(1);
         if (driver.length > 0) {
           await db.update(drivers).set({
             backgroundCheckStatus: "passed"
-          }).where(eq2(drivers.userId, referenceId));
+          }).where(eq3(drivers.userId, referenceId));
           if (CHECKR_API_KEY) {
             await initiateBackgroundCheck(referenceId, driver[0]);
           }
         }
       } else {
-        const customer = await db.select().from(customers).where(eq2(customers.userId, referenceId)).limit(1);
+        const customer = await db.select().from(customers).where(eq3(customers.userId, referenceId)).limit(1);
         if (customer.length > 0) {
           await db.update(customers).set({
             idVerified: true,
@@ -3372,7 +3405,7 @@ async function handleVerificationWebhook(event, data) {
               method: "persona",
               expiresAt: new Date(Date.now() + 365 * 24 * 60 * 60 * 1e3).toISOString()
             })
-          }).where(eq2(customers.userId, referenceId));
+          }).where(eq3(customers.userId, referenceId));
         }
       }
     }
@@ -3453,11 +3486,11 @@ async function handleCheckrWebhook(event, data) {
     if (checkStatus === "passed") {
       await db.update(drivers).set({
         backgroundCheckStatus: "cleared"
-      }).where(eq2(drivers.userId, candidateId));
+      }).where(eq3(drivers.userId, candidateId));
     } else if (checkStatus === "failed") {
       await db.update(drivers).set({
         backgroundCheckStatus: "failed"
-      }).where(eq2(drivers.userId, candidateId));
+      }).where(eq3(drivers.userId, candidateId));
     }
     return { processed: true };
   } catch (error) {
@@ -3467,7 +3500,7 @@ async function handleCheckrWebhook(event, data) {
 }
 async function getVerificationStatus(userId, type) {
   if (type === "alcohol") {
-    const customer = await db.select().from(customers).where(eq2(customers.userId, userId)).limit(1);
+    const customer = await db.select().from(customers).where(eq3(customers.userId, userId)).limit(1);
     if (customer.length > 0 && customer[0].idVerified) {
       const verificationData = customer[0].idVerificationData ? JSON.parse(customer[0].idVerificationData) : {};
       if (verificationData.expiresAt && new Date(verificationData.expiresAt) < /* @__PURE__ */ new Date()) {
@@ -3483,7 +3516,7 @@ async function getVerificationStatus(userId, type) {
     }
     return { verified: false, status: "pending", method: "none" };
   }
-  const driver = await db.select().from(drivers).where(eq2(drivers.userId, userId)).limit(1);
+  const driver = await db.select().from(drivers).where(eq3(drivers.userId, userId)).limit(1);
   if (driver.length > 0) {
     const bgStatus = driver[0].backgroundCheckStatus || "pending";
     return {
@@ -3751,7 +3784,8 @@ var AWS_REGION = process.env.AWS_REGION || "us-east-1";
 var AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
 var AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
 var S3_BUCKET = process.env.S3_BUCKET || "cryptoeats-uploads";
-var LOCAL_UPLOAD_DIR = path3.resolve(process.cwd(), "uploads");
+var isServerless3 = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var LOCAL_UPLOAD_DIR = isServerless3 ? path3.resolve("/tmp", "uploads") : path3.resolve(process.cwd(), "uploads");
 function isS3Configured() {
   return !!(AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY && S3_BUCKET);
 }
@@ -3971,7 +4005,10 @@ function getCloudStorageStatus() {
 }
 
 // server/routes.ts
-var JWT_SECRET = process.env.SESSION_SECRET || "cryptoeats-secret-key";
+var isServerless4 = !!process.env.VERCEL || !!process.env.AWS_LAMBDA_FUNCTION_NAME;
+var JWT_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? (() => {
+  throw new Error("SESSION_SECRET must be set in production");
+})() : "dev-only-secret-not-for-production");
 function getParam(val) {
   return Array.isArray(val) ? val[0] : val;
 }
@@ -3993,6 +4030,33 @@ function authMiddleware(req, res, next) {
     res.status(401).json({ message: "Invalid or expired token" });
   }
 }
+function adminMiddleware(req, res, next) {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== "admin") {
+      res.status(403).json({ message: "Admin access required" });
+      return;
+    }
+    next();
+  });
+}
+function merchantMiddleware(req, res, next) {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== "restaurant" && req.user?.role !== "admin") {
+      res.status(403).json({ message: "Merchant or admin access required" });
+      return;
+    }
+    next();
+  });
+}
+function driverMiddleware(req, res, next) {
+  authMiddleware(req, res, () => {
+    if (req.user?.role !== "driver" && req.user?.role !== "admin") {
+      res.status(403).json({ message: "Driver or admin access required" });
+      return;
+    }
+    next();
+  });
+}
 var authLimiter = rateLimit({
   windowMs: 15 * 60 * 1e3,
   max: 20,
@@ -4000,7 +4064,9 @@ var authLimiter = rateLimit({
 });
 var upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 10 * 1024 * 1024 } });
 async function registerRoutes(app2) {
-  await seedDatabase();
+  if (!isServerless4) {
+    await seedDatabase();
+  }
   await initCache();
   app2.post("/api/auth/register", authLimiter, async (req, res) => {
     try {
@@ -4009,7 +4075,7 @@ async function registerRoutes(app2) {
       if (existing) {
         return res.status(400).json({ message: "Email already registered" });
       }
-      const passwordHash = await bcrypt.hash(data.password, 10);
+      const passwordHash = await bcrypt2.hash(data.password, 10);
       const user = await storage.createUser({ email: data.email, passwordHash, phone: data.phone, role: data.role });
       if (data.role === "driver") {
         await storage.createDriver({ userId: user.id, firstName: data.firstName, lastName: data.lastName });
@@ -4039,7 +4105,7 @@ async function registerRoutes(app2) {
       if (!user) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
-      const valid = await bcrypt.compare(data.password, user.passwordHash);
+      const valid = await bcrypt2.compare(data.password, user.passwordHash);
       if (!valid) {
         return res.status(401).json({ message: "Invalid credentials" });
       }
@@ -4055,6 +4121,79 @@ async function registerRoutes(app2) {
       res.json({ token, user: req.user });
     } catch (err) {
       res.status(400).json({ message: "Token refresh failed" });
+    }
+  });
+  app2.post("/api/auth/forgot-password", authLimiter, async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email) return res.status(400).json({ message: "Email is required" });
+      const user = await storage.getUserByEmail(email);
+      if (!user) {
+        return res.json({ message: "If an account with that email exists, a reset code has been sent." });
+      }
+      const code = Math.floor(1e5 + Math.random() * 9e5).toString();
+      const hashedCode = await bcrypt2.hash(code, 10);
+      const expiresAt = new Date(Date.now() + 15 * 60 * 1e3);
+      await db.insert(passwordResetTokens).values({
+        userId: user.id,
+        token: hashedCode,
+        expiresAt
+      });
+      const { sendEmail: sendEmail2 } = await Promise.resolve().then(() => (init_notifications(), notifications_exports));
+      await sendEmail2(
+        email,
+        "CryptoEats \u2014 Password Reset Code",
+        `<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0A0A0F; color: #ffffff; border-radius: 12px;">
+          <h2 style="color: #00D4AA; margin-bottom: 8px;">Password Reset</h2>
+          <p>Your password reset code is:</p>
+          <div style="font-size: 32px; font-weight: bold; letter-spacing: 8px; text-align: center; padding: 20px; background: #14141F; border-radius: 8px; color: #00D4AA; margin: 16px 0;">
+            ${code}
+          </div>
+          <p style="color: #888;">This code expires in 15 minutes. If you didn't request this, please ignore this email.</p>
+          <p style="color: #555; font-size: 12px; margin-top: 24px;">CryptoEats \u2014 Miami's Crypto-Native Delivery</p>
+        </div>`
+      );
+      console.log(`[Auth] Password reset code generated for ${email}${!process.env.SENDGRID_API_KEY ? ` (code: ${code})` : ""}`);
+      res.json({ message: "If an account with that email exists, a reset code has been sent." });
+    } catch (err) {
+      console.error("[Auth] Forgot password error:", err.message);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
+    }
+  });
+  app2.post("/api/auth/reset-password", authLimiter, async (req, res) => {
+    try {
+      const { email, code, newPassword } = req.body;
+      if (!email || !code || !newPassword) {
+        return res.status(400).json({ message: "Email, code, and new password are required" });
+      }
+      if (newPassword.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+      const user = await storage.getUserByEmail(email);
+      if (!user) return res.status(400).json({ message: "Invalid or expired reset code" });
+      const tokens = await db.select().from(passwordResetTokens).where(and2(
+        eq4(passwordResetTokens.userId, user.id),
+        eq4(passwordResetTokens.used, false)
+      )).orderBy(desc2(passwordResetTokens.createdAt)).limit(5);
+      let validToken = null;
+      for (const t of tokens) {
+        if (/* @__PURE__ */ new Date() > t.expiresAt) continue;
+        const match = await bcrypt2.compare(code, t.token);
+        if (match) {
+          validToken = t;
+          break;
+        }
+      }
+      if (!validToken) {
+        return res.status(400).json({ message: "Invalid or expired reset code" });
+      }
+      const newHash = await bcrypt2.hash(newPassword, 12);
+      await db.update(users).set({ passwordHash: newHash, updatedAt: /* @__PURE__ */ new Date() }).where(eq4(users.id, user.id));
+      await db.update(passwordResetTokens).set({ used: true }).where(eq4(passwordResetTokens.id, validToken.id));
+      res.json({ message: "Password has been reset successfully. You can now sign in." });
+    } catch (err) {
+      console.error("[Auth] Reset password error:", err.message);
+      res.status(500).json({ message: "Something went wrong. Please try again." });
     }
   });
   app2.get("/api/onboarding/status", authMiddleware, async (req, res) => {
@@ -4580,6 +4719,57 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
+  app2.get("/api/driver/dashboard/stats", driverMiddleware, async (req, res) => {
+    try {
+      const driver = await storage.getDriverByUserId(req.user.id);
+      if (!driver) return res.status(404).json({ message: "Driver profile not found" });
+      const earnings = await storage.getDriverEarnings(driver.id);
+      const status = await storage.getDriverStatus(driver.id);
+      const allOrders = await storage.getAllOrders();
+      const myOrders = allOrders.filter((o) => o.driverId === driver.id);
+      const activeOrders = myOrders.filter((o) => ["confirmed", "preparing", "ready", "picked_up", "on_the_way"].includes(o.status));
+      const completedOrders = myOrders.filter((o) => o.status === "delivered");
+      const pendingOrders = await storage.getPendingOrders();
+      const totalEarnings = earnings.reduce((sum, e) => sum + parseFloat(e.totalPayout || "0"), 0);
+      const todayEarnings = earnings.filter((e) => {
+        const d = new Date(e.createdAt);
+        const now = /* @__PURE__ */ new Date();
+        return d.toDateString() === now.toDateString();
+      }).reduce((sum, e) => sum + parseFloat(e.totalPayout || "0"), 0);
+      const totalTips = earnings.reduce((sum, e) => sum + parseFloat(e.tipAmount || "0"), 0);
+      res.json({
+        driver,
+        status: status || { status: "active", engagementTier: "active" },
+        stats: {
+          totalDeliveries: driver.totalDeliveries || completedOrders.length,
+          activeDeliveries: activeOrders.length,
+          availableOrders: pendingOrders.length,
+          totalEarnings: totalEarnings.toFixed(2),
+          todayEarnings: todayEarnings.toFixed(2),
+          totalTips: totalTips.toFixed(2),
+          rating: driver.rating || 5,
+          isAvailable: driver.isAvailable || false
+        },
+        activeOrders,
+        recentDeliveries: completedOrders.slice(-10).reverse(),
+        availableOrders: pendingOrders,
+        earnings
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  app2.get("/api/driver/dashboard/orders", driverMiddleware, async (req, res) => {
+    try {
+      const driver = await storage.getDriverByUserId(req.user.id);
+      if (!driver) return res.status(404).json({ message: "Driver profile not found" });
+      const allOrders = await storage.getAllOrders();
+      const myOrders = allOrders.filter((o) => o.driverId === driver.id);
+      res.json(myOrders);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
   app2.post("/api/payments/stripe/create-intent", authMiddleware, async (req, res) => {
     res.json({
       clientSecret: `pi_stub_${Date.now()}_secret`,
@@ -4631,7 +4821,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.get("/api/admin/restaurants", async (_req, res) => {
+  app2.get("/api/admin/restaurants", adminMiddleware, async (_req, res) => {
     try {
       const list = await storage.getAllRestaurants();
       res.json(list);
@@ -4639,7 +4829,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.put("/api/admin/restaurants/:id/approve", async (req, res) => {
+  app2.put("/api/admin/restaurants/:id/approve", adminMiddleware, async (req, res) => {
     try {
       const updated = await storage.updateRestaurant(getParam(req.params.id), { isApproved: true });
       if (!updated) return res.status(404).json({ message: "Restaurant not found" });
@@ -4648,7 +4838,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.get("/api/admin/drivers", async (_req, res) => {
+  app2.get("/api/admin/drivers", adminMiddleware, async (_req, res) => {
     try {
       const list = await storage.getAllDrivers();
       res.json(list);
@@ -4656,7 +4846,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.put("/api/admin/drivers/:id/approve", async (req, res) => {
+  app2.put("/api/admin/drivers/:id/approve", adminMiddleware, async (req, res) => {
     try {
       const updated = await storage.updateDriver(getParam(req.params.id), { backgroundCheckStatus: "approved" });
       if (!updated) return res.status(404).json({ message: "Driver not found" });
@@ -4665,7 +4855,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.get("/api/admin/orders", async (_req, res) => {
+  app2.get("/api/admin/orders", adminMiddleware, async (_req, res) => {
     try {
       const list = await storage.getAllOrders();
       res.json(list);
@@ -4673,7 +4863,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.get("/api/admin/tax/summary", async (_req, res) => {
+  app2.get("/api/admin/tax/summary", adminMiddleware, async (_req, res) => {
     try {
       const summary = await storage.getTaxSummary();
       res.json(summary);
@@ -4681,7 +4871,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.post("/api/admin/tax/file", async (req, res) => {
+  app2.post("/api/admin/tax/file", adminMiddleware, async (req, res) => {
     try {
       const remittance = await storage.createRemittance({
         jurisdictionId: req.body.jurisdictionId || null,
@@ -4696,7 +4886,7 @@ async function registerRoutes(app2) {
       res.status(400).json({ message: err.message });
     }
   });
-  app2.get("/api/admin/compliance", async (_req, res) => {
+  app2.get("/api/admin/compliance", adminMiddleware, async (_req, res) => {
     try {
       const logs = await storage.getComplianceLogs();
       res.json(logs);
@@ -4923,7 +5113,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.put("/api/admin/delivery-windows", async (req, res) => {
+  app2.put("/api/admin/delivery-windows", adminMiddleware, async (req, res) => {
     try {
       const { id, ...data } = req.body;
       if (!id) return res.status(400).json({ message: "Window ID required" });
@@ -4933,7 +5123,7 @@ async function registerRoutes(app2) {
       res.status(500).json({ message: err.message });
     }
   });
-  app2.get("/api/admin/drivers/status", async (_req, res) => {
+  app2.get("/api/admin/drivers/status", adminMiddleware, async (_req, res) => {
     try {
       const statuses = await storage.getAllDriverStatuses();
       res.json(statuses);
@@ -6145,6 +6335,159 @@ async function registerRoutes(app2) {
   app2.get("/api/cache/stats", authMiddleware, async (_req, res) => {
     res.json(getCacheStats());
   });
+  app2.get("/api/admin/stats", adminMiddleware, async (_req, res) => {
+    try {
+      const allOrders = await storage.getAllOrders();
+      const allRestaurants = await storage.getAllRestaurants();
+      const allDrivers = await storage.getAllDrivers();
+      const taxSummary = await storage.getTaxSummary();
+      const complianceLogs2 = await storage.getComplianceLogs();
+      const totalRevenue = allOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const totalDeliveryFees = allOrders.reduce((sum, o) => sum + parseFloat(o.deliveryFee || "0"), 0);
+      const totalTips = allOrders.reduce((sum, o) => sum + parseFloat(o.tip || "0"), 0);
+      const avgOrderValue = allOrders.length > 0 ? totalRevenue / allOrders.length : 0;
+      const ordersByStatus = {};
+      allOrders.forEach((o) => {
+        ordersByStatus[o.status] = (ordersByStatus[o.status] || 0) + 1;
+      });
+      const now = /* @__PURE__ */ new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const weekStart = new Date(todayStart);
+      weekStart.setDate(weekStart.getDate() - 7);
+      const todayOrders = allOrders.filter((o) => new Date(o.createdAt) >= todayStart);
+      const weekOrders = allOrders.filter((o) => new Date(o.createdAt) >= weekStart);
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const weekRevenue = weekOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const activeDrivers = allDrivers.filter((d) => d.isAvailable);
+      const approvedRestaurants = allRestaurants.filter((r) => r.isApproved);
+      const dailyOrders = {};
+      allOrders.forEach((o) => {
+        const day = new Date(o.createdAt).toISOString().split("T")[0];
+        if (!dailyOrders[day]) dailyOrders[day] = { count: 0, revenue: 0 };
+        dailyOrders[day].count++;
+        dailyOrders[day].revenue += parseFloat(o.total || "0");
+      });
+      const pilotBudget = {
+        total: 19745,
+        driverGuarantees: { budget: 1e4, label: "Driver Guarantees" },
+        customerPromos: { budget: 3e3, label: "Customer Promos" },
+        merchantIncentives: { budget: 2e3, label: "Merchant Incentives" },
+        marketing: { budget: 3e3, label: "Marketing" },
+        operations: { budget: 1745, label: "Operations" },
+        techHosting: { budget: 1e3, label: "Tech/Hosting" }
+      };
+      res.json({
+        overview: {
+          totalOrders: allOrders.length,
+          totalRevenue: totalRevenue.toFixed(2),
+          avgOrderValue: avgOrderValue.toFixed(2),
+          totalDeliveryFees: totalDeliveryFees.toFixed(2),
+          totalTips: totalTips.toFixed(2),
+          todayOrders: todayOrders.length,
+          todayRevenue: todayRevenue.toFixed(2),
+          weekOrders: weekOrders.length,
+          weekRevenue: weekRevenue.toFixed(2)
+        },
+        ordersByStatus,
+        restaurants: {
+          total: allRestaurants.length,
+          approved: approvedRestaurants.length,
+          pending: allRestaurants.length - approvedRestaurants.length,
+          cuisineBreakdown: allRestaurants.reduce((acc, r) => {
+            acc[r.cuisineType] = (acc[r.cuisineType] || 0) + 1;
+            return acc;
+          }, {})
+        },
+        drivers: {
+          total: allDrivers.length,
+          active: activeDrivers.length,
+          avgRating: allDrivers.length > 0 ? (allDrivers.reduce((s, d) => s + (d.rating || 0), 0) / allDrivers.length).toFixed(1) : "0",
+          totalDeliveries: allDrivers.reduce((s, d) => s + (d.totalDeliveries || 0), 0)
+        },
+        tax: taxSummary,
+        compliance: {
+          total: complianceLogs2.length,
+          recent: complianceLogs2.slice(0, 10)
+        },
+        dailyOrders,
+        pilotBudget
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  app2.get("/api/merchant/restaurants", merchantMiddleware, async (req, res) => {
+    try {
+      const allRestaurants = await storage.getAllRestaurants();
+      res.json(allRestaurants);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
+  app2.get("/api/merchant/stats/:restaurantId", merchantMiddleware, async (req, res) => {
+    try {
+      const restaurantId = getParam(req.params.restaurantId);
+      const restaurant = await storage.getRestaurantById(restaurantId);
+      if (!restaurant) return res.status(404).json({ message: "Restaurant not found" });
+      const allOrders = await storage.getAllOrders();
+      const restaurantOrders = allOrders.filter((o) => o.restaurantId === restaurantId);
+      const menuItemsList = await storage.getMenuItems(restaurantId);
+      const reviewsList = await storage.getReviewsByRestaurant(restaurantId);
+      const totalRevenue = restaurantOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const avgOrderValue = restaurantOrders.length > 0 ? totalRevenue / restaurantOrders.length : 0;
+      const deliveredOrders = restaurantOrders.filter((o) => o.status === "delivered");
+      const avgRating = reviewsList.length > 0 ? reviewsList.reduce((s, r) => s + (r.restaurantRating || 0), 0) / reviewsList.length : 0;
+      const now = /* @__PURE__ */ new Date();
+      const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayOrders = restaurantOrders.filter((o) => new Date(o.createdAt) >= todayStart);
+      const todayRevenue = todayOrders.reduce((sum, o) => sum + parseFloat(o.total || "0"), 0);
+      const ordersByStatus = {};
+      restaurantOrders.forEach((o) => {
+        ordersByStatus[o.status] = (ordersByStatus[o.status] || 0) + 1;
+      });
+      const popularItems = {};
+      restaurantOrders.forEach((o) => {
+        const items = o.items;
+        if (items) {
+          items.forEach((item) => {
+            const key = item.menuItemId || item.name;
+            if (!popularItems[key]) popularItems[key] = { count: 0, revenue: 0, name: item.name };
+            popularItems[key].count += item.quantity;
+            popularItems[key].revenue += item.price * item.quantity;
+          });
+        }
+      });
+      const dailyRevenue = {};
+      restaurantOrders.forEach((o) => {
+        const day = new Date(o.createdAt).toISOString().split("T")[0];
+        if (!dailyRevenue[day]) dailyRevenue[day] = { orders: 0, revenue: 0 };
+        dailyRevenue[day].orders++;
+        dailyRevenue[day].revenue += parseFloat(o.total || "0");
+      });
+      res.json({
+        restaurant,
+        overview: {
+          totalOrders: restaurantOrders.length,
+          deliveredOrders: deliveredOrders.length,
+          totalRevenue: totalRevenue.toFixed(2),
+          avgOrderValue: avgOrderValue.toFixed(2),
+          avgRating: avgRating.toFixed(1),
+          totalReviews: reviewsList.length,
+          todayOrders: todayOrders.length,
+          todayRevenue: todayRevenue.toFixed(2),
+          menuItemCount: menuItemsList.length
+        },
+        ordersByStatus,
+        popularItems: Object.values(popularItems).sort((a, b) => b.count - a.count).slice(0, 10),
+        recentOrders: restaurantOrders.slice(0, 20),
+        reviews: reviewsList.slice(0, 20),
+        dailyRevenue,
+        menuItems: menuItemsList
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  });
   app2.post("/api/cache/invalidate", authMiddleware, async (req, res) => {
     try {
       const { type, restaurantId } = req.body;
@@ -6234,9 +6577,9 @@ import rateLimit2 from "express-rate-limit";
 import jwt2 from "jsonwebtoken";
 
 // server/platform-storage.ts
-import { eq as eq3, desc as desc2, sql as sql4 } from "drizzle-orm";
+import { eq as eq5, desc as desc3, sql as sql4 } from "drizzle-orm";
 import crypto4 from "crypto";
-import bcrypt2 from "bcryptjs";
+import bcrypt3 from "bcryptjs";
 var TIER_LIMITS = {
   free: { rateLimit: 100, dailyLimit: 1e3, permissions: ["read"] },
   starter: { rateLimit: 500, dailyLimit: 1e4, permissions: ["read", "write"] },
@@ -6262,7 +6605,7 @@ var platformStorage = {
   async createApiKey(data) {
     const publicKey = generatePublicKey();
     const secretKey = generateSecretKey();
-    const secretKeyHash = await bcrypt2.hash(secretKey, 10);
+    const secretKeyHash = await bcrypt3.hash(secretKey, 10);
     const tier = data.tier || "free";
     const limits = getTierLimits(tier);
     const [apiKey] = await db.insert(apiKeys).values({
@@ -6278,39 +6621,39 @@ var platformStorage = {
     return { apiKey, secretKey };
   },
   async getApiKeyByPublicKey(publicKey) {
-    const [key] = await db.select().from(apiKeys).where(eq3(apiKeys.publicKey, publicKey)).limit(1);
+    const [key] = await db.select().from(apiKeys).where(eq5(apiKeys.publicKey, publicKey)).limit(1);
     return key;
   },
   async validateSecretKey(apiKey, secretKey) {
-    return bcrypt2.compare(secretKey, apiKey.secretKeyHash);
+    return bcrypt3.compare(secretKey, apiKey.secretKeyHash);
   },
   async getApiKeysByUserId(userId) {
-    return db.select().from(apiKeys).where(eq3(apiKeys.userId, userId)).orderBy(desc2(apiKeys.createdAt));
+    return db.select().from(apiKeys).where(eq5(apiKeys.userId, userId)).orderBy(desc3(apiKeys.createdAt));
   },
   async updateApiKey(id, data) {
-    const [key] = await db.update(apiKeys).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(apiKeys.id, id)).returning();
+    const [key] = await db.update(apiKeys).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq5(apiKeys.id, id)).returning();
     return key;
   },
   async rotateApiKey(id) {
     const secretKey = generateSecretKey();
-    const secretKeyHash = await bcrypt2.hash(secretKey, 10);
+    const secretKeyHash = await bcrypt3.hash(secretKey, 10);
     const publicKey = generatePublicKey();
-    const [key] = await db.update(apiKeys).set({ publicKey, secretKeyHash, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(apiKeys.id, id)).returning();
+    const [key] = await db.update(apiKeys).set({ publicKey, secretKeyHash, updatedAt: /* @__PURE__ */ new Date() }).where(eq5(apiKeys.id, id)).returning();
     if (!key) return void 0;
     return { apiKey: key, secretKey };
   },
   async deactivateApiKey(id) {
-    const [key] = await db.update(apiKeys).set({ isActive: false, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(apiKeys.id, id)).returning();
+    const [key] = await db.update(apiKeys).set({ isActive: false, updatedAt: /* @__PURE__ */ new Date() }).where(eq5(apiKeys.id, id)).returning();
     return key;
   },
   async incrementDailyRequests(id) {
     await db.update(apiKeys).set({
       dailyRequests: sql4`${apiKeys.dailyRequests} + 1`,
       lastUsedAt: /* @__PURE__ */ new Date()
-    }).where(eq3(apiKeys.id, id));
+    }).where(eq5(apiKeys.id, id));
   },
   async resetDailyRequests(id) {
-    await db.update(apiKeys).set({ dailyRequests: 0, lastResetAt: /* @__PURE__ */ new Date() }).where(eq3(apiKeys.id, id));
+    await db.update(apiKeys).set({ dailyRequests: 0, lastResetAt: /* @__PURE__ */ new Date() }).where(eq5(apiKeys.id, id));
   },
   async checkRateLimit(apiKey) {
     const limits = getTierLimits(apiKey.tier);
@@ -6340,21 +6683,21 @@ var platformStorage = {
     return webhook;
   },
   async getWebhooksByApiKey(apiKeyId) {
-    return db.select().from(webhooks).where(eq3(webhooks.apiKeyId, apiKeyId)).orderBy(desc2(webhooks.createdAt));
+    return db.select().from(webhooks).where(eq5(webhooks.apiKeyId, apiKeyId)).orderBy(desc3(webhooks.createdAt));
   },
   async getWebhookById(id) {
-    const [webhook] = await db.select().from(webhooks).where(eq3(webhooks.id, id)).limit(1);
+    const [webhook] = await db.select().from(webhooks).where(eq5(webhooks.id, id)).limit(1);
     return webhook;
   },
   async updateWebhook(id, data) {
-    const [webhook] = await db.update(webhooks).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(webhooks.id, id)).returning();
+    const [webhook] = await db.update(webhooks).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq5(webhooks.id, id)).returning();
     return webhook;
   },
   async deleteWebhook(id) {
-    await db.update(webhooks).set({ isActive: false }).where(eq3(webhooks.id, id));
+    await db.update(webhooks).set({ isActive: false }).where(eq5(webhooks.id, id));
   },
   async getWebhooksForEvent(event) {
-    const allWebhooks = await db.select().from(webhooks).where(eq3(webhooks.isActive, true));
+    const allWebhooks = await db.select().from(webhooks).where(eq5(webhooks.isActive, true));
     return allWebhooks.filter((w) => {
       const events = w.events;
       return events.includes(event) || events.includes("*");
@@ -6365,25 +6708,25 @@ var platformStorage = {
     return delivery;
   },
   async getWebhookDeliveries(webhookId, limit = 50) {
-    return db.select().from(webhookDeliveries).where(eq3(webhookDeliveries.webhookId, webhookId)).orderBy(desc2(webhookDeliveries.deliveredAt)).limit(limit);
+    return db.select().from(webhookDeliveries).where(eq5(webhookDeliveries.webhookId, webhookId)).orderBy(desc3(webhookDeliveries.deliveredAt)).limit(limit);
   },
   async createIntegrationPartner(data) {
     const [partner] = await db.insert(integrationPartners).values(data).returning();
     return partner;
   },
   async getIntegrationPartners(apiKeyId) {
-    return db.select().from(integrationPartners).where(eq3(integrationPartners.apiKeyId, apiKeyId));
+    return db.select().from(integrationPartners).where(eq5(integrationPartners.apiKeyId, apiKeyId));
   },
   async createWhiteLabelConfig(data) {
     const [config] = await db.insert(whiteLabelConfigs).values(data).returning();
     return config;
   },
   async getWhiteLabelConfig(apiKeyId) {
-    const [config] = await db.select().from(whiteLabelConfigs).where(eq3(whiteLabelConfigs.apiKeyId, apiKeyId)).limit(1);
+    const [config] = await db.select().from(whiteLabelConfigs).where(eq5(whiteLabelConfigs.apiKeyId, apiKeyId)).limit(1);
     return config;
   },
   async updateWhiteLabelConfig(id, data) {
-    const [config] = await db.update(whiteLabelConfigs).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(whiteLabelConfigs.id, id)).returning();
+    const [config] = await db.update(whiteLabelConfigs).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq5(whiteLabelConfigs.id, id)).returning();
     return config;
   },
   async createAuditLog(data) {
@@ -6391,31 +6734,31 @@ var platformStorage = {
     return log2;
   },
   async getAuditLogs(apiKeyId, limit = 100) {
-    return db.select().from(apiAuditLogs).where(eq3(apiAuditLogs.apiKeyId, apiKeyId)).orderBy(desc2(apiAuditLogs.createdAt)).limit(limit);
+    return db.select().from(apiAuditLogs).where(eq5(apiAuditLogs.apiKeyId, apiKeyId)).orderBy(desc3(apiAuditLogs.createdAt)).limit(limit);
   },
   async createInboundOrder(data) {
     const [order] = await db.insert(inboundOrders).values(data).returning();
     return order;
   },
   async getInboundOrders(apiKeyId) {
-    return db.select().from(inboundOrders).where(eq3(inboundOrders.apiKeyId, apiKeyId)).orderBy(desc2(inboundOrders.createdAt));
+    return db.select().from(inboundOrders).where(eq5(inboundOrders.apiKeyId, apiKeyId)).orderBy(desc3(inboundOrders.createdAt));
   },
   async getInboundOrderById(id) {
-    const [order] = await db.select().from(inboundOrders).where(eq3(inboundOrders.id, id)).limit(1);
+    const [order] = await db.select().from(inboundOrders).where(eq5(inboundOrders.id, id)).limit(1);
     return order;
   },
   async updateInboundOrder(id, data) {
-    const [order] = await db.update(inboundOrders).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq3(inboundOrders.id, id)).returning();
+    const [order] = await db.update(inboundOrders).set({ ...data, updatedAt: /* @__PURE__ */ new Date() }).where(eq5(inboundOrders.id, id)).returning();
     return order;
   },
   async getAllApiKeys() {
-    return db.select().from(apiKeys).orderBy(desc2(apiKeys.createdAt));
+    return db.select().from(apiKeys).orderBy(desc3(apiKeys.createdAt));
   },
   async getAllWebhooks() {
-    return db.select().from(webhooks).orderBy(desc2(webhooks.createdAt));
+    return db.select().from(webhooks).orderBy(desc3(webhooks.createdAt));
   },
   async getAllInboundOrders() {
-    return db.select().from(inboundOrders).orderBy(desc2(inboundOrders.createdAt));
+    return db.select().from(inboundOrders).orderBy(desc3(inboundOrders.createdAt));
   }
 };
 
@@ -7144,7 +7487,7 @@ var options = {
       description: "The Delivery Layer \u2014 Full-featured food & alcohol delivery platform with blockchain integration, NFT rewards, escrow payments, and open API platform. Build on top of CryptoEats to power your own delivery experience.",
       contact: {
         name: "CryptoEats Developer Support",
-        email: "developers@cryptoeats.io"
+        email: "developers@cryptoeats.net"
       },
       license: {
         name: "Proprietary"
@@ -7702,6 +8045,7 @@ function configureExpoAndLanding(app2) {
     next();
   });
   app2.use("/assets", express.static(path4.resolve(process.cwd(), "assets")));
+  app2.use("/public", express.static(path4.resolve(process.cwd(), "public")));
   app2.use(express.static(path4.resolve(process.cwd(), "static-build")));
   log("Expo routing: Checking expo-platform header on / and /manifest");
 }
@@ -7741,6 +8085,10 @@ function setupErrorHandler(app2) {
   app.get("/merchant", (req, res) => {
     const merchantPath = path4.resolve(process.cwd(), "server", "templates", "merchant-dashboard.html");
     res.sendFile(merchantPath);
+  });
+  app.get("/driver", (req, res) => {
+    const driverPath = path4.resolve(process.cwd(), "server", "templates", "driver-dashboard.html");
+    res.sendFile(driverPath);
   });
   app.get("/developers", (req, res) => {
     const devPortalPath = path4.resolve(process.cwd(), "server", "templates", "developer-portal.html");
