@@ -1,13 +1,5 @@
-import {
-  createPaymentIntent,
-  capturePayment,
-  cancelPayment,
-  createRefund,
-  getPaymentStatus,
-  isStripeConfigured,
-} from "./payments";
 
-export type PaymentProviderKey = "stripe" | "adyen" | "godaddy" | "square" | "coinbase";
+export type PaymentProviderKey = "adyen" | "godaddy" | "square" | "coinbase";
 
 export interface PaymentOrder {
   id: string;
@@ -59,58 +51,6 @@ interface PaymentProvider {
   getStatus(intentId: string): Promise<{ status: string; amount: number }>;
   handleDispute(webhookData: any): Promise<DisputeResult>;
   getFeeEstimate(amount: number, type: string): { rate: string; estimated: number };
-}
-
-class StripePaymentProvider implements PaymentProvider {
-  name: PaymentProviderKey = "stripe";
-
-  isConfigured(): boolean {
-    return isStripeConfigured();
-  }
-
-  async createPayment(order: PaymentOrder): Promise<PaymentResult> {
-    const result = await createPaymentIntent(order.amount, order.id, order.customerEmail, order.metadata);
-    return {
-      clientSecret: result.clientSecret,
-      intentId: result.intentId,
-      provider: "stripe",
-      amount: result.amount,
-      currency: result.currency,
-    };
-  }
-
-  async capturePayment(intentId: string): Promise<CaptureResult> {
-    const result = await capturePayment(intentId);
-    return { ...result, provider: "stripe" };
-  }
-
-  async refundPayment(intentId: string, amount: number, reason?: string): Promise<RefundResult> {
-    const result = await createRefund(intentId, amount);
-    return { success: true, refundId: result.refundId, status: result.status, provider: "stripe" };
-  }
-
-  async cancelPayment(intentId: string): Promise<{ success: boolean }> {
-    return cancelPayment(intentId);
-  }
-
-  async getStatus(intentId: string): Promise<{ status: string; amount: number }> {
-    const result = await getPaymentStatus(intentId);
-    return { status: result.status, amount: result.amount };
-  }
-
-  async handleDispute(webhookData: any): Promise<DisputeResult> {
-    if (webhookData.type === "charge.dispute.created") {
-      const disputeId = webhookData.data?.object?.id;
-      console.log(`[PaymentRouter] Stripe dispute created: ${disputeId}`);
-      return { resolution: "logged_for_review", provider: "stripe", disputeId };
-    }
-    return { resolution: "no_action", provider: "stripe" };
-  }
-
-  getFeeEstimate(amount: number, _type: string): { rate: string; estimated: number } {
-    const fee = amount * 0.029 + 0.30;
-    return { rate: "2.9% + $0.30", estimated: Math.round(fee * 100) / 100 };
-  }
 }
 
 class AdyenPaymentProvider implements PaymentProvider {
@@ -568,12 +508,12 @@ export interface RoutingConfig {
 }
 
 const defaultRoutingConfig: RoutingConfig = {
-  defaultProvider: "stripe",
+  defaultProvider: "adyen",
   cryptoProvider: "coinbase",
   internationalProvider: "adyen",
   inPersonProvider: "godaddy",
   posProvider: "square",
-  fallbackChain: ["stripe", "adyen", "square", "godaddy"],
+  fallbackChain: ["adyen", "square", "godaddy", "coinbase"],
 };
 
 class PaymentRouter {
@@ -588,7 +528,6 @@ class PaymentRouter {
   constructor(config?: Partial<RoutingConfig>) {
     this.config = { ...defaultRoutingConfig, ...config };
 
-    this.providers.set("stripe", new StripePaymentProvider());
     this.providers.set("adyen", new AdyenPaymentProvider());
     this.providers.set("godaddy", new GoDaddyPaymentProvider());
     this.providers.set("square", new SquarePaymentProvider());
@@ -618,7 +557,7 @@ class PaymentRouter {
       }
     }
 
-    throw new Error("No payment providers are configured. Set at least STRIPE_SECRET_KEY.");
+    throw new Error("No payment providers are configured. Set credentials for at least one provider (Adyen, GoDaddy, Square, or Coinbase).");
   }
 
   async createPayment(order: PaymentOrder): Promise<PaymentResult> {

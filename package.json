@@ -80,7 +80,6 @@
     "react-native-worklets": "0.5.1",
     "socket.io": "^4.8.3",
     "square": "^44.0.0",
-    "stripe": "^20.3.1",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
     "tsx": "^4.21.0",
