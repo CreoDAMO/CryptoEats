@@ -144,11 +144,15 @@ function configureStaticWeb(app: express.Application) {
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
   
   app.use((req: Request, res: Response) => {
-    if (!req.path.startsWith("/api")) {
+    const reqPath = req.path;
+    if (!reqPath.startsWith("/api") && !reqPath.startsWith("/admin") && !reqPath.startsWith("/merchant") && !reqPath.startsWith("/driver") && !reqPath.startsWith("/developers") && !reqPath.startsWith("/legal") && !reqPath.startsWith("/widget.js")) {
       const indexPath = path.resolve(process.cwd(), "static-build", "index.html");
       return res.sendFile(indexPath);
     }
-    res.status(404).json({ error: "Not found" });
+    if (!reqPath.startsWith("/api")) {
+      return res.status(404).json({ error: "Not found" });
+    }
+    res.status(404).json({ error: "API endpoint not found" });
   });
 }
 
@@ -254,8 +258,8 @@ function setupErrorHandler(app: express.Application) {
   registerPlatformRoutes(app);
   const server = await registerRoutes(app);
 
-  configureStaticWeb(app);
   setupErrorHandler(app);
+  configureStaticWeb(app);
 
   const port = parseInt(process.env.PORT || "5000", 10);
   server.listen(
