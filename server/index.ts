@@ -141,7 +141,6 @@ function configureStaticWeb(app: express.Application) {
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
   app.use("/public", express.static(path.resolve(process.cwd(), "public")));
-  
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
   
   app.use((req: Request, res: Response) => {
@@ -198,16 +197,19 @@ function setupErrorHandler(app: express.Application) {
 
   app.get('/admin', (req, res) => {
     const adminPath = path.resolve(process.cwd(), 'server', 'templates', 'admin-dashboard.html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.sendFile(adminPath);
   });
 
   app.get('/merchant', (req, res) => {
     const merchantPath = path.resolve(process.cwd(), 'server', 'templates', 'merchant-dashboard.html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.sendFile(merchantPath);
   });
 
   app.get('/driver', (req, res) => {
     const driverPath = path.resolve(process.cwd(), 'server', 'templates', 'driver-dashboard.html');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.sendFile(driverPath);
   });
 
@@ -250,11 +252,9 @@ function setupErrorHandler(app: express.Application) {
   }));
 
   registerPlatformRoutes(app);
-
-  configureStaticWeb(app);
-
   const server = await registerRoutes(app);
 
+  configureStaticWeb(app);
   setupErrorHandler(app);
 
   const port = parseInt(process.env.PORT || "5000", 10);
