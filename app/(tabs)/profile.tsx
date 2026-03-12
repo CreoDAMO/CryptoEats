@@ -217,7 +217,14 @@ export default function ProfileScreen() {
             <Text style={[styles.sectionTitle, { color: c.text, fontFamily: 'DMSans_600SemiBold' }]}>Management</Text>
           </View>
           <Pressable
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); WebBrowser.openBrowserAsync(`${getApiUrl()}/admin`); }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if (Platform.OS === 'web') {
+                window.open('/admin', '_blank');
+              } else {
+                WebBrowser.openBrowserAsync(`${getApiUrl()}/admin`);
+              }
+            }}
             style={[styles.web3Row, { borderBottomColor: c.border }]}
           >
             <View style={[styles.web3Icon, { backgroundColor: '#FF6B3522' }]}>
@@ -230,7 +237,14 @@ export default function ProfileScreen() {
             <Feather name="external-link" size={16} color={c.textTertiary} />
           </Pressable>
           <Pressable
-            onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); WebBrowser.openBrowserAsync(`${getApiUrl()}/merchant`); }}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              if (Platform.OS === 'web') {
+                window.open('/merchant', '_blank');
+              } else {
+                WebBrowser.openBrowserAsync(`${getApiUrl()}/merchant`);
+              }
+            }}
             style={styles.web3Row}
           >
             <View style={[styles.web3Icon, { backgroundColor: c.orangeLight }]}>
