@@ -136,79 +136,21 @@ function serveExpoManifest(platform: string, res: Response) {
   res.send(manifest);
 }
 
-function serveLandingPage({
-  req,
-  res,
-  landingPageTemplate,
-  appName,
-}: {
-  req: Request;
-  res: Response;
-  landingPageTemplate: string;
-  appName: string;
-}) {
-  const forwardedProto = req.header("x-forwarded-proto");
-  const protocol = forwardedProto || req.protocol || "https";
-  const forwardedHost = req.header("x-forwarded-host");
-  const host = forwardedHost || req.get("host");
-  const baseUrl = `${protocol}://${host}`;
-  const expsUrl = `${host}`;
-
-  log(`baseUrl`, baseUrl);
-  log(`expsUrl`, expsUrl);
-
-  const html = landingPageTemplate
-    .replace(/BASE_URL_PLACEHOLDER/g, baseUrl)
-    .replace(/EXPS_URL_PLACEHOLDER/g, expsUrl)
-    .replace(/APP_NAME_PLACEHOLDER/g, appName);
-
-  res.setHeader("Content-Type", "text/html; charset=utf-8");
-  res.status(200).send(html);
-}
-
-function configureExpoAndLanding(app: express.Application) {
-  const templatePath = path.resolve(
-    process.cwd(),
-    "server",
-    "templates",
-    "landing-page.html",
-  );
-  const landingPageTemplate = fs.readFileSync(templatePath, "utf-8");
-  const appName = getAppName();
-
-  log("Serving static Expo files with dynamic manifest routing");
-
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    if (req.path.startsWith("/api")) {
-      return next();
-    }
-
-    if (req.path !== "/" && req.path !== "/manifest") {
-      return next();
-    }
-
-    const platform = req.header("expo-platform");
-    if (platform && (platform === "ios" || platform === "android")) {
-      return serveExpoManifest(platform, res);
-    }
-
-    if (req.path === "/") {
-      return serveLandingPage({
-        req,
-        res,
-        landingPageTemplate,
-        appName,
-      });
-    }
-
-    next();
-  });
+function configureStaticWeb(app: express.Application) {
+  log("Serving web app from static-build");
 
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
   app.use("/public", express.static(path.resolve(process.cwd(), "public")));
+  
   app.use(express.static(path.resolve(process.cwd(), "static-build")));
-
-  log("Expo routing: Checking expo-platform header on / and /manifest");
+  
+  app.use((req: Request, res: Response) => {
+    if (!req.path.startsWith("/api")) {
+      const indexPath = path.resolve(process.cwd(), "static-build", "index.html");
+      return res.sendFile(indexPath);
+    }
+    res.status(404).json({ error: "Not found" });
+  });
 }
 
 function setupErrorHandler(app: express.Application) {
@@ -309,7 +251,7 @@ function setupErrorHandler(app: express.Application) {
 
   registerPlatformRoutes(app);
 
-  configureExpoAndLanding(app);
+  configureStaticWeb(app);
 
   const server = await registerRoutes(app);
 
