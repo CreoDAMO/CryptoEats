@@ -324,9 +324,74 @@ export default function ProfileScreen() {
             <Row iconBg="#0052FF22" iconColor="#0052FF" icon="wallet-outline" label="Wallet" sublabel="Connect wallet, view balances" onPress={() => router.push('/wallet')} />
             <Row iconBg="#FFD70022" iconColor="#FFD700" icon="trophy-outline" label="NFT Rewards" sublabel="Milestones & achievements" onPress={() => router.push('/nft-collection')} />
             <Row iconBg={c.accentLight} iconColor={c.accent} icon="storefront-outline" label="Marketplace" sublabel="Trade & collect NFTs" onPress={() => router.push('/marketplace')} />
-            <Row iconBg="#7B61FF22" iconColor="#7B61FF" icon="color-wand-outline" label="AI NFT Studio" sublabel="Create AI-generated artwork" onPress={() => router.push('/generate-nft' as any)} />
-            <Row iconBg="#0052FF22" iconColor="#0052FF" icon="add-circle-outline" label="Buy Crypto" sublabel="Coinbase Onramp · cards, Apple Pay" onPress={() => router.push('/buy-crypto')} />
-            <Row iconBg="#FF6B3522" iconColor="#FF6B35" icon="arrow-up-circle-outline" label="Cash Out" sublabel="Coinbase Offramp · crypto to bank" onPress={() => router.push('/cash-out')} isLast />
+            <Row iconBg="#7B61FF22" iconColor="#7B61FF" icon="color-wand-outline" label="AI NFT Studio" sublabel="Create AI-generated artwork" onPress={() => router.push('/generate-nft' as any)} isLast />
+          </View>
+
+          {/* Crypto Finance Cards */}
+          <View style={styles.cryptoFinanceRow}>
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/buy-crypto'); }}
+              style={({ pressed }) => [styles.financeCard, { opacity: pressed ? 0.88 : 1 }]}
+            >
+              <LinearGradient
+                colors={['#0036CC', '#0052FF', '#1A6AFF']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.financeCardGradient}
+              >
+                <View style={styles.financeCardTop}>
+                  <View style={[styles.financeCardIconWrap, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                    <Ionicons name="add-circle-outline" size={20} color="#fff" />
+                  </View>
+                  <View style={[styles.financeCardBadge, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                    <Text style={[styles.financeCardBadgeText, { fontFamily: 'DMSans_600SemiBold' }]}>Coinbase</Text>
+                  </View>
+                </View>
+                <Text style={[styles.financeCardTitle, { fontFamily: 'DMSans_700Bold' }]}>Buy Crypto</Text>
+                <Text style={[styles.financeCardSub, { fontFamily: 'DMSans_400Regular' }]}>
+                  Cards · Apple Pay · Google Pay
+                </Text>
+                <View style={styles.financeCardTokens}>
+                  {['USDC', 'ETH', 'BTC'].map(token => (
+                    <View key={token} style={[styles.financeTokenPill, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                      <Text style={[styles.financeTokenText, { fontFamily: 'DMSans_600SemiBold' }]}>{token}</Text>
+                    </View>
+                  ))}
+                </View>
+              </LinearGradient>
+            </Pressable>
+
+            <Pressable
+              onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/cash-out'); }}
+              style={({ pressed }) => [styles.financeCard, { opacity: pressed ? 0.88 : 1 }]}
+            >
+              <LinearGradient
+                colors={['#B83B00', '#FF6B35', '#FF8C5A']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.financeCardGradient}
+              >
+                <View style={styles.financeCardTop}>
+                  <View style={[styles.financeCardIconWrap, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                    <Ionicons name="arrow-up-circle-outline" size={20} color="#fff" />
+                  </View>
+                  <View style={[styles.financeCardBadge, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                    <Text style={[styles.financeCardBadgeText, { fontFamily: 'DMSans_600SemiBold' }]}>Offramp</Text>
+                  </View>
+                </View>
+                <Text style={[styles.financeCardTitle, { fontFamily: 'DMSans_700Bold' }]}>Cash Out</Text>
+                <Text style={[styles.financeCardSub, { fontFamily: 'DMSans_400Regular' }]}>
+                  Crypto to bank account
+                </Text>
+                <View style={styles.financeCardTokens}>
+                  {['Bank', 'ACH', 'Wire'].map(method => (
+                    <View key={method} style={[styles.financeTokenPill, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                      <Text style={[styles.financeTokenText, { fontFamily: 'DMSans_600SemiBold' }]}>{method}</Text>
+                    </View>
+                  ))}
+                </View>
+              </LinearGradient>
+            </Pressable>
           </View>
 
           {/* Join CryptoEats */}
@@ -618,4 +683,65 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   chipText: { fontSize: 13 },
+
+  cryptoFinanceRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  financeCard: {
+    flex: 1,
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  financeCardGradient: {
+    padding: 18,
+    gap: 8,
+    minHeight: 160,
+  },
+  financeCardTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  financeCardIconWrap: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  financeCardBadge: {
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  financeCardBadgeText: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.9)',
+  },
+  financeCardTitle: {
+    fontSize: 18,
+    color: '#fff',
+  },
+  financeCardSub: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.7)',
+    lineHeight: 15,
+  },
+  financeCardTokens: {
+    flexDirection: 'row',
+    gap: 6,
+    marginTop: 6,
+    flexWrap: 'wrap',
+  },
+  financeTokenPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  financeTokenText: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.9)',
+  },
 });
