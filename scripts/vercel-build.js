@@ -2,6 +2,23 @@ const { execSync } = require('child_process');
 const path = require('path');
 const cwd = path.resolve(__dirname, '..');
 
+console.log('[CryptoEats] Building web app with Expo...');
+try {
+  const domain = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL || '';
+  const env = { ...process.env };
+  if (domain) {
+    env.EXPO_PUBLIC_DOMAIN = domain;
+    console.log(`[CryptoEats] Using domain: ${domain}`);
+  } else {
+    console.log('[CryptoEats] No domain set — web app will use relative URLs');
+    delete env.EXPO_PUBLIC_DOMAIN;
+  }
+  execSync('npx expo export --platform web --output-dir static-build', { stdio: 'inherit', cwd, env });
+  console.log('[CryptoEats] Web build complete.');
+} catch (err) {
+  console.warn('[CryptoEats] Web build warning (non-fatal):', err.message);
+}
+
 console.log('[CryptoEats] Building API with esbuild...');
 try {
   execSync(
