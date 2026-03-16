@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, Pressable, Platform, Alert, TextInp
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import Colors from '@/constants/colors';
 import { apiRequest, getApiUrl } from '@/lib/query-client';
@@ -122,11 +123,16 @@ export default function WalletScreen() {
       <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: isWeb ? 34 : Math.max(insets.bottom, 20) }]} showsVerticalScrollIndicator={false}>
         {hasWallet ? (
           <>
-            <View style={[styles.walletCard, { backgroundColor: c.surface }]}>
+            <LinearGradient
+              colors={['#0A1628', '#0052FF18', '#00D4AA12']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.walletCard}
+            >
               <View style={styles.walletCardHeader}>
-                <View style={[styles.chainBadge, { backgroundColor: '#0052FF22' }]}>
+                <View style={[styles.chainBadge, { backgroundColor: '#0052FF30' }]}>
                   <MaterialCommunityIcons name="ethereum" size={20} color="#0052FF" />
-                  <Text style={[styles.chainText, { color: '#0052FF', fontFamily: 'DMSans_600SemiBold' }]}>Base</Text>
+                  <Text style={[styles.chainText, { color: '#4D8AFF', fontFamily: 'DMSans_600SemiBold' }]}>Base Network</Text>
                 </View>
                 <View style={[styles.connectedBadge, { backgroundColor: c.greenLight }]}>
                   <View style={[styles.connectedDot, { backgroundColor: c.green }]} />
@@ -134,7 +140,7 @@ export default function WalletScreen() {
                 </View>
               </View>
 
-              <Text style={[styles.addressText, { color: c.textSecondary, fontFamily: 'DMSans_400Regular' }]}>
+              <Text style={[styles.addressText, { color: 'rgba(255,255,255,0.5)', fontFamily: 'DMSans_400Regular' }]}>
                 {truncateAddress(defaultWallet.walletAddress)}
               </Text>
 
@@ -143,21 +149,21 @@ export default function WalletScreen() {
               ) : balances ? (
                 <View style={styles.balancesRow}>
                   <View style={styles.balanceItem}>
-                    <Text style={[styles.balanceLabel, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>USDC</Text>
-                    <Text style={[styles.balanceValue, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>
+                    <Text style={[styles.balanceLabel, { color: 'rgba(255,255,255,0.5)', fontFamily: 'DMSans_400Regular' }]}>USDC Balance</Text>
+                    <Text style={[styles.balanceValue, { color: '#fff', fontFamily: 'DMSans_700Bold' }]}>
                       ${parseFloat(balances.usdc).toFixed(2)}
                     </Text>
                   </View>
-                  <View style={[styles.balanceDivider, { backgroundColor: c.border }]} />
+                  <View style={[styles.balanceDivider, { backgroundColor: 'rgba(255,255,255,0.15)' }]} />
                   <View style={styles.balanceItem}>
-                    <Text style={[styles.balanceLabel, { color: c.textTertiary, fontFamily: 'DMSans_400Regular' }]}>ETH</Text>
-                    <Text style={[styles.balanceValue, { color: c.text, fontFamily: 'DMSans_700Bold' }]}>
+                    <Text style={[styles.balanceLabel, { color: 'rgba(255,255,255,0.5)', fontFamily: 'DMSans_400Regular' }]}>ETH Balance</Text>
+                    <Text style={[styles.balanceValue, { color: '#fff', fontFamily: 'DMSans_700Bold' }]}>
                       {parseFloat(balances.eth).toFixed(4)}
                     </Text>
                   </View>
                 </View>
               ) : null}
-            </View>
+            </LinearGradient>
 
             <Pressable
               onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push('/buy-crypto'); }}
