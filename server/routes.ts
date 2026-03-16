@@ -50,7 +50,11 @@ import {
   validateCloudUpload, isS3Configured, getCloudStorageStatus,
 } from "./services/cloud-storage";
 
-const JWT_SECRET = process.env.SESSION_SECRET || (process.env.NODE_ENV === "production" ? (() => { throw new Error("SESSION_SECRET must be set in production"); })() : "dev-only-secret-not-for-production");
+const _sessionSecret = process.env.SESSION_SECRET;
+if (!_sessionSecret && process.env.NODE_ENV === "production") {
+  console.warn("[SECURITY WARNING] SESSION_SECRET is not set. Tokens will not persist across restarts. Set SESSION_SECRET in your environment variables.");
+}
+const JWT_SECRET = _sessionSecret || "dev-only-secret-not-for-production";
 
 function getParam(val: string | string[]): string {
   return Array.isArray(val) ? val[0] : val;

@@ -144,31 +144,8 @@ if (hasDatabaseUrl) {
     customSiteTitle: "CryptoEats API Docs",
   }));
 
-  const staticBuildDir = path.resolve(process.cwd(), "static-build");
-  const staticIndexPath = path.resolve(staticBuildDir, "index.html");
-
   app.use("/assets", express.static(path.resolve(process.cwd(), "assets")));
   app.use("/public", express.static(path.resolve(process.cwd(), "public")));
-  app.use(express.static(staticBuildDir));
-
-  app.get("/", (req, res) => {
-    const platform = req.header("expo-platform");
-    if (platform && (platform === "ios" || platform === "android")) {
-      const manifestPath = path.resolve(process.cwd(), "public", "manifest.json");
-      try {
-        const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-        res.json(manifest);
-      } catch {
-        res.json({ name: "CryptoEats", slug: "cryptoeats" });
-      }
-      return;
-    }
-    if (fs.existsSync(staticIndexPath)) {
-      res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-      return res.sendFile(staticIndexPath);
-    }
-    res.status(404).send("<h1>CryptoEats</h1><p>Web build not found.</p>");
-  });
 
   registerPlatformRoutes(app);
   getInitPromise();

@@ -3,47 +3,22 @@
   "framework": null,
   "buildCommand": "npm run vercel-build",
   "installCommand": "npm install",
+  "outputDirectory": "static-build",
   "functions": {
     "api/index.js": {
-      "includeFiles": "server/templates/**,public/**,assets/**,static-build/**"
+      "includeFiles": "server/templates/**,public/**,assets/**"
     }
   },
-  "routes": [
-    {
-      "src": "/admin",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/merchant",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/legal/(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/developers",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/health",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/api-docs(.*)",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/widget.js",
-      "dest": "/api/index.js"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/api/index.js"
-    }
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "/api/index.js" },
+    { "source": "/admin", "destination": "/api/index.js" },
+    { "source": "/merchant", "destination": "/api/index.js" },
+    { "source": "/driver", "destination": "/api/index.js" },
+    { "source": "/developers", "destination": "/api/index.js" },
+    { "source": "/legal/:path*", "destination": "/api/index.js" },
+    { "source": "/health", "destination": "/api/index.js" },
+    { "source": "/api-docs/:path*", "destination": "/api/index.js" },
+    { "source": "/widget.js", "destination": "/api/index.js" },
+    { "source": "/((?!_expo|assets|images|favicon).*)", "destination": "/index.html" }
   ]
 }
