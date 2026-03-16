@@ -34,7 +34,7 @@ try {
 if (process.env.DATABASE_URL) {
   console.log('[CryptoEats] Running database migrations...');
   try {
-    execSync('npx drizzle-kit push --force', { stdio: 'inherit', cwd });
+    execSync('npx drizzle-kit push', { stdio: 'inherit', cwd });
     console.log('[CryptoEats] Database migrations complete.');
   } catch (err) {
     console.warn('[CryptoEats] Database migration warning:', err.message);
