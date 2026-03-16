@@ -80,3 +80,4 @@ waitForPort = 5000
 [userenv.shared]
 API_PLAYGROUND_ENABLED = "true"
 WEBHOOK_SECRET = "cryptoeats-webhook-secret-v1"
+SESSION_SECRET = "LCmuczugvOZiu1CWpH8bvflk+iAT5qTnVeO+lK79Vxo="
