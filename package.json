@@ -39,7 +39,7 @@
     "drizzle-zod": "^0.7.1",
     "esbuild": "^0.25.12",
     "ethers": "^6.16.0",
-    "expo": "~54.0.27",
+    "expo": "~56.0.3",
     "expo-blur": "~15.0.8",
     "expo-constants": "~18.0.11",
     "expo-crypto": "^15.0.8",
